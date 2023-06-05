@@ -97,61 +97,71 @@ extern gpio gpio_stm32f103RC;
 
 void WR_IDLE()
 {
-stm32f103.set_pin_state(GPIOA,WR,1);
+GPIOA->BRR= (1<<15);
 }
 
 void RESET_IDLE()
 {
-stm32f103.set_pin_state(GPIOA,RST,1);
+//stm32f103.set_pin_state(GPIOA,RST,1);
+GPIOA->BSRR= (1<<10);
 }
 
 void CS_IDLE()
 {
-stm32f103.set_pin_state(GPIOA,CS,1);
+//stm32f103.set_pin_state(GPIOA,CS,1);
+GPIOA->BRR= (1<<11);
+//delay_us(10);
 }
 
 void RD_IDLE()
 {
 stm32f103.set_pin_state(GPIOC,RD,1);
+//GPIOC->BRR= (1<<10);
 }
 
 
 
 void RESET_ACTIVE()
 {
-stm32f103.set_pin_state(GPIOA,RST,0);
+//stm32f103.set_pin_state(GPIOA,RST,0);
+GPIOA->BSRR= (1<<10);
 }
 
 void CS_ACTIVE()
 {
-stm32f103.set_pin_state(GPIOA,CS,0);
+//stm32f103.set_pin_state(GPIOA,CS,0);
+GPIOA->BRR= (1<<11);
+//delay_us(5000);
 }
 void CD_DATA()
 {
-stm32f103.set_pin_state(GPIOA,RS,1);
+//stm32f103.set_pin_state(GPIOA,RS,1);
+GPIOA->BSRR= (1<<12);
 }
 void CD_CMD()
 {
-stm32f103.set_pin_state(GPIOA,RS,0);
+//stm32f103.set_pin_state(GPIOA,RS,0);
+GPIOA->BRR= (1<<12);
 }
 
 void RD_ACTIVE()
 {
-stm32f103.set_pin_state(GPIOC,RD,0);
+//stm32f103.set_pin_state(GPIOC,RD,0);
+GPIOC->BSRR= (1<<10);
 }
 
 void WR_ACTIVE()
 {
-stm32f103.set_pin_state(GPIOA,WR,0);
+//stm32f103.set_pin_state(GPIOA,WR,0);
+GPIOA->BSRR= (1<<15);
 }
 
 // write strobe
-void WR_STROBE()
+/*void WR_STROBE()
   {
-  WR_ACTIVE();
-  //delay_ms(1);
-  WR_IDLE();
-  }
+   GPIOA->BSRR= (1<<15);
+   WR_IDLE();
+  }*/
 
 extern "C" void DMA1_Channel4_IRQHandler(void)
 {
@@ -198,24 +208,76 @@ uart1.uart_enter();
 void port_data(uint8_t cmd)
 {
 uint8_t cmd_temp=0,mask[8]={1,2,4,8,16,32,64,128},state=0;  
-GPIO_TypeDef *ports[8]={GPIOB,GPIOB,GPIOB,GPIOB,GPIOC,GPIOC,GPIOA,GPIOA};
-uint8_t pins[8]={12,13,14,15,8,9,8,9};
+//GPIO_TypeDef *ports[8]={GPIOB,GPIOB,GPIOB,GPIOB,GPIOC,GPIOC,GPIOA,GPIOA};
+//uint8_t pins[8]={12,13,14,15,8,9,8,9};
+GPIOB->BRR = (1<<12);
+GPIOB->BRR = (1<<13);
+GPIOB->BRR = (1<<14);
+GPIOB->BRR = (1<<15);
+GPIOC->BRR = (1<<8);
+GPIOC->BRR = (1<<9);
+GPIOA->BRR = (1<<8);
+GPIOA->BRR = (1<<9);
 
 for(int i=0;i<8;i++)
 {
   cmd_temp=cmd;
   cmd_temp=cmd_temp&mask[i];
+
+switch ( i ) {
+case 0:
+if(cmd_temp)
+ GPIOB->BSRR = (1<<12);
+  break;
+case 1:
+if(cmd_temp)
+   GPIOB->BSRR = (1<<13);
+  break;
+case 2:
+if(cmd_temp)
+   GPIOB->BSRR = (1<<14);
+  break;
+  case 3:
+  if(cmd_temp)
+  GPIOB->BSRR = (1<<15);
+  break;
+  case 4:
+  if(cmd_temp)
+ GPIOC->BSRR = (1<<8);
+  break;
+  case 5:
+  if(cmd_temp)
+GPIOC->BSRR = (1<<9);
+  break;
+  case 6:
+  if(cmd_temp)
+GPIOA->BSRR = (1<<8);
+  break;
+  case 7:
+  if(cmd_temp)
+  GPIOA->BSRR = (1<<9);
+  break;
+
+ default:
+  // Code
+  break;
+}
+/*
   if(cmd_temp==0)
   {
   state=0;
+  ports[i]->BRR = (1<<pins[i]);
   }
   else
   {
   state=1;
-  }
-stm32f103.set_pin_state(ports[i],pins[i],state);
+  ports[i]->BSRR = (1<<pins[i]);
+  }*/
 }
 }
+
+
+
 
 
 
@@ -224,7 +286,9 @@ stm32f103.set_pin_state(ports[i],pins[i],state);
 void write8(uint8_t data)
 {                          
     port_data(data);
-    WR_STROBE();
+    GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+   // WR_STROBE();
 }
 
 void writeRegister8(uint8_t a,uint8_t d) 
@@ -285,7 +349,9 @@ void reset()
   write8(0x00);
   for(uint8_t i=0; i<3; i++)
   {
- WR_STROBE(); // Three extra 0x00s
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+ //WR_STROBE(); // Three extra 0x00s
   } 
   CS_IDLE();
 }
@@ -355,14 +421,34 @@ void flood(uint16_t color, uint32_t len)
     while(blocks--) {
       i = 16; // 64 pixels/block / 4 pixels/pass
       do {
-        WR_STROBE();  WR_STROBE();  WR_STROBE();  WR_STROBE(); // 2 bytes/pixel
-         WR_STROBE();  WR_STROBE();  WR_STROBE();  WR_STROBE(); // x 4 pixels
+         GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     /*   WR_STROBE();  WR_STROBE();  WR_STROBE();  WR_STROBE(); // 2 bytes/pixel
+         WR_STROBE();  WR_STROBE();  WR_STROBE();  WR_STROBE(); // x 4 pixels*/
       } while(--i);
     }
     // Fill any remaining pixels (1 to 64)
     for(i = (uint8_t)len & 63; i--; ) {
-       WR_STROBE();
-       WR_STROBE();
+        GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     GPIOA->BSRR= (1<<15);
+    GPIOA->BRR= (1<<15);
+     /*  WR_STROBE();
+       WR_STROBE();*/
     }
   } else {
     while(blocks--) {
@@ -417,10 +503,9 @@ breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
 
-
   reset();  
   begin();
-  fillScreen(GREEN);
+  fillScreen(BLUE);
 
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
