@@ -4,40 +4,7 @@
 #include "dma.hpp"
 #include "string.h"
 #include "hardware_config.hpp"
-//#include "registers.hpp"
-
-
-#define ILI9341_SOFTRESET          0x01
-#define ILI9341_SLEEPIN            0x10
-#define ILI9341_SLEEPOUT           0x11
-#define ILI9341_NORMALDISP         0x13
-#define ILI9341_INVERTOFF          0x20
-#define ILI9341_INVERTON           0x21
-#define ILI9341_GAMMASET           0x26
-#define ILI9341_DISPLAYOFF         0x28
-#define ILI9341_DISPLAYON          0x29
-#define ILI9341_COLADDRSET         0x2A
-#define ILI9341_PAGEADDRSET        0x2B
-#define ILI9341_MEMORYWRITE        0x2C
-#define ILI9341_PIXELFORMAT        0x3A
-#define ILI9341_FRAMECONTROL       0xB1
-#define ILI9341_DISPLAYFUNC        0xB6
-#define ILI9341_ENTRYMODE          0xB7
-#define ILI9341_POWERCONTROL1      0xC0
-#define ILI9341_POWERCONTROL2      0xC1
-#define ILI9341_VCOMCONTROL1      0xC5
-#define ILI9341_VCOMCONTROL2      0xC7
-#define ILI9341_MEMCONTROL      0x36
-#define ILI9341_MADCTL  0x36
-
-#define ILI9341_MADCTL_MY  0x80
-#define ILI9341_MADCTL_MX  0x40
-#define ILI9341_MADCTL_MV  0x20
-#define ILI9341_MADCTL_ML  0x10
-#define ILI9341_MADCTL_RGB 0x00
-#define ILI9341_MADCTL_BGR 0x08
-#define ILI9341_MADCTL_MH  0x04
-
+#include "registers.hpp"
 
 
 
@@ -93,8 +60,7 @@ void delay_ms(uint32_t ms)
 }
 
 extern gpio gpio_stm32f103RC;
-
-
+/*
 void WR_IDLE()
 {
 GPIOA->BRR= (1<<15);
@@ -154,7 +120,7 @@ void WR_ACTIVE()
 {
 //stm32f103.set_pin_state(GPIOA,WR,0);
 GPIOA->BSRR= (1<<15);
-}
+}*/
 
 // write strobe
 /*void WR_STROBE()
@@ -204,12 +170,14 @@ uart1.uart_enter();
 
 
 
-
+uint8_t cmd_temp=0,mask[8]={1,2,4,8,16,32,64,128};//,state=0;  
 void port_data(uint8_t cmd)
 {
-uint8_t cmd_temp=0,mask[8]={1,2,4,8,16,32,64,128},state=0;  
+
 //GPIO_TypeDef *ports[8]={GPIOB,GPIOB,GPIOB,GPIOB,GPIOC,GPIOC,GPIOA,GPIOA};
 //uint8_t pins[8]={12,13,14,15,8,9,8,9};
+
+
 GPIOB->BRR = (1<<12);
 GPIOB->BRR = (1<<13);
 GPIOB->BRR = (1<<14);
@@ -218,6 +186,7 @@ GPIOC->BRR = (1<<8);
 GPIOC->BRR = (1<<9);
 GPIOA->BRR = (1<<8);
 GPIOA->BRR = (1<<9);
+
 
 for(int i=0;i<8;i++)
 {
@@ -268,7 +237,7 @@ GPIOA->BSRR = (1<<8);
   state=0;
   ports[i]->BRR = (1<<pins[i]);
   }
-  else
+  if(cmd_temp==1)//else
   {
   state=1;
   ports[i]->BSRR = (1<<pins[i]);
@@ -293,9 +262,9 @@ void write8(uint8_t data)
 
 void writeRegister8(uint8_t a,uint8_t d) 
 { 
-   CD_CMD(); 
+  GPIOA->BRR= (1<<12);
    write8(a); 
-   CD_DATA() ; 
+GPIOA->BSRR= (1<<12); 
    write8(d); 
 }
 
@@ -304,12 +273,12 @@ void writeRegister16(uint16_t a, uint16_t d)
   uint8_t hi, lo; 
   hi = (a) >> 8; 
   lo = (a); 
-  CD_CMD(); 
+GPIOA->BRR= (1<<12);
   write8(hi); 
   write8(lo); 
   hi = (d) >> 8;
   lo = (d); 
-  CD_DATA() ; 
+GPIOA->BSRR= (1<<12);
   write8(hi);
   write8(lo); 
   }
@@ -318,10 +287,10 @@ void writeRegister16(uint16_t a, uint16_t d)
 void writeRegister32(uint8_t r, uint32_t d)
  {
   uint8_t temp;
-  CS_ACTIVE();
-  CD_CMD();
+GPIOA->BRR= (1<<11);
+GPIOA->BRR= (1<<12);
   write8(r);
-  CD_DATA();
+GPIOA->BSRR= (1<<12);
   delay_us(10);
   temp=d >> 24;
   write8(temp);
@@ -333,19 +302,19 @@ void writeRegister32(uint8_t r, uint32_t d)
   write8(temp);
   delay_us(10);
   write8(d);
-  CS_IDLE();
+GPIOA->BRR= (1<<11);
 }
 
 void reset()
  {
-  CS_IDLE();
-  WR_IDLE();
-  RD_IDLE();
-  RESET_ACTIVE();
+GPIOA->BRR= (1<<11);
+GPIOA->BRR= (1<<15);
+stm32f103.set_pin_state(GPIOC,RD,1);;
+GPIOA->BSRR= (1<<10);
    // delay_ms(2);
-    RESET_IDLE();
-  CS_ACTIVE();
-  CD_CMD();
+   GPIOA->BSRR= (1<<10);
+ GPIOA->BRR= (1<<11);
+GPIOA->BRR= (1<<12);
   write8(0x00);
   for(uint8_t i=0; i<3; i++)
   {
@@ -353,13 +322,13 @@ void reset()
     GPIOA->BRR= (1<<15);
  //WR_STROBE(); // Three extra 0x00s
   } 
-  CS_IDLE();
+GPIOA->BRR= (1<<11);
 }
 
 
 void setAddrWindow(int x1, int y1, int x2, int y2)
  {
-  CS_ACTIVE();
+ GPIOA->BRR= (1<<11);
   uint32_t t;
     t = x1;
     t <<= 16;
@@ -369,7 +338,7 @@ void setAddrWindow(int x1, int y1, int x2, int y2)
     t <<= 16;
     t |= y2;
     writeRegister32(ILI9341_PAGEADDRSET, t); // HX8357D uses same registers!
-    CS_IDLE();
+GPIOA->BRR= (1<<11);
 }
 
 void begin() 
@@ -379,7 +348,7 @@ void begin()
  port_data(0x00);
  //RESET_IDLE();
   //delay_ms(500);
-    CS_ACTIVE();
+GPIOA->BRR= (1<<11);
     writeRegister8(ILI9341_SOFTRESET, 0);
    // delay_ms(1);
     writeRegister8(ILI9341_DISPLAYOFF, 0);
@@ -404,12 +373,12 @@ void flood(uint16_t color, uint32_t len)
   uint16_t blocks;
   uint8_t  i, hi = color >> 8,
               lo = color;
-  CS_ACTIVE();
-  CD_CMD();  
+GPIOA->BRR= (1<<11);
+ GPIOA->BRR= (1<<12);
   write8(0x2C);
   
     // Write first pixel normally, decrement counter by 1
-  CD_DATA();
+GPIOA->BSRR= (1<<12);
   write8(hi);
   write8(lo);
   len--;
@@ -463,7 +432,7 @@ void flood(uint16_t color, uint32_t len)
       write8(lo);
     }
   }
-  CS_IDLE();
+GPIOA->BRR= (1<<11);
 }
 
 void fillScreen(uint16_t color) 
@@ -508,13 +477,14 @@ int main()
 RCC->APB2ENR |= RCC_APB2ENR_AFIOEN; 
 AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_1; //remap PA15*/
 //SetSysClockTo72();
+/*
 RCC->CFGR|=RCC_CFGR_PLLMULL_0;
 RCC->CFGR|=RCC_CFGR_PLLMULL_1;
 RCC->CFGR&=~RCC_CFGR_PLLMULL_2;
 RCC->CFGR&=~RCC_CFGR_PLLMULL_3;
 RCC->CFGR|=RCC_CFGR_MCOSEL_HSI;
 RCC->CFGR&=~RCC_CFGR_SW_0;
-RCC->CFGR|=RCC_CFGR_SW_1;
+RCC->CFGR|=RCC_CFGR_SW_1;*/
 gpio_init();
 dma_usart1.DMA1_Init();
 uart1.usart_init();
@@ -526,13 +496,21 @@ breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
 
+uint32_t colors[8]={0x0000,0x001F, 0xF800,0x07E0,  0x07FF,0xF81F,0xFFE0, 0xFFFF};
   reset();  
   begin();
-  fillScreen(YELLOW);
+  for(int i=0;i<8;i++)
+  {
+ fillScreen(colors[i]);
+  }
+ 
 
+
+/*
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
+*/
 /*
   CS_IDLE();
   WR_IDLE();
