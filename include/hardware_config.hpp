@@ -4,8 +4,8 @@
 
 //USART1
 #define usart_port							       	 GPIOB
-#define usart_tx_pin							        	6
-#define usart_rx_pin							            7
+#define usart_tx_pin							      	6
+#define usart_rx_pin							        7
 #define usart_tx_pin_mode					1 //   gpio.alternate_mode_pp_50;
 #define usart_rx_pin_mode						1///gpio.input_mode_floating;
 //Parallel_BUS
