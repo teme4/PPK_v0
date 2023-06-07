@@ -283,7 +283,8 @@ void write8(uint8_t data)
      GPIOA->BSRR= (1<<31);
     // asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");    //asm ("NOP"); asm ("NOP");        
      GPIOA->BSRR= (1<<15); 
-     asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");    
+     delay_us(10);
+    // asm ("NOP"); asm ("NOP");asm ("NOP"); asm ("NOP");  //asm ("NOP");// asm ("NOP");     
 }
 
 void writeRegister8(uint8_t a,uint8_t d) 
@@ -292,7 +293,8 @@ void writeRegister8(uint8_t a,uint8_t d)
   write8(a); 
   GPIOA->BSRR= (1<<12); 
   write8(d); 
-   asm ("NOP"); asm ("NOP"); //asm ("NOP"); asm ("NOP");  
+   //asm ("NOP"); asm ("NOP"); //asm ("NOP"); asm ("NOP");  
+    delay_us(10);
 }
 
 void writeRegister16(uint16_t a, uint16_t d)
@@ -308,7 +310,8 @@ void writeRegister16(uint16_t a, uint16_t d)
   GPIOA->BSRR= (1<<12);
   write8(hi);
   write8(lo); 
-  asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");  
+  //asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");  
+   delay_us(10);
   }
 
 
@@ -327,22 +330,39 @@ GPIOA->BSRR= (1<<28);
   write8(temp); 
   write8(d);
 GPIOA->BSRR= (1<<27);
-asm ("NOP"); asm ("NOP");asm ("NOP"); asm ("NOP");
+//asm ("NOP"); asm ("NOP");asm ("NOP"); asm ("NOP");
+   delay_us(10);
 }
 
 void reset()
- {
+{
+  /*
+GPIOA->BSRR= (1<<26);
+delay_ms(5);
+GPIOA->BSRR= (1<<10);
+delay_ms(5);
+GPIOA->BSRR= (1<<28);
+write8(0x00); 
+for (uint8_t i=0;i<3;i++) 
+{
+GPIOA->BSRR= (1<<31);
+GPIOA->BSRR= (1<<15);
+}      
+}*/
+
+
 GPIOA->BRR= (1<<11);
 stm32f103.set_pin_state(GPIOC,RD,1);
 GPIOA->BSRR= (1<<10);
-delay_ms(2);
+delay_ms(50);
 GPIOA->BSRR= (1<<10);
+delay_ms(50);
 GPIOA->BRR= (1<<11);
 GPIOA->BRR= (1<<12);
-  write8(0x00);
+  write8(ILI9341_SOFTRESET);
   for(uint8_t i=0; i<3; i++)
   {
-     GPIOA->BSRR= (1<<15);
+    GPIOA->BSRR= (1<<15);
     GPIOA->BRR= (1<<15);
  //WR_STROBE(); // Three extra 0x00s
   } 
@@ -361,31 +381,45 @@ void setAddrWindow(int x1, int y1, int x2, int y2)
      t = y1;
     t <<= 16;
     t |= y2;
-    asm ("NOP");// asm ("NOP"); 
+  //  asm ("NOP");// asm ("NOP"); 
     writeRegister32(ILI9341_PAGEADDRSET, t); // HX8357D uses same registers!
-    asm ("NOP");// asm ("NOP"); 
+  //  asm ("NOP");// asm ("NOP"); 
 GPIOA->BRR= (1<<11);
 }
 
 void begin() 
 {
  reset();
- port_data(0x00);
+ //port_data(0x00);
   GPIOA->BRR= (1<<11);
     writeRegister8(ILI9341_SOFTRESET, 0);
+    delay_ms(10);
     writeRegister8(ILI9341_DISPLAYOFF, 0);
+     delay_ms(10);
     writeRegister8(ILI9341_POWERCONTROL1, 0x23);
+     delay_ms(10);
     writeRegister8(ILI9341_POWERCONTROL2, 0x10);
+     delay_ms(10);
     writeRegister16(ILI9341_VCOMCONTROL1, 0x2B2B);
+     delay_ms(10);
     writeRegister8(ILI9341_VCOMCONTROL2, 0xC0);
-    writeRegister8(ILI9341_MEMCONTROL,0x88 );//ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR
+     delay_ms(10);
+    writeRegister8(ILI9341_MEMCONTROL,0x88);//ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR
+     delay_ms(10);
+    //case ROTATE_0:      send_data(0x58);
+    //case ROTATE_90:      send_data(0x28);   
+    //case ROTATE_180:   send_data(0x88);   
+    //case ROTATE_270:   send_data(0xE8);   
     writeRegister8(ILI9341_PIXELFORMAT, 0x55);
+     delay_ms(10);
     writeRegister16(ILI9341_FRAMECONTROL, 0x0310);//0x001B
+     delay_ms(10);
     writeRegister8(ILI9341_ENTRYMODE, 0x07);
+     delay_ms(10);
     writeRegister8(ILI9341_SLEEPOUT, 0);
-    delay_ms(250);
+     delay_ms(250);
     writeRegister8(ILI9341_DISPLAYON, 0);
-    delay_ms(1000);
+    delay_ms(500);
     setAddrWindow(0, 0, 239, 319);    
  }
 
@@ -489,8 +523,37 @@ return;
 
 
 
+void test (uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color)
+{
+//uint16_t ILI9341_x = x0;
+//uint16_t ILI9341_y = y0;
+for(int i=0;i<(y1-y0);i++)
+{
+setAddrWindow(x0, y0 + i, x1, y0 + i+1);
+  GPIOA->BSRR= (1<<28);
+  write8(0x2C); 
+for(int j=0;j<(x1-x0);j++)
+{
+  GPIOA->BSRR= (1<<12); 
+  write8(color >> 8); 
+  write8(color & 0xFF); 
+}
+}
+}
 
-
+void lcdFillRGB(uint16_t color)
+{
+  setAddrWindow(0, 0, 240 - 1, 320 - 1);
+  int dimensions = 320 * 240;
+  GPIOA->BSRR= (1<<28);
+  write8(0x2C); 
+  GPIOA->BSRR= (1<<12); 
+  while(dimensions--)
+  {
+    write8(color >> 8); 
+    write8(color & 0xFF); 
+  }
+}
 //void func_hard_fault(void);
 
 int main()
@@ -544,7 +607,7 @@ for(int i=0;i<239;i++)
  }*/
  
  
-
+//test (0, 0, 240, 320,0x0000);
 
 
 /*
@@ -556,13 +619,17 @@ breakpoint("DMA_init!");
 while(1)
 {
 
+lcdFillRGB(0x0000);
+//delay_ms(1000);
+lcdFillRGB(0xFFFF);
+/*
 for(int i=0;i<9;i++)
 {
 GPIOA->BSRR= (1<<27);                
   fillScreen(colors[i]);      
 GPIOA->BSRR= (1<<11);
 delay_ms(1000);
-}
+}*/
   /*
  SCB_DEMCR |= 0x01000000;
  DWT_CONTROL|= 1; // enable the counter
