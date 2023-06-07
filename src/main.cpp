@@ -30,6 +30,11 @@ char temp[1];
 #define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
 #define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
 #define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
+
+volatile uint32_t *DWT_CONTROL2 = (uint32_t *)0xE0001000;
+volatile uint32_t *DWT_CYCCNT2 = (uint32_t *)0xE0001004; 
+volatile uint32_t *DEMCR2 = (uint32_t *)0xE000EDFC; 
+uint32_t Mcounter, count;
  
 void delay_us(uint32_t us)
 {
@@ -169,7 +174,7 @@ uart1.uart_enter();
 
 
 
-
+/*
 uint8_t cmd_temp=0,mask[8]={1,2,4,8,16,32,64,128};  
 GPIO_TypeDef *ports[8]={GPIOB,GPIOB,GPIOB,GPIOB,GPIOC,GPIOC,GPIOA,GPIOA};
 uint8_t pins[8]={12,13,14,15,8,9,8,9};
@@ -243,10 +248,30 @@ asm ("nop");
 }
 //GPIOA->BSRR= (1<<19);
 }
+//delay_us(100);
 }
-
-
-
+*/
+uint8_t cmd_temp=0,mask[8]={1,2,4,8,16,32,64,128};  
+GPIO_TypeDef *ports[8]={GPIOB,GPIOB,GPIOB,GPIOB,GPIOC,GPIOC,GPIOA,GPIOA};
+uint8_t pins[8]={12,13,14,15,8,9,8,9};
+void port_data(uint8_t cmd)
+{
+  
+for(int i=0;i<8;i++)
+{
+  cmd_temp=cmd;
+  cmd_temp=cmd_temp&mask[i];
+  if(cmd_temp==0)
+  {
+     ports[i]->BSRR = (1<<(pins[i]+16));
+  }
+  else
+  { 
+  ports[i]->BSRR = (1<<pins[i]);
+  
+  }
+}
+}
 
 
 
@@ -255,17 +280,19 @@ asm ("nop");
 void write8(uint8_t data)
 {                          
     port_data(data);
-    *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-      asm ("NOP");  asm ("NOP");  asm ("NOP");  asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
+     GPIOA->BSRR= (1<<31);
+    // asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");    //asm ("NOP"); asm ("NOP");        
+     GPIOA->BSRR= (1<<15); 
+     asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");    
 }
 
 void writeRegister8(uint8_t a,uint8_t d) 
 { 
   GPIOA->BSRR= (1<<28);
-   write8(a); 
+  write8(a); 
   GPIOA->BSRR= (1<<12); 
-   write8(d); 
+  write8(d); 
+   asm ("NOP"); asm ("NOP"); //asm ("NOP"); asm ("NOP");  
 }
 
 void writeRegister16(uint16_t a, uint16_t d)
@@ -273,14 +300,15 @@ void writeRegister16(uint16_t a, uint16_t d)
   uint8_t hi, lo; 
   hi = (a) >> 8; 
   lo = (a); 
-GPIOA->BRR= (1<<12);
+  GPIOA->BRR= (1<<12);
   write8(hi); 
   write8(lo); 
   hi = (d) >> 8;
   lo = (d); 
-GPIOA->BSRR= (1<<12);
+  GPIOA->BSRR= (1<<12);
   write8(hi);
   write8(lo); 
+  asm ("NOP"); asm ("NOP"); asm ("NOP"); asm ("NOP");  
   }
 
 
@@ -289,20 +317,17 @@ void writeRegister32(uint8_t r, uint32_t d)
   uint8_t temp;
 GPIOA->BSRR= (1<<27);
 GPIOA->BSRR= (1<<28);
-  write8(r);
-GPIOA->BSRR= (1<<12);
- // delay_us(10);
+  write8(r);  
+ GPIOA->BSRR= (1<<12);
   temp=d >> 24;
   write8(temp);
-  //delay_us(10);
   temp=d >> 16;
-  write8(temp);
- // delay_us(10);
+  write8(temp); 
   temp=d >> 8;
-  write8(temp);
- // delay_us(10);
+  write8(temp); 
   write8(d);
 GPIOA->BSRR= (1<<27);
+asm ("NOP"); asm ("NOP");asm ("NOP"); asm ("NOP");
 }
 
 void reset()
@@ -310,7 +335,7 @@ void reset()
 GPIOA->BRR= (1<<11);
 stm32f103.set_pin_state(GPIOC,RD,1);
 GPIOA->BSRR= (1<<10);
-   // delay_ms(2);
+delay_ms(2);
 GPIOA->BSRR= (1<<10);
 GPIOA->BRR= (1<<11);
 GPIOA->BRR= (1<<12);
@@ -324,29 +349,28 @@ GPIOA->BRR= (1<<12);
 GPIOA->BRR= (1<<11);
 }
 
-
+  uint32_t t;
 void setAddrWindow(int x1, int y1, int x2, int y2)
  {
  GPIOA->BRR= (1<<11);
-  uint32_t t;
+
     t = x1;
     t <<= 16;
     t |= x2;
     writeRegister32(ILI9341_COLADDRSET, t);  // HX8357D uses same registers!
-    t = y1;
+     t = y1;
     t <<= 16;
     t |= y2;
+    asm ("NOP");// asm ("NOP"); 
     writeRegister32(ILI9341_PAGEADDRSET, t); // HX8357D uses same registers!
+    asm ("NOP");// asm ("NOP"); 
 GPIOA->BRR= (1<<11);
 }
 
 void begin() 
 {
- // uint8_t i = 0;
  reset();
  port_data(0x00);
- //RESET_IDLE();
-  //delay_ms(500);
   GPIOA->BRR= (1<<11);
     writeRegister8(ILI9341_SOFTRESET, 0);
     writeRegister8(ILI9341_DISPLAYOFF, 0);
@@ -361,8 +385,8 @@ void begin()
     writeRegister8(ILI9341_SLEEPOUT, 0);
     delay_ms(250);
     writeRegister8(ILI9341_DISPLAYON, 0);
-    delay_ms(500);
-    setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);    
+    delay_ms(1000);
+    setAddrWindow(0, 0, 239, 319);    
  }
 
 
@@ -385,56 +409,48 @@ GPIOA->BSRR= (1<<12);
   if(hi == lo) {
     // High and low bytes are identical.  Leave prior data
     // on the port(s) and just toggle the write strobe.
-    while(blocks--) {
+    while(blocks--)
+    {
       i = 16; // 64 pixels/block / 4 pixels/pass
-      do {
-    *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-     *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-     *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-      *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-   // asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-     *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-     *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-      *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-   // asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-  *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-     /*   WR_STROBE();  WR_STROBE();  WR_STROBE();  WR_STROBE(); // 2 bytes/pixel
-         WR_STROBE();  WR_STROBE();  WR_STROBE();  WR_STROBE(); // x 4 pixels*/
-      } while(--i);
+      do
+       {
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15); 
+      GPIOA->BSRR= (1<<31);
+      GPIOA->BSRR= (1<<15);
+     } 
+     while(--i);
     }
     // Fill any remaining pixels (1 to 64)
     for(i = (uint8_t)len & 63; i--; ) {
-   *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-    //asm ("NOP");
-      *((int*)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
-    //asm ("NOP");
-    *((int*)(GPIOA_BASE+0x10)) =0x8000; //WR=1 
-     /*  WR_STROBE();
-       WR_STROBE();*/
+    GPIOA->BSRR= (1<<31);
+    GPIOA->BSRR= (1<<15); 
+    GPIOA->BSRR= (1<<31);
+    GPIOA->BSRR= (1<<15);     
     }
-  } else {
+  } 
+  else
+  {
     while(blocks--) {
       i = 16; // 64 pixels/block / 4 pixels/pass
-      do {
+      do
+      {
         write8(hi); write8(lo); write8(hi); write8(lo);
         write8(hi); write8(lo); write8(hi); write8(lo);
-      } while(--i);
+      } 
+      while(--i);
     }
     for(i = (uint8_t)len & 63; i--; ) {
       write8(hi);
@@ -447,7 +463,8 @@ GPIOA->BRR= (1<<11);
 void fillScreen(uint16_t color) 
 {
   setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);
-  flood(color, (long)TFTWIDTH * (long)TFTHEIGHT);
+  //asm ("NOP"); asm ("NOP");   // asm ("NOP"); asm ("NOP");
+  flood(color, TFTWIDTH * TFTHEIGHT);
 }
 
 
@@ -456,67 +473,117 @@ void fillScreen(uint16_t color)
 
 
 
+void DrawPixel(uint16_t x, uint16_t y,uint16_t color) 
+{
+ if((x<0)||(y<0)||(x>=239)||(y>=319))
+return;
+ setAddrWindow(x, y, x, y);
+ writeRegister16(0x2C, color);
+ /*
+ TFT1520_SendCommand();
+ TFT1520_SendData(color >> 8);
+ TFT1520_SendData(color & 0xFF);*/
+  }
 
 
 
 
 
 
+
+//void func_hard_fault(void);
 
 int main()
 {
+//-------------------------------------------------------
 
-RCC->CFGR&=~RCC_CFGR_PLLMULL_0;//12
+
+/*
+RCC->CFGR|=RCC_CFGR_PLLMULL_0;//12
 RCC->CFGR|=RCC_CFGR_PLLMULL_1;
-RCC->CFGR&=~RCC_CFGR_PLLMULL_2;
-RCC->CFGR|=RCC_CFGR_PLLMULL_3;
+RCC->CFGR|=RCC_CFGR_PLLMULL_2;
+RCC->CFGR|=RCC_CFGR_PLLMULL_3;*/
 
+RCC->CFGR|=(0xA)<<RCC_CFGR_PLLMULL_Pos;//0xF
+//RCC->CFGR|=(0x8)<<RCC_CFGR_HPRE_Pos;
 RCC->CFGR|=RCC_CFGR_MCOSEL_PLL_DIV2;
 RCC->CFGR&=~RCC_CFGR_SW_0;
 RCC->CFGR|=RCC_CFGR_SW_1;
 RCC->CR|=RCC_CR_PLLON;
-/*
-while(1)
-{
-uint32_t temp=(RCC->CR & RCC_CR_PLLRDY);
-break;
-}
-*/
+
 gpio_init();
 dma_usart1.DMA1_Init();
 uart1.usart_init();
-SET_BIT(AFIO->MAPR,AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
-gpio_stm32f103RC.gpio_conf(GPIOA,WR,gpio_stm32f103RC.gpio_mode_pp_50);
+
+AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
+//gpio_stm32f103RC.gpio_conf(GPIOA,WR,gpio_stm32f103RC.gpio_mode_pp_10);
 /*
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
 
-//uint32_t colors[8]={0x0000,0x001F, 0xF800,0x07E0,  0x07FF,0xF81F,0xFFE0, 0xFFFF};
-  
-  
-  
+uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
   
   reset();  
   begin();
- // fillScreen(MAGENTA);
+// fillScreen(MAGENTA);
+/*
+for(int i=0;i<239;i++)
+{
+  DrawPixel(i+2,i+2,BLACK);
+}
+
+ for(int x = 0; x < 320; x++) 
+ {
+ for(int y = 0; y < 240; y++)
+{
+// заполнение дисплея чёрным попиксельно
+ DrawPixel(y, x, 0x0000);
+ }
+ }*/
+ 
+ 
 
 
 
+/*
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
-
+*/
 
 while(1)
 {
 
+for(int i=0;i<9;i++)
+{
 GPIOA->BSRR= (1<<27);                
-      fillScreen(YELLOW);        
-    
+  fillScreen(colors[i]);      
 GPIOA->BSRR= (1<<11);
+delay_ms(1000);
+}
+  /*
+ SCB_DEMCR |= 0x01000000;
+ DWT_CONTROL|= 1; // enable the counter
+ DWT_CYCCNT  = 0;
+
  
+
+
+//Mcounter=*DWT_CYCCNT2;
+
+  GPIOA->BSRR= (1<<27);                
+   writeRegister16(ILI9341_VCOMCONTROL1, 0x2B2B);   
+  GPIOA->BSRR= (1<<11);  
+   //asm ("nop");
+ 
+
+
+ count=DWT_CYCCNT;
+breakpoint("gpio_init!");
+*/
+
 
 
 //*((int *)(GPIOA_BASE+0x10)) = 0x3000000;//PA8 PA9 =0
@@ -527,5 +594,19 @@ GPIOA->BSRR= (1<<11);
 //*((int *)(GPIOA_BASE+0x10)) = 0x80000000;//WR=0
 //*((int *)(GPIOA_BASE+0x10)) =0x8000; //WR=1
 
+}
+}
+
+
+extern "C"
+{
+void HardFault_Handler(void)
+{
+  int k=0;
+  while(1)
+  {
+    
+    k++;
+  }
 }
 }
