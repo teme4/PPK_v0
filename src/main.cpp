@@ -5,11 +5,13 @@
 #include "string.h"
 #include "hardware_config.hpp"
 #include "registers.hpp"
+#include "arial.hpp"
+#include "stdio.h"
 
 
-
-#define TFTWIDTH   240
-#define TFTHEIGHT  320
+char str[80];
+#define TFTWIDTH   320
+#define TFTHEIGHT  240
 // Assign human-readable names to some common 16-bit color values:
 #define BLACK   0x0000
 #define BLUE    0x001F
@@ -65,74 +67,8 @@ void delay_ms(uint32_t ms)
 }
 
 extern gpio gpio_stm32f103RC;
-/*
-void WR_IDLE()
-{
-GPIOA->BRR= (1<<15);
-}
-
-void RESET_IDLE()
-{
-//stm32f103.set_pin_state(GPIOA,RST,1);
-GPIOA->BSRR= (1<<10);
-}
-
-void CS_IDLE()
-{
-//stm32f103.set_pin_state(GPIOA,CS,1);
-GPIOA->BRR= (1<<11);
-//delay_us(10);
-}
-
-void RD_IDLE()
-{
-stm32f103.set_pin_state(GPIOC,RD,1);
-//GPIOC->BRR= (1<<10);
-}
 
 
-
-void RESET_ACTIVE()
-{
-//stm32f103.set_pin_state(GPIOA,RST,0);
-GPIOA->BSRR= (1<<10);
-}
-
-void CS_ACTIVE()
-{
-//stm32f103.set_pin_state(GPIOA,CS,0);
-GPIOA->BRR= (1<<11);
-//delay_us(5000);
-}
-void CD_DATA()
-{
-//stm32f103.set_pin_state(GPIOA,RS,1);
-GPIOA->BSRR= (1<<12);
-}
-void CD_CMD()
-{
-//stm32f103.set_pin_state(GPIOA,RS,0);
-GPIOA->BRR= (1<<12);
-}
-
-void RD_ACTIVE()
-{
-//stm32f103.set_pin_state(GPIOC,RD,0);
-GPIOC->BSRR= (1<<10);
-}
-
-void WR_ACTIVE()
-{
-//stm32f103.set_pin_state(GPIOA,WR,0);
-GPIOA->BSRR= (1<<15);
-}*/
-
-// write strobe
-/*void WR_STROBE()
-  {
-   GPIOA->BSRR= (1<<15);
-   WR_IDLE();
-  }*/
 
 extern "C" void DMA1_Channel4_IRQHandler(void)
 {
@@ -216,7 +152,6 @@ for(int i=0;i<8;i++)
   else
   { 
   ports[i]->BSRR = (1<<pins[i]);
-  
   }
 }
 }
@@ -236,10 +171,10 @@ void writeRegister8(uint8_t a,uint8_t d)
 { 
   GPIOA->BSRR= (1<<28);
   write8(a); 
+  delay_us(5);
   GPIOA->BSRR= (1<<12); 
   write8(d); 
-   //asm ("NOP"); asm ("NOP"); //asm ("NOP"); asm ("NOP");  
-  delay_us(10);
+  delay_us(5);
 }
 
 void writeRegister16(uint16_t a, uint16_t d)
@@ -252,10 +187,11 @@ void writeRegister16(uint16_t a, uint16_t d)
   write8(lo); 
   hi = (d) >> 8;
   lo = (d); 
+  delay_us(5);
   GPIOA->BSRR= (1<<12);
   write8(hi);
   write8(lo);   
- // delay_us(10);
+  delay_us(5);
   }
 
 
@@ -265,58 +201,68 @@ void writeRegister32(uint8_t r, uint32_t d)
   GPIOA->BSRR= (1<<27);
   GPIOA->BSRR= (1<<28);
   write8(r);  
+  delay_us(1);
   GPIOA->BSRR= (1<<12);
   temp=d >> 24;
   write8(temp);
+  delay_us(1);
   temp=d >> 16;
   write8(temp); 
+  delay_us(1);
   temp=d >> 8;
   write8(temp); 
+  delay_us(1);
   write8(d);
   GPIOA->BSRR= (1<<27);
-  //delay_us(10);
+  delay_us(1);
 }
 
 void reset()
 {
-GPIOA->BRR= (1<<11);
+//GPIOA->BRR= (1<<11);
 stm32f103.set_pin_state(GPIOC,RD,1);
 GPIOA->BSRR= (1<<10);
 delay_ms(50);
 GPIOA->BSRR= (1<<10);
 delay_ms(50);
-GPIOA->BRR= (1<<11);
+//GPIOA->BRR= (1<<11);
 GPIOA->BRR= (1<<12);
   write8(ILI9341_SOFTRESET);
+  GPIOA->BSRR= (1<<12);
+  write8(0x80);
+  write8(0x80);
   for(uint8_t i=0; i<3; i++)
   {
     GPIOA->BSRR= (1<<15);
     GPIOA->BRR= (1<<15);
   } 
-GPIOA->BRR= (1<<11);
+
+//GPIOA->BRR= (1<<11);
 }
 
   uint32_t t;
-void setAddrWindow(int x1, int y1, int x2, int y2)
+void setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
  {
- GPIOA->BRR= (1<<11);
-
+ //GPIOA->BRR= (1<<11);
     t = x1;
     t <<= 16;
     t |= x2;
     writeRegister32(ILI9341_COLADDRSET, t);  // HX8357D uses same registers!
+    delay_us(5);
      t = y1;
     t <<= 16;
     t |= y2;
      writeRegister32(ILI9341_PAGEADDRSET, t); // HX8357D uses same registers!
-GPIOA->BRR= (1<<11);
+delay_us(5);
+//GPIOA->BRR= (1<<11);
 }
 
 void begin() 
 {
  reset();
+ delay_ms(128);
  //port_data(0x00);
-  GPIOA->BRR= (1<<11);
+  //GPIOA->BRR= (1<<11);
     writeRegister8(ILI9341_SOFTRESET, 0);
     delay_us(100);
     writeRegister8(ILI9341_DISPLAYOFF, 0);
@@ -329,15 +275,19 @@ void begin()
     delay_us(100);
     writeRegister8(ILI9341_VCOMCONTROL2, 0xC0);
     delay_us(100);
-    writeRegister8(ILI9341_MEMCONTROL,0x88);//ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR
+    writeRegister8(ILI9341_MEMCONTROL,0x38);//ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR
     delay_us(100);
     //case ROTATE_0:      send_data(0x58);
     //case ROTATE_90:      send_data(0x28);   
     //case ROTATE_180:   send_data(0x88);   
     //case ROTATE_270:   send_data(0xE8);   
+    writeRegister8(0x37, 0x00);//0x001B
+ writeRegister8(0x53,0x00);
+      writeRegister8(ILI9341_GAMMASET,0x01);
+ writeRegister8(0x51,0x0);
     writeRegister8(ILI9341_PIXELFORMAT, 0x55);
     delay_us(100);
-    writeRegister16(ILI9341_FRAMECONTROL, 0x0310);//0x001B
+    writeRegister16(ILI9341_FRAMECONTROL, 0x001B);//0x001B
     delay_us(100);
     writeRegister8(ILI9341_ENTRYMODE, 0x07);
    delay_us(100);
@@ -345,7 +295,7 @@ void begin()
      delay_ms(500);
     writeRegister8(ILI9341_DISPLAYON, 0);
     delay_ms(750);
-    setAddrWindow(0, 0, 239, 319);    
+    setAddrWindow(0, 0, 319, 239);    
  }
 
 
@@ -354,7 +304,7 @@ void flood(uint16_t color, uint32_t len)
   uint16_t blocks;
   uint8_t  i, hi = color >> 8,
               lo = color;
- GPIOA->BRR= (1<<11);
+// GPIOA->BRR= (1<<11);
  GPIOA->BRR= (1<<12);
   write8(0x2C);
   
@@ -416,13 +366,15 @@ GPIOA->BSRR= (1<<12);
       write8(lo);
     }
   }
-GPIOA->BRR= (1<<11);
+//GPIOA->BRR= (1<<11);
 }
 
 void fillScreen(uint16_t color) 
 {
-  setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);
-  asm ("NOP"); asm ("NOP");   // asm ("NOP"); asm ("NOP");
+  setAddrWindow(0, 0, TFTWIDTH+61, TFTHEIGHT+16);
+  delay_us(1);
+   //setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);
+  //delay_us(1);
   flood(color, TFTWIDTH * TFTHEIGHT);
 }
 
@@ -438,33 +390,20 @@ void DrawPixel(uint16_t x, uint16_t y,uint16_t color)
 return;
  setAddrWindow(x, y, x, y);
  writeRegister16(0x2C, color);
- /*
- TFT1520_SendCommand();
- TFT1520_SendData(color >> 8);
- TFT1520_SendData(color & 0xFF);*/
-  }
-
-
-
-
-
-void test (uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color)
-{
-//uint16_t ILI9341_x = x0;
-//uint16_t ILI9341_y = y0;
-for(int i=0;i<(y1-y0);i++)
-{
-setAddrWindow(x0, y0 + i, x1, y0 + i+1);
-  GPIOA->BSRR= (1<<28);
-  write8(0x2C); 
-for(int j=0;j<(x1-x0);j++)
-{
-  GPIOA->BSRR= (1<<12); 
-  write8(color >> 8); 
-  write8(color & 0xFF); 
 }
+
+
+
+void LCD_DrawPixel(uint32_t x, uint32_t y, uint32_t color) {
+    setAddrWindow(x, y, x, y);
+    GPIOA->BSRR= (1<<28);
+    write8(ILI9341_MEMORYWRITE); 
+    GPIOA->BSRR= (1<<12); 
+    write8(color >> 8);
+    write8(color & 0xFF);
 }
-}
+
+
 
 void lcdFillRGB(uint16_t color)
 {
@@ -481,6 +420,86 @@ void lcdFillRGB(uint16_t color)
 }
 //void func_hard_fault(void);
 
+extern const font_type TimesNewRoman;
+
+uint32_t LCD_Putchar(uint32_t x, uint32_t y, char c) {
+        uint32_t i, j;
+        unsigned short Data;        
+        uint32_t offset = (c-32)*TimesNewRoman.height;
+        uint16_t width = TimesNewRoman.width;        
+    	for (i = 0; i < TimesNewRoman.height; i++) {
+            Data = TimesNewRoman.data_table[offset+i];     
+               for (j = 0; j < width; j++) {
+                if ((Data << j) & 0x8000) {
+                    LCD_DrawPixel(x + j, (y + i), 0xFFFF);  //white
+                    delay_us(10);
+                } else {
+                    LCD_DrawPixel(x + j, (y + i), 0x0000);  //black
+                    delay_us(10);
+                }
+            }
+        }        
+        return x+width;
+}
+
+void LCD_DrawString(uint32_t x, uint32_t y, char *str)
+{
+    while(*str) {
+       x = LCD_Putchar(x,y,*str++);
+      delay_ms(1000);
+    }
+}
+
+uint16_t data_state[32];
+void HC74_595(uint16_t data)
+{
+uint8_t k=7;
+stm32f103.set_pin_state(GPIOD,EN_1,1);
+stm32f103.set_pin_state(GPIOC,latcg_pin,0);
+for(int i=0;i<8;i++)
+{
+  data_state[i]=data;
+  data_state[i]= data_state[i]&mask[k];
+  k--;
+  if(data_state[i]!=0)
+  {
+     data_state[i]=1;
+  }  
+}
+for(int j=0;j<8;j++)
+{
+  stm32f103.set_pin_state(GPIOB,data_pin,data_state[j]);
+    delay_us(1);
+  stm32f103.set_pin_state(GPIOC,clock_pin,1);
+  delay_us(1);
+  stm32f103.set_pin_state(GPIOC,clock_pin,0);
+    delay_us(1);
+  stm32f103.set_pin_state(GPIOB,data_pin,0);
+  delay_us(1);
+}
+stm32f103.set_pin_state(GPIOC,latcg_pin,1);
+stm32f103.set_pin_state(GPIOD,EN_1,0);
+}
+
+GPIO_TypeDef *ports_eth[8]={GPIOC,GPIOC,GPIOC,GPIOC,GPIOB,GPIOC,GPIOC,GPIOC};
+uint8_t pins_eth[8]={eth1,eth2,eth3,eth4,eth5,eth6,eth7,eth8};
+uint8_t pins_eth_out[8]={eth1_out,eth2_out,eth3_out,eth4_out,eth5_out,eth6_out,eth7_out,eth8_out};
+void eth_test()
+{
+ // stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
+  //GPIOA->BSRR=((1<<0)|(1<<1)|(1<<2));
+  for(int i=0;i<8;i++)
+  {
+  stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
+  delay_ms(900);
+  stm32f103.set_pin_state(ports_eth[i],pins_eth_out[i],1);
+    stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
+ 
+  }
+}
+
+
+
 int main()
 {
 //-------------------------------------------------------
@@ -492,7 +511,7 @@ RCC->CFGR|=RCC_CFGR_PLLMULL_1;
 RCC->CFGR|=RCC_CFGR_PLLMULL_2;
 RCC->CFGR|=RCC_CFGR_PLLMULL_3;*/
 
-RCC->CFGR|=(0xA)<<RCC_CFGR_PLLMULL_Pos;//0xF
+RCC->CFGR|=(0x9)<<RCC_CFGR_PLLMULL_Pos;//0xF
 //RCC->CFGR|=(0x8)<<RCC_CFGR_HPRE_Pos;
 RCC->CFGR|=RCC_CFGR_MCOSEL_PLL_DIV2;
 RCC->CFGR&=~RCC_CFGR_SW_0;
@@ -503,8 +522,10 @@ gpio_init();
 dma_usart1.DMA1_Init();
 uart1.usart_init();
 
-AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
+//AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
 //gpio_stm32f103RC.gpio_conf(GPIOA,WR,gpio_stm32f103RC.gpio_mode_pp_10);
+
+
 
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
@@ -512,15 +533,32 @@ breakpoint("DMA_init!");
 
 
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
-  
 
 
+
+/*
   
   reset();  
   begin();
- fillScreen(MAGENTA);
+  fillScreen(0x0000);
+  asm ("nop");*/
+//LCD_Putchar(50,50,0x0000);
+//LCD_DrawString(100,50,"Hello_world!");
 
+//delay_us(10);
+  //LCD_DrawString(0,0,"1234512345123451234512345");
 
+  /*
+  for(int i=0;i<320;i++)
+  {
+    DrawPixel(i,10,WHITE);
+      DrawPixel(i,11,WHITE);
+        DrawPixel(i,12,WHITE);
+          DrawPixel(i,13,WHITE);
+          sprintf(str,"%f",i);
+          breakpoint(str);
+    delay_ms(500);
+  }*/
 
 
 /*
@@ -547,9 +585,14 @@ breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
-
+  /*HC74_595(0x55);
+   HC74_595(0x55);*/
+   /* HC74_595(0x05);
+      HC74_595(0x05);
+        HC74_595(0x05);*/
 while(1)
 {
+eth_test();
   /*
 lcdFillRGB(0x0000);
 //delay_ms(1000);
@@ -563,14 +606,14 @@ delay_ms(10);*/
 
 
 
-
+/*
 for(int i=0;i<9;i++)
 {
 GPIOA->BSRR= (1<<27);                
 fillScreen(colors[i]);      
 GPIOA->BSRR= (1<<11);
 delay_ms(300);
-}
+}*/
   /*
  SCB_DEMCR |= 0x01000000;
  DWT_CONTROL|= 1; // enable the counter

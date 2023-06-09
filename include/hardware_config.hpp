@@ -22,6 +22,27 @@
 #define RS						             12
 #define CS				                     11	
 #define RST				                     10	
-
-
+//595
+#define data_pin						     8
+#define clock_pin				             11
+#define latcg_pin				             12
+#define EN_1      				             2
+//eth_in
+#define eth1						     0
+#define eth2				             1
+#define eth3				             2
+#define eth4                             7
+#define eth5						     6
+#define eth6				             5
+#define eth7				             4
+#define eth8                             3
+//eth_out
+#define eth1_out						     0
+#define eth2_out				             1
+#define eth3_out				             2
+#define eth4_out                             3
+#define eth5_out						     10
+#define eth6_out				             5
+#define eth7_out				             7
+#define eth8_out                             6
 void gpio_init(void);

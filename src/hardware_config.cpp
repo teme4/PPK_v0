@@ -27,4 +27,26 @@ gpio_stm32f103RC.gpio_conf(GPIOA,WR,gpio_stm32f103RC.gpio_mode_pp_50);
 
 //gpio_stm32f103RC.gpio_conf(GPIOA,3,gpio_stm32f103RC.gpio_mode_pp_50);
 //gpio_stm32f103RC.gpio_conf(GPIOA,D6,gpio_stm32f103RC.alternate_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,data_pin,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,clock_pin,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,latcg_pin,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOD,EN_1,gpio_stm32f103RC.gpio_mode_pp_50);
+//eth_in
+gpio_stm32f103RC.gpio_conf(GPIOA,eth1,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth2,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth3,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth4,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth5,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth6,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth7,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,eth8,gpio_stm32f103RC.gpio_mode_pp_50);
+//eth_out
+gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.gpio_mode_pp_50);
 }
