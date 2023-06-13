@@ -481,21 +481,59 @@ stm32f103.set_pin_state(GPIOC,latcg_pin,1);
 stm32f103.set_pin_state(GPIOD,EN_1,0);
 }
 
+
+void eth_config_out()
+{
+gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.gpio_mode_pp_50);
+}
+void eth_config_in()
+{
+gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.input_mode_floating);
+}
+void eth_test()
+{
 GPIO_TypeDef *ports_eth[8]={GPIOC,GPIOC,GPIOC,GPIOC,GPIOB,GPIOC,GPIOC,GPIOC};
 uint8_t pins_eth[8]={eth1,eth2,eth3,eth4,eth5,eth6,eth7,eth8};
 uint8_t pins_eth_out[8]={eth1_out,eth2_out,eth3_out,eth4_out,eth5_out,eth6_out,eth7_out,eth8_out};
-void eth_test()
-{
- // stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
-  //GPIOA->BSRR=((1<<0)|(1<<1)|(1<<2));
+uint8_t state[8]={0};
+  //visible
+  eth_config_out();
   for(int i=0;i<8;i++)
   {
   stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
-  delay_ms(900);
+  delay_ms(1000);
   stm32f103.set_pin_state(ports_eth[i],pins_eth_out[i],1);
-    stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
+  stm32f103.set_pin_state(GPIOA,pins_eth[i],1); 
+  }
+  //otchet
+  eth_config_in();
+  for(int i=0;i<8;i++)
+  {
+  stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
+  for(int k=0;k<8;k++)
+  {
+ if(stm32f103.get_state_pin(ports_eth[k],pins_eth_out[k])==1)
+  {
+  state[k]=k;
+  }
+  }
  
   }
+ //  eth_config_out();
 }
 
 
