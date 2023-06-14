@@ -1,7 +1,5 @@
 #include <stm32f1xx.h>
 
-
-
 //USART1
 #define usart_port							       	 GPIOB
 #define usart_tx_pin							      	6
@@ -45,4 +43,17 @@
 #define eth6_out				             5
 #define eth7_out				             7
 #define eth8_out                             6
+//165
+#define data_pin						     8
+#define clock_pin				             11
+#define latcg_pin				             12
+#define EN_1      				             2
+//138
+#define A0						             15
+#define A1				                     9
+#define A2				                     0
+#define CP						             13 //Clock inut
+#define PL				                     14  //parallel load
+#define data_out     		                 1   //data
+
 void gpio_init(void);

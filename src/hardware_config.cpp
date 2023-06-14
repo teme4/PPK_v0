@@ -49,4 +49,15 @@ gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.gpio_mode_pp_50);
+//138
+gpio_stm32f103RC.gpio_conf(GPIOC,A0,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,A1,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOD,A2,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,CP,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,PL,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,data_out,gpio_stm32f103RC.input_mode_floating);
+AFIO->MAPR|= AFIO_MAPR_PD01_REMAP; //A2 remap
+
+
+gpio_stm32f103RC.set_pin_state(GPIOC,PL,1);
 }

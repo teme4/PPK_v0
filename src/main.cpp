@@ -449,6 +449,29 @@ void LCD_DrawString(uint32_t x, uint32_t y, char *str)
       delay_ms(1000);
     }
 }
+uint8_t res[32]={0,};
+uint8_t HC74_165()
+{
+stm32f103.set_pin_state(GPIOC,PL,0); 
+stm32f103.set_pin_state(GPIOC,PL,1);
+// щелкнули защелкой
+for(int i=7;i>=0;i--)
+{
+if(stm32f103.get_state_pin(GPIOB,data_out)==1)
+{
+res[i]=1;
+stm32f103.set_pin_state(GPIOC,CP,1); 
+stm32f103.set_pin_state(GPIOC,CP,0);  
+}
+}
+
+
+return *res;
+//return shiftIn(DATA_PIN, CLOCK_PIN, MSBFIRST); // считали данные
+}
+
+
+
 
 uint16_t data_state[32];
 void HC74_595(uint16_t data)
@@ -541,8 +564,7 @@ uint8_t state[8]={0};
 int main()
 {
 //-------------------------------------------------------
-
-
+  
 /*
 RCC->CFGR|=RCC_CFGR_PLLMULL_0;//12
 RCC->CFGR|=RCC_CFGR_PLLMULL_1;
@@ -572,7 +594,9 @@ breakpoint("DMA_init!");
 
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
 
-
+stm32f103.set_pin_state(GPIOC,A0,1);
+stm32f103.set_pin_state(GPIOB,A1,0);
+stm32f103.set_pin_state(GPIOD,A2,1);
 
 /*
   
@@ -623,14 +647,16 @@ breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
-  /*HC74_595(0x55);
-   HC74_595(0x55);*/
-   /* HC74_595(0x05);
-      HC74_595(0x05);
-        HC74_595(0x05);*/
+  HC74_595(0x55);
+  HC74_595(0x55);
+  HC74_595(0x05);
+  HC74_595(0x05);
+
+  HC74_165();
+
 while(1)
 {
-eth_test();
+//eth_test();
   /*
 lcdFillRGB(0x0000);
 //delay_ms(1000);
@@ -685,7 +711,6 @@ breakpoint("gpio_init!");
 
 }
 }
-
 
 extern "C"
 {
