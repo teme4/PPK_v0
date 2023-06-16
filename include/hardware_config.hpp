@@ -52,8 +52,10 @@
 #define A0						             15
 #define A1				                     9
 #define A2				                     0
-#define CP						             13 //Clock inut
-#define PL				                     14  //parallel load
-#define data_out     		                 1   //data
+#define clk_165						             13 //Clock inut
+#define cs_165				                 14  //parallel load
+#define data_km   		                     0   //data
+#define data_flex     		                 1   //data
+#define data_db     		                 2 //data
 
 void gpio_init(void);

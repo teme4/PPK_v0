@@ -26,8 +26,8 @@ uint8_t alternate_mode_od_50=		    0x0F;
 //                Input
 uint8_t input_mode_analog=          0x00;
 uint8_t input_mode_floating=	      0x04;
-uint8_t input_mode_pull_down_up=    0x08;  
-uint8_t input_mode_pull_down=       0x04;//0x80
+uint8_t input_mode_pull_down=       0x28;  
+uint8_t input_mode_pull_up=         0x48;//0x80
 
 
 

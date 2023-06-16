@@ -449,25 +449,129 @@ void LCD_DrawString(uint32_t x, uint32_t y, char *str)
       delay_ms(1000);
     }
 }
-uint8_t res[32]={0,};
-uint8_t HC74_165()
+
+
+
+volatile uint8_t res[104]={0,};
+
+uint8_t HC74_165(uint8_t pin)
 {
-stm32f103.set_pin_state(GPIOC,PL,0); 
-stm32f103.set_pin_state(GPIOC,PL,1);
+uint16_t count=4;
+
+for(int i=0;i<104;i++)
+{
+res[i]=0;
+}
+//flex
+
+stm32f103.set_pin_state(GPIOC,A0,1);
+stm32f103.set_pin_state(GPIOB,A1,0);
+stm32f103.set_pin_state(GPIOD,A2,1);
+
+//en_165
+//km
+/*
+stm32f103.set_pin_state(GPIOC,A0,0);
+stm32f103.set_pin_state(GPIOB,A1,1);
+stm32f103.set_pin_state(GPIOD,A2,0);
+*/
+//en_165
+//db_26
+/*
+stm32f103.set_pin_state(GPIOC,A0,1);
+stm32f103.set_pin_state(GPIOB,A1,1);
+stm32f103.set_pin_state(GPIOD,A2,0);
+*/
+//en_165
+
 // щелкнули защелкой
-for(int i=7;i>=0;i--)
+stm32f103.set_pin_state(GPIOC,clk_165,1); 
+stm32f103.set_pin_state(GPIOC,cs_165,0);
+//delay_ms(1); 
+stm32f103.set_pin_state(GPIOC,cs_165,1);
+// щелкнули защелкой
+for(int i=1;i<9;i++)
 {
-if(stm32f103.get_state_pin(GPIOB,data_out)==1)
-{
-res[i]=1;
-stm32f103.set_pin_state(GPIOC,CP,1); 
-stm32f103.set_pin_state(GPIOC,CP,0);  
+    if((stm32f103.get_state_pin(GPIOB,pin))==1)
+    {
+    res[i]=i;
+    }
+    else
+    {
+    res[i]=0;  
+    } 
+    stm32f103.set_pin_state(GPIOC,clk_165,0); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,clk_165,1);
 }
+stm32f103.set_pin_state(GPIOC,clk_165,0); 
+
+
+
+// щелкнули защелкой
+stm32f103.set_pin_state(GPIOC,clk_165,1); 
+stm32f103.set_pin_state(GPIOC,cs_165,0);
+//delay_ms(1); 
+stm32f103.set_pin_state(GPIOC,cs_165,1);
+// щелкнули защелкой
+for(int i=8;i<17;i++)
+{
+    if((stm32f103.get_state_pin(GPIOB,pin))==1)
+    {
+  res[i]=i;
+    }
+    else
+    {
+    res[i]=0;  
+    } 
+    stm32f103.set_pin_state(GPIOC,clk_165,0); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,clk_165,1);
 }
 
 
+// щелкнули защелкой
+stm32f103.set_pin_state(GPIOC,clk_165,1); 
+stm32f103.set_pin_state(GPIOC,cs_165,0);
+//delay_ms(1); 
+stm32f103.set_pin_state(GPIOC,cs_165,1);
+// щелкнули защелкой
+for(int i=16;i<25;i++)
+{
+    if((stm32f103.get_state_pin(GPIOB,pin))==1)
+    {
+    res[i]=i;
+    }
+    else
+    {
+    res[i]=0;  
+    } 
+    stm32f103.set_pin_state(GPIOC,clk_165,0); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,clk_165,1);
+}
+
+// щелкнули защелкой
+stm32f103.set_pin_state(GPIOC,clk_165,1); 
+stm32f103.set_pin_state(GPIOC,cs_165,0);
+//delay_ms(1); 
+stm32f103.set_pin_state(GPIOC,cs_165,1);
+// щелкнули защелкой
+for(int i=24;i<33;i++)
+{
+    if((stm32f103.get_state_pin(GPIOB,pin))==1)
+    {
+    res[i]=i;
+    }
+    else
+    {
+    res[i]=0;  
+    } 
+    stm32f103.set_pin_state(GPIOC,clk_165,0); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,clk_165,1);
+}
 return *res;
-//return shiftIn(DATA_PIN, CLOCK_PIN, MSBFIRST); // считали данные
 }
 
 
@@ -559,7 +663,35 @@ uint8_t state[8]={0};
  //  eth_config_out();
 }
 
+void RCC_init()
+{
+   BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
+   BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
+   BKP->CSR =0;                                             //ничего важного 
+   PWR->CR |= PWR_CR_DBP;                                   //1: Включен доступ к RTC и резервным регистрам
+   RCC->BDCR &=~ RCC_BDCR_BDRST;
+   RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
+   RCC->BDCR &=~ RCC_BDCR_LSEON;                            // выключаем LSE
+   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // ждем пока генератор выключится
 
+   RCC->CR &=~ RCC_CR_HSEON;                                // выключаем HSE
+   RCC->CR |= RCC_CR_HSION;                                 // включаем HSI генератор 
+   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // ждем пока генератор не включится
+
+   RCC->CFGR |= RCC_CFGR_SW_HSI;                            // выбрали HSI в качестве системного тактирования
+   RCC->CFGR &=~ RCC_CFGR_PLLSRC;          
+      
+   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        // выбираем при выключенном PLL !! PLL=x8 (4Мгц *8 =32 Мгц)
+   RCC->CFGR|= RCC_CFGR_PLLMULL_1 |RCC_CFGR_PLLMULL_2;
+
+   RCC->CR |= RCC_CR_PLLON;                                 // включаем PLL
+   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     // ждем пока умножитель не включится
+
+   RCC->CFGR |= RCC_CFGR_SW_PLL;                            // выбрали PLL в качестве системного тактирования
+   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler установлен в деление на 1
+   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler установлен в деление на 1
+   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler установлен в деление на 1
+}
 
 int main()
 {
@@ -570,14 +702,16 @@ RCC->CFGR|=RCC_CFGR_PLLMULL_0;//12
 RCC->CFGR|=RCC_CFGR_PLLMULL_1;
 RCC->CFGR|=RCC_CFGR_PLLMULL_2;
 RCC->CFGR|=RCC_CFGR_PLLMULL_3;*/
-
+/*
 RCC->CFGR|=(0x9)<<RCC_CFGR_PLLMULL_Pos;//0xF
 //RCC->CFGR|=(0x8)<<RCC_CFGR_HPRE_Pos;
 RCC->CFGR|=RCC_CFGR_MCOSEL_PLL_DIV2;
 RCC->CFGR&=~RCC_CFGR_SW_0;
 RCC->CFGR|=RCC_CFGR_SW_1;
-RCC->CR|=RCC_CR_PLLON;
+RCC->CR|=RCC_CR_PLLON;*/
 
+
+RCC_init();
 gpio_init();
 dma_usart1.DMA1_Init();
 uart1.usart_init();
@@ -594,9 +728,7 @@ breakpoint("DMA_init!");
 
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
 
-stm32f103.set_pin_state(GPIOC,A0,1);
-stm32f103.set_pin_state(GPIOB,A1,0);
-stm32f103.set_pin_state(GPIOD,A2,1);
+
 
 /*
   
@@ -647,15 +779,53 @@ breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
-  HC74_595(0x55);
-  HC74_595(0x55);
-  HC74_595(0x05);
-  HC74_595(0x05);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
 
-  HC74_165();
+
+  
 
 while(1)
 {
+
+HC74_165(data_flex);
+delay_ms(2000);
+/*
+
+stm32f103.set_pin_state(GPIOC,PL,0); 
+delay_us(3);
+stm32f103.set_pin_state(GPIOC,PL,1);
+delay_us(3);
+
+stm32f103.set_pin_state(GPIOC,CP,1); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,0);  
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,1); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,0);  
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,1); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,0);  
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,1); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,0);  
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,1); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,0);  
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,1); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOC,CP,0);  
+delay_us(1);
+
+*/
+
 //eth_test();
   /*
 lcdFillRGB(0x0000);

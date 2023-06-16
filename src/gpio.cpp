@@ -33,9 +33,16 @@ void gpio::gpio_conf(GPIO_TypeDef * port, uint32_t pin, uint8_t mode)
  }
 
  int gpio:: get_state_pin (GPIO_TypeDef *port, uint8_t pin)
-    {
+{
 	uint16_t mask;
 	mask = ( 1<< pin);
-	if ((port->IDR) & mask) return 1;
-	else return 0;
+	if ((port->IDR) & mask) 
+    {
+        return 1;
+    }
+	else 
+    {
+        return 0;
+    }
+        
 }
