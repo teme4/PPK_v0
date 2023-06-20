@@ -405,6 +405,13 @@ void LCD_DrawPixel(uint32_t x, uint32_t y, uint32_t color) {
 
 
 
+
+
+     
+
+
+
+
 void lcdFillRGB(uint16_t color)
 {
   setAddrWindow(0, 0, 240 - 1, 320 - 1);
@@ -450,15 +457,71 @@ void LCD_DrawString(uint32_t x, uint32_t y, char *str)
     }
 }
 
+volatile uint8_t res[32]={0,};
 
+uint8_t HC74_165_()
+{
+stm32f103.set_pin_state(GPIOC,A0,1);
+stm32f103.set_pin_state(GPIOB,A1,0);
+stm32f103.set_pin_state(GPIOD,A2,1);
 
-volatile uint8_t res[104]={0,};
+stm32f103.set_pin_state(GPIOB,cs_165,0);
+//stm32f103.set_pin_state(GPIOB,clk_165,0); 
+//stm32f103.set_pin_state(GPIOB,clk_165,1); 
+stm32f103.set_pin_state(GPIOB,cs_165,1);
+//delay_us(2);
+for(int i=0;i<8;i++)
+{   
+ if((stm32f103.get_state_pin(GPIOB,1))==1)
+    {
+    res[i]=77;
+    }
+    else
+    {
+    res[i]=99;  
+    } 
+stm32f103.set_pin_state(GPIOB,clk_165,0); 
+delay_us(1);
+stm32f103.set_pin_state(GPIOB,clk_165,1);
+delay_us(1);
+   // delay_us(5);
+
+}
+return *res;
+}
+
+uint8_t HC165ReadData(void)
+{
+stm32f103.set_pin_state(GPIOC,A0,1);
+stm32f103.set_pin_state(GPIOB,A1,0);
+stm32f103.set_pin_state(GPIOD,A2,1);
+  uint8_t dat=0;
+  
+  stm32f103.set_pin_state(GPIOB,clk_165,1);
+  stm32f103.set_pin_state(GPIOB,cs_165,0);
+  delay_ms(1);
+  stm32f103.set_pin_state(GPIOB,cs_165,1);
+
+  for(uint8_t i=0;i<8;i++)
+  {
+   // dat=dat<<1;
+     if((stm32f103.get_state_pin(GPIOB,1))==0)
+     res[i]=0;
+     else 
+     res[i]=1;
+
+    stm32f103.set_pin_state(GPIOB,clk_165,0);
+    delay_ms(1);
+     stm32f103.set_pin_state(GPIOB,clk_165,1);
+  }
+  stm32f103.set_pin_state(GPIOB,clk_165,0);
+  return *res;
+}
+
 
 uint8_t HC74_165(uint8_t pin)
 {
-uint16_t count=4;
-
-for(int i=0;i<104;i++)
+for(int i=0;i<32;i++)
 {
 res[i]=0;
 }
@@ -485,14 +548,15 @@ stm32f103.set_pin_state(GPIOD,A2,0);
 //en_165
 
 // щелкнули защелкой
-stm32f103.set_pin_state(GPIOC,clk_165,1); 
-stm32f103.set_pin_state(GPIOC,cs_165,0);
-//delay_ms(1); 
-stm32f103.set_pin_state(GPIOC,cs_165,1);
+stm32f103.set_pin_state(GPIOB,clk_165,0); 
+stm32f103.set_pin_state(GPIOB,cs_165,0);
+delay_us(5);
+stm32f103.set_pin_state(GPIOB,cs_165,1);
 // щелкнули защелкой
-for(int i=1;i<9;i++)
-{
-    if((stm32f103.get_state_pin(GPIOB,pin))==1)
+for(int i=0;i<32;i++)
+{   
+
+ if((stm32f103.get_state_pin(GPIOB,1))==1)
     {
     res[i]=i;
     }
@@ -500,13 +564,16 @@ for(int i=1;i<9;i++)
     {
     res[i]=0;  
     } 
-    stm32f103.set_pin_state(GPIOC,clk_165,0); 
-delay_us(1);
-stm32f103.set_pin_state(GPIOC,clk_165,1);
+//delay_us(5);
+stm32f103.set_pin_state(GPIOB,clk_165,1); 
+delay_us(5);
+stm32f103.set_pin_state(GPIOB,clk_165,0);
+delay_us(5);
 }
-stm32f103.set_pin_state(GPIOC,clk_165,0); 
+delay_us(500);
+//stm32f103.set_pin_state(GPIOC,clk_165,0); 
 
-
+/*
 
 // щелкнули защелкой
 stm32f103.set_pin_state(GPIOC,clk_165,1); 
@@ -570,11 +637,9 @@ for(int i=24;i<33;i++)
     stm32f103.set_pin_state(GPIOC,clk_165,0); 
 delay_us(1);
 stm32f103.set_pin_state(GPIOC,clk_165,1);
-}
+}*/
 return *res;
 }
-
-
 
 
 uint16_t data_state[32];
@@ -583,7 +648,7 @@ void HC74_595(uint16_t data)
 uint8_t k=7;
 stm32f103.set_pin_state(GPIOD,EN_1,1);
 stm32f103.set_pin_state(GPIOC,latcg_pin,0);
-for(int i=0;i<8;i++)
+for(int i=0;i<33;i++)
 {
   data_state[i]=data;
   data_state[i]= data_state[i]&mask[k];
@@ -593,6 +658,8 @@ for(int i=0;i<8;i++)
      data_state[i]=1;
   }  
 }
+
+
 for(int j=0;j<8;j++)
 {
   stm32f103.set_pin_state(GPIOB,data_pin,data_state[j]);
@@ -620,6 +687,8 @@ gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.gpio_mode_pp_50);
 }
+
+
 void eth_config_in()
 {
 gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.input_mode_floating);
@@ -631,6 +700,8 @@ gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.input_mode_floating);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.input_mode_floating);
 gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.input_mode_floating);
 }
+
+
 void eth_test()
 {
 GPIO_TypeDef *ports_eth[8]={GPIOC,GPIOC,GPIOC,GPIOC,GPIOB,GPIOC,GPIOC,GPIOC};
@@ -658,7 +729,6 @@ uint8_t state[8]={0};
   state[k]=k;
   }
   }
- 
   }
  //  eth_config_out();
 }
@@ -693,6 +763,93 @@ void RCC_init()
    RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler установлен в деление на 1
 }
 
+
+void init_SPI1(void) 
+{
+   RCC->APB1ENR |= RCC_APB2ENR_SPI1EN  ; // ??? ???????????? SPI    
+ /*
+   SPI1->CR1 |= SPI_CR1_BIDIMODE;          // 1 line
+   SPI1->CR1 |= SPI_CR1_BIDIOE;            // MOSI
+   SPI1->CR1 |= SPI_CR1_BR;                //Baud rate = Fpclk/4 = 30/4 = 7.5 ???
+   SPI1->CR1 |= SPI_CR1_DFF;               //16 ??? ???????
+   SPI1->CR1 &= ~SPI_CR1_CPOL;             //Polarity signal CPOL = 0;
+   SPI1->CR1 &= ~SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
+   SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
+   SPI1->CR1 |= SPI_CR1_MSTR;              //Mode Master  
+   //SPI1->CR2 =SPI1->CR2 & ~ 0xE7 | // Сбрасываем все значимые биты регистра CR2.
+           //  SPI_CR2_RXNEIE ;    // Разрешены прерывания при установке флага RXNE.
+           //  SPI_CR2_TXEIE;       // Разрешены прерывания при установке флага TXE.
+  // NVIC_EnableIRQ(SPI2_IRQn);
+   
+     SPI1->CR2  |= SPI_CR2_SSOE;     
+     SPI1->CR1 |= SPI_CR1_SPE;                //Enable SPI2
+*/
+
+   SPI1->CR1  |= SPI_CR1_BR_2;              
+   SPI1->CR1  |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
+   SPI1->CR1  |= SPI_CR1_MSTR;              //Mode Master     
+   SPI1->CR2  |= SPI_CR2_SSOE;
+   SPI1->CR1  |= SPI_CR1_SPE;                //Enable SPI2     
+}
+
+
+void spi_transmit(uint16_t data)
+{
+while (!(SPI1->SR & SPI_SR_TXE));  
+SPI1->DR = data ;
+delay_ms(1);  
+}
+
+uint16_t spi_receive(void)
+{
+
+  stm32f103.set_pin_state(GPIOC,A0,1);
+  stm32f103.set_pin_state(GPIOB,A1,0);
+  stm32f103.set_pin_state(GPIOD,A2,1);
+
+
+  stm32f103.set_pin_state(GPIOB,cs_165,0);
+  delay_us(5);
+  stm32f103.set_pin_state(GPIOB,cs_165,1);
+  delay_us(5);
+ SPI2->DR = 0;       
+    while(!(SPI1->SR & SPI_SR_RXNE)) ;  
+    while(SPI1->SR&SPI_SR_BSY); //Передача завершена
+    return SPI1->DR;
+}
+
+
+
+ uint16_t read(void)
+ {
+uint64_t resalt,bitVal;
+stm32f103.set_pin_state(GPIOC,A0,1);
+stm32f103.set_pin_state(GPIOB,A1,0);
+stm32f103.set_pin_state(GPIOD,A2,1);
+
+   // опрашиваем регистр о состоянии пинов
+     stm32f103.set_pin_state(GPIOB,clk_165,1);
+     stm32f103.set_pin_state(GPIOB,cs_165,0);
+     delay_us(10);
+     stm32f103.set_pin_state(GPIOB,cs_165,1);
+     stm32f103.set_pin_state(GPIOB,clk_165,0);
+ 
+    // считываем полученные данные о пинах
+    for(int i = 0; i<8; i++)
+    {
+        if((stm32f103.get_state_pin(GPIOB,data_flex))==0) 
+       breakpoint("on");
+       else 
+        breakpoint("off");
+        stm32f103.set_pin_state(GPIOB,clk_165,1);
+        delay_us(10);
+        stm32f103.set_pin_state(GPIOB,clk_165,0);
+    }
+return resalt;
+ }
+
+
+
 int main()
 {
 //-------------------------------------------------------
@@ -711,7 +868,7 @@ RCC->CFGR|=RCC_CFGR_SW_1;
 RCC->CR|=RCC_CR_PLLON;*/
 
 
-RCC_init();
+//RCC_init();
 gpio_init();
 dma_usart1.DMA1_Init();
 uart1.usart_init();
@@ -724,7 +881,7 @@ uart1.usart_init();
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
-
+//init_SPI1(); 
 
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
 
@@ -785,13 +942,31 @@ breakpoint("DMA_init!");
   HC74_595(0xFF);
 
 
-  
+  uint64_t pinValues;
 
 while(1)
 {
 
-HC74_165(data_flex);
+//HC74_165_();
+//spi_receive();
+//HC74_165_();
+pinValues = read();
+  breakpoint("************************************");
+/*
+ breakpoint("************************************");
+ for(int i = 0; i < 8; i++)
+ {
+
+        if((pinValues >> i) & 1)
+        {
+          breakpoint("on");
+        }else{
+           breakpoint("off");
+        }         
+ }
+  breakpoint("************************************");*/
 delay_ms(2000);
+//HC165ReadData();
 /*
 
 stm32f103.set_pin_state(GPIOC,PL,0); 
