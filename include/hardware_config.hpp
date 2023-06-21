@@ -55,7 +55,7 @@
 #define clk_165						         13 //Clock inut                 D0 12
 #define cs_165				                 12  //parallel load             D1 13
 #define data_km   		                     0   //data
-#define data_flex                            1
+#define data_flex                            14
 #define data_db     		                 2 //data
 
 #define SCK_165                              5

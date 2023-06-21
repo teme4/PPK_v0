@@ -54,14 +54,14 @@ gpio_stm32f103RC.gpio_conf(GPIOC,A0,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOB,A1,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOD,A2,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOB,data_db,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOB,data_flex,gpio_stm32f103RC.input_mode_pull_up);
+
 gpio_stm32f103RC.gpio_conf(GPIOB,data_km,gpio_stm32f103RC.input_mode_floating);
 AFIO->MAPR|= AFIO_MAPR_PD01_REMAP; //A2 remap
 
 RCC->APB1ENR |= RCC_APB1ENR_BKPEN|RCC_APB1ENR_PWREN; 
-gpio_stm32f103RC.gpio_conf(GPIOC,clk_165,gpio_stm32f103RC.gpio_mode_pp_2);
-gpio_stm32f103RC.gpio_conf(GPIOC,cs_165,gpio_stm32f103RC.gpio_mode_pp_2);
-
+gpio_stm32f103RC.gpio_conf(GPIOB,clk_165,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,cs_165,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOB,data_flex,gpio_stm32f103RC.input_mode_floating);
 
 gpio_stm32f103RC.set_pin_state(GPIOB,cs_165,1);
 gpio_stm32f103RC.set_pin_state(GPIOB,clk_165,0);

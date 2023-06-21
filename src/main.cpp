@@ -826,26 +826,29 @@ uint64_t resalt,bitVal;
 stm32f103.set_pin_state(GPIOC,A0,1);
 stm32f103.set_pin_state(GPIOB,A1,0);
 stm32f103.set_pin_state(GPIOD,A2,1);
-
+   delay_us(100);
    // опрашиваем регистр о состоянии пинов
-     stm32f103.set_pin_state(GPIOB,clk_165,1);
+    // stm32f103.set_pin_state(GPIOB,clk_165,1);
      stm32f103.set_pin_state(GPIOB,cs_165,0);
      delay_us(10);
      stm32f103.set_pin_state(GPIOB,cs_165,1);
-     stm32f103.set_pin_state(GPIOB,clk_165,0);
- 
+     //stm32f103.set_pin_state(GPIOB,clk_165,0);
+      delay_us(50);
     // считываем полученные данные о пинах
     for(int i = 0; i<8; i++)
     {
         if((stm32f103.get_state_pin(GPIOB,data_flex))==0) 
-       breakpoint("on");
+      // breakpoint("on");
+      res[i]=1;
        else 
-        breakpoint("off");
+        res[i]=0;
+       // breakpoint("off");
         stm32f103.set_pin_state(GPIOB,clk_165,1);
-        delay_us(10);
+        delay_us(20);
         stm32f103.set_pin_state(GPIOB,clk_165,0);
+        delay_us(15);
     }
-return resalt;
+return *res;
  }
 
 
@@ -951,7 +954,8 @@ while(1)
 //spi_receive();
 //HC74_165_();
 pinValues = read();
-  breakpoint("************************************");
+delay_ms(50);
+ // breakpoint("************************************");
 /*
  breakpoint("************************************");
  for(int i = 0; i < 8; i++)
@@ -965,7 +969,7 @@ pinValues = read();
         }         
  }
   breakpoint("************************************");*/
-delay_ms(2000);
+//
 //HC165ReadData();
 /*
 
