@@ -1,4 +1,4 @@
-#include <stm32f1xx.h>
+﻿#include <stm32f1xx.h>
 #include "uart.hpp"
 #include "gpio.hpp"
 #include "dma.hpp"
@@ -465,10 +465,10 @@ stm32f103.set_pin_state(GPIOC,A0,1);
 stm32f103.set_pin_state(GPIOB,A1,0);
 stm32f103.set_pin_state(GPIOD,A2,1);
 
-stm32f103.set_pin_state(GPIOB,cs_165,0);
+stm32f103.set_pin_state(GPIOB,pl_165,0);
 //stm32f103.set_pin_state(GPIOB,clk_165,0); 
 //stm32f103.set_pin_state(GPIOB,clk_165,1); 
-stm32f103.set_pin_state(GPIOB,cs_165,1);
+stm32f103.set_pin_state(GPIOB,pl_165,1);
 //delay_us(2);
 for(int i=0;i<8;i++)
 {   
@@ -498,9 +498,9 @@ stm32f103.set_pin_state(GPIOD,A2,1);
   uint8_t dat=0;
   
   stm32f103.set_pin_state(GPIOB,clk_165,1);
-  stm32f103.set_pin_state(GPIOB,cs_165,0);
+  stm32f103.set_pin_state(GPIOB,pl_165,0);
   delay_ms(1);
-  stm32f103.set_pin_state(GPIOB,cs_165,1);
+  stm32f103.set_pin_state(GPIOB,pl_165,1);
 
   for(uint8_t i=0;i<8;i++)
   {
@@ -549,9 +549,9 @@ stm32f103.set_pin_state(GPIOD,A2,0);
 
 // щелкнули защелкой
 stm32f103.set_pin_state(GPIOB,clk_165,0); 
-stm32f103.set_pin_state(GPIOB,cs_165,0);
+stm32f103.set_pin_state(GPIOB,pl_165,0);
 delay_us(5);
-stm32f103.set_pin_state(GPIOB,cs_165,1);
+stm32f103.set_pin_state(GPIOB,pl_165,1);
 // щелкнули защелкой
 for(int i=0;i<32;i++)
 {   
@@ -763,33 +763,102 @@ void RCC_init()
    RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler установлен в деление на 1
 }
 
-
-void init_SPI1(void) 
+extern uint32_t SystemCoreClock;
+// clang-format off
+enum class IRQnSPI
 {
-   RCC->APB1ENR |= RCC_APB2ENR_SPI1EN  ; // ??? ???????????? SPI    
- /*
-   SPI1->CR1 |= SPI_CR1_BIDIMODE;          // 1 line
-   SPI1->CR1 |= SPI_CR1_BIDIOE;            // MOSI
+    TXEIE                                       = (1<<7),///<прерываниe по переполнени. приемного буфера FIFO
+    RXNEIE                                      = (1<<6),///<прерываниe по таймауту приемника (буфер FIFO приемника не пуст и не было попыток его чтения в течение времени таймаута)
+    ERRIE                                       = (1<<5),///<прерываниe по заполнению на 50 % и более буфера FIFO приемника
+    NONE                                        = (0<<0)
+};
+
+enum class RegCR1
+{
+    SPI_MODE0                                   = (0b00 ),///<SPI фирмы Motorola(CPOL = 0, CPHA = 0);
+    SPI_MODE1                                   = (0b01 ),///<SPI фирмы Motorola(CPOL = 0, CPHA = 1);
+    SPI_MODE2                                   = (0b10 ),///<SPI фирмы Motorola(CPOL = 1, CPHA = 0);
+    SPI_MODE3                                   = (0b11 ),///<SPI фирмы Motorola(CPOL = 1, CPHA = 1);
+    MASTER                                      = (1<<2 ),///<ведущий модуль
+    SLAVE                                       = (0<<0 ),///<ведомый модуль
+    ACTIVE                                      = (1<<6 ),///<работа разрешена
+    INACTIVE                                    = (0<<0 ),///<работа запрещена;
+    DFF8bit                                     = (0<<0 ),///<data frame format: 8bit;
+    DFF16bit                                    = (1<<11),///<data frame format: 16bit;
+    LSBF                                        = (1<<7 ),///<LSB  transmitted first
+    MSBF                                        = (0<<0 ),///<MSB transmitted first
+};
+enum class RegDMACR
+{
+    RXDMA_DIS                                   = 0x00,///<Запрещено формирование запросов DMA буфера FIFO приемника
+    RXDMA_EN                                    = 0x01,///<Разрешено формирование запросов DMA буфера FIFO приемника
+    TXDMA_DIS                                   = 0x00,///<Запрещено формирование запросов DMA буфера FIFO передатчика
+    TXDMA_EN                                    = 0x02,///<Разрешено формирование запросов DMA буфера FIFO передатчика
+    NONE                                        = 0x00
+};
+void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
+                      RegCR1 MS,
+                      double frequency,
+                      RegCR1 Type,
+                      RegCR1 WordSize,
+                      RegCR1 LsbMsbFirst)
+                      {
+   RCC->APB2ENR |= RCC_APB2ENR_SPI1EN  ; // ??? ???????????? SPI    
+  
+    SPIx->CR1    = 0;
+    SPIx->CR2    = 0;
+    SPIx->SR     = 0;
+    SPIx->CRCPR  = 0;
+    SPIx->RXCRCR = 0;
+    SPIx->TXCRCR = 0;
+    //BRR = static_cast<uint8_t>(log2(F_SPICLK / (Frequency * 1000000)) - 1);
+
+    SPIx->CR1 |=  SPI_CR1_BR;
+    SPIx->CR1 |= static_cast<uint32_t>(Type);
+    SPIx->CR1 |= static_cast<uint32_t>(WordSize);
+    SPIx->CR1 |= static_cast<uint32_t>(LsbMsbFirst);
+    SPIx->CR1 |= SPI_CR1_SSI | SPI_CR1_SSM;
+    SPIx->CR1 |= static_cast<uint32_t>(MS);
+
+   // SPIx->CR2 |= static_cast<uint32_t>(TxDmacr);
+    //SPIx->CR2 |= static_cast<uint32_t>(RxDmacr);
+
+    SPIx->CR1 |= static_cast<uint32_t>(SPE);
+                      }
+
+
+
+                   
+                          // RegDMACR::RXDMA_DIS,
+                         // RegDMACR::TXDMA_DIS);
+
+void init_SPI1(SPI_TypeDef*SPIx )
+{
+
+
+
+
+ 
+   //SPI1->CR1 |= SPI_CR1_BIDIMODE;          // 1 line
+   //SPI1->CR1 |= SPI_CR1_BIDIOE;            // MOSI
    SPI1->CR1 |= SPI_CR1_BR;                //Baud rate = Fpclk/4 = 30/4 = 7.5 ???
    SPI1->CR1 |= SPI_CR1_DFF;               //16 ??? ???????
+
+
    SPI1->CR1 &= ~SPI_CR1_CPOL;             //Polarity signal CPOL = 0;
    SPI1->CR1 &= ~SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
-   SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
-   SPI1->CR1 |= SPI_CR1_MSTR;              //Mode Master  
-   //SPI1->CR2 =SPI1->CR2 & ~ 0xE7 | // Сбрасываем все значимые биты регистра CR2.
-           //  SPI_CR2_RXNEIE ;    // Разрешены прерывания при установке флага RXNE.
-           //  SPI_CR2_TXEIE;       // Разрешены прерывания при установке флага TXE.
-  // NVIC_EnableIRQ(SPI2_IRQn);
-   
-     SPI1->CR2  |= SPI_CR2_SSOE;     
-     SPI1->CR1 |= SPI_CR1_SPE;                //Enable SPI2
+
+/*
+   SPI1->CR1 |=SPI_CR1_CPOL;             //Polarity signal CPOL = 0;
+   SPI1->CR1 |=SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
 */
 
-   SPI1->CR1  |= SPI_CR1_BR_2;              
-   SPI1->CR1  |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
-   SPI1->CR1  |= SPI_CR1_MSTR;              //Mode Master     
-   SPI1->CR2  |= SPI_CR2_SSOE;
-   SPI1->CR1  |= SPI_CR1_SPE;                //Enable SPI2     
+
+   SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
+   SPI1->CR1 |= SPI_CR1_MSTR;              //Mode Master  
+   SPI1->CR2  |= SPI_CR2_SSOE;     
+   SPI1->CR1 |= SPI_CR1_SPE;                //Enable SPI2
+
 }
 
 
@@ -803,19 +872,28 @@ delay_ms(1);
 uint16_t spi_receive(void)
 {
 
+  //stm32f103.set_pin_state(GPIOB,clk_165,0);  
   stm32f103.set_pin_state(GPIOC,A0,1);
   stm32f103.set_pin_state(GPIOB,A1,0);
   stm32f103.set_pin_state(GPIOD,A2,1);
 
+  stm32f103.set_pin_state(GPIOB,pl_165,0);
+  delay_us(5);
+  stm32f103.set_pin_state(GPIOB,pl_165,1);
 
-  stm32f103.set_pin_state(GPIOB,cs_165,0);
-  delay_us(5);
-  stm32f103.set_pin_state(GPIOB,cs_165,1);
-  delay_us(5);
- SPI2->DR = 0;       
+  for(int i=0;i<4;i++)
+  {
+    while(!(SPI1->SR & SPI_SR_TXE)) ;  
+    SPI1->DR=0;  
     while(!(SPI1->SR & SPI_SR_RXNE)) ;  
-    while(SPI1->SR&SPI_SR_BSY); //Передача завершена
-    return SPI1->DR;
+
+    res[i]= SPI1->DR;
+  }
+  while(SPI1->SR&SPI_SR_BSY); //Передача завершена
+    delay_us(10);
+  stm32f103.set_pin_state(GPIOC,A0,0);
+  stm32f103.set_pin_state(GPIOB,A1,0);
+  stm32f103.set_pin_state(GPIOD,A2,0);
 }
 
 
@@ -829,9 +907,9 @@ stm32f103.set_pin_state(GPIOD,A2,1);
    delay_us(100);
    // опрашиваем регистр о состоянии пинов
     // stm32f103.set_pin_state(GPIOB,clk_165,1);
-     stm32f103.set_pin_state(GPIOB,cs_165,0);
+     stm32f103.set_pin_state(GPIOB,pl_165,0);
      delay_us(10);
-     stm32f103.set_pin_state(GPIOB,cs_165,1);
+     stm32f103.set_pin_state(GPIOB,pl_165,1);
      //stm32f103.set_pin_state(GPIOB,clk_165,0);
       delay_us(50);
     // считываем полученные данные о пинах
@@ -884,8 +962,14 @@ uart1.usart_init();
 breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
-//init_SPI1(); 
-
+//init_SPI1(SPI1); 
+   SettingsSPI(SPI1, 
+                      RegCR1::ACTIVE,
+                          RegCR1::MASTER,
+                          1 /*Mbps*/,
+                          RegCR1::SPI_MODE3,
+                          RegCR1::DFF8bit,
+                          RegCR1::MSBF);
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
 
 
@@ -949,12 +1033,12 @@ breakpoint("DMA_init!");
 
 while(1)
 {
+spi_receive();
+//HC74_165_();
 
 //HC74_165_();
-//spi_receive();
-//HC74_165_();
-pinValues = read();
-delay_ms(50);
+//pinValues = read();
+//delay_ms(500);
  // breakpoint("************************************");
 /*
  breakpoint("************************************");
