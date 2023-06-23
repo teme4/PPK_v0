@@ -881,16 +881,17 @@ uint16_t spi_receive(void)
   delay_us(5);
   stm32f103.set_pin_state(GPIOB,pl_165,1);
 
-  for(int i=0;i<4;i++)
+  for(int i=0;i<1;i++)
   {
     while(!(SPI1->SR & SPI_SR_TXE)) ;  
-    SPI1->DR=0;  
+    SPI1->DR=0xFF;  
     while(!(SPI1->SR & SPI_SR_RXNE)) ;  
 
     res[i]= SPI1->DR;
+    // delay_us(50);
   }
   while(SPI1->SR&SPI_SR_BSY); //Передача завершена
-    delay_us(10);
+   
   stm32f103.set_pin_state(GPIOC,A0,0);
   stm32f103.set_pin_state(GPIOB,A1,0);
   stm32f103.set_pin_state(GPIOD,A2,0);
@@ -1023,17 +1024,18 @@ breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
 
 
-  uint64_t pinValues;
+ uint64_t pinValues;
 
 while(1)
 {
 spi_receive();
+delay_ms(50);
 //HC74_165_();
 
 //HC74_165_();
