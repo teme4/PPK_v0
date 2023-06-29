@@ -490,36 +490,8 @@ delay_us(1);
 return *res;
 }
 
-uint8_t HC165ReadData(void)
-{
-stm32f103.set_pin_state(GPIOC,A0,1);
-stm32f103.set_pin_state(GPIOB,A1,0);
-stm32f103.set_pin_state(GPIOD,A2,1);
-  uint8_t dat=0;
-  
-  stm32f103.set_pin_state(GPIOB,clk_165,1);
-  stm32f103.set_pin_state(GPIOB,pl_165,0);
-  delay_ms(1);
-  stm32f103.set_pin_state(GPIOB,pl_165,1);
 
-  for(uint8_t i=0;i<8;i++)
-  {
-   // dat=dat<<1;
-     if((stm32f103.get_state_pin(GPIOB,1))==0)
-     res[i]=0;
-     else 
-     res[i]=1;
-
-    stm32f103.set_pin_state(GPIOB,clk_165,0);
-    delay_ms(1);
-     stm32f103.set_pin_state(GPIOB,clk_165,1);
-  }
-  stm32f103.set_pin_state(GPIOB,clk_165,0);
-  return *res;
-}
-
-
-uint8_t HC74_165(uint8_t pin)
+uint8_t HC74_165()
 {
 for(int i=0;i<32;i++)
 {
@@ -640,6 +612,83 @@ stm32f103.set_pin_state(GPIOC,clk_165,1);
 }*/
 return *res;
 }
+/*
+enum class registor_in 
+ {
+  //1 74HC595
+    pin1 =   0x40,                
+    pin2=    0x80,                    
+    pin3 =   0x10,                  
+    pin4 =   0x20,
+    pin5 =   0x04,                
+    pin6 =   0x08,                    
+    pin7 =   0x01,                  
+    pin8 =   0x02,   
+  //2 74HC595
+    pin9 =    0x80,                
+    pin10=    0x40,                    
+    pin11 =   0x20,                  
+    pin12 =   0x10,
+    pin13 =   0x08,                
+    pin14 =   0x04,                    
+    pin15 =   0x02,                  
+    pin16 =   0x01,
+    //3 74HC595
+    pin17 =   0x40,                
+    pin18=    0x80,                    
+    pin19 =   0x10,                  
+    pin20 =   0x20,
+    pin21 =   0x04,                
+    pin22 =   0x08,                    
+    pin23 =   0x02,                  
+    pin24 =   0x01,
+    //4 74HC595
+    pin25 =   0x40,                
+    pin26 =   0x80,                    
+    pin27 =   0x10,                  
+    pin28 =   0x20,
+    pin29 =   0x04,                
+    pin30 =   0x08,                    
+    pin31 =   0x02,                  
+    pin32 =   0x01
+};*/
+
+ //1 74HC595
+  uint8_t  pin1 =   0x40;               
+  uint8_t  pin2 =   0x80;                  
+  uint8_t  pin3 =   0x10;                  
+  uint8_t  pin4 =   0x20;
+  uint8_t  pin5 =   0x04;                
+  uint8_t  pin6 =   0x08;                   
+  uint8_t  pin7 =   0x01;                
+  uint8_t  pin8 =   0x02;   
+  //2 74HC595
+  uint8_t  pin9 =    0x80;               
+  uint8_t  pin10=    0x40;                    
+  uint8_t  pin11 =   0x20;                 
+  uint8_t  pin12 =   0x10;
+  uint8_t  pin13 =   0x08;               
+  uint8_t   pin14 =  0x04;                    
+  uint8_t  pin15 =   0x02;                 
+  uint8_t  pin16 =   0x01;
+    //3 74HC595
+  uint8_t  pin17 =   0x40;               
+  uint8_t  pin18=    0x80;                   
+  uint8_t  pin19 =   0x10;                  
+  uint8_t  pin20 =   0x20;
+  uint8_t  pin21 =   0x04;               
+  uint8_t  pin22 =   0x08;                    
+  uint8_t pin23 =    0x02;                 
+  uint8_t  pin24 =   0x01;
+    //4 74HC595
+  uint8_t  pin25 =   0x40;                
+  uint8_t   pin26 =  0x80;                    
+  uint8_t  pin27 =   0x10;                  
+  uint8_t  pin28 =   0x20;
+  uint8_t  pin29 =   0x04;                
+  uint8_t  pin30 =   0x08;                    
+  uint8_t  pin31 =   0x02;               
+  uint8_t  pin32 =   0x01;
 
 
 uint16_t data_state[32];
@@ -648,7 +697,7 @@ void HC74_595(uint16_t data)
 uint8_t k=7;
 stm32f103.set_pin_state(GPIOD,EN_1,1);
 stm32f103.set_pin_state(GPIOC,latcg_pin,0);
-for(int i=0;i<33;i++)
+for(int i=1;i<33;i++)
 {
   data_state[i]=data;
   data_state[i]= data_state[i]&mask[k];
@@ -660,7 +709,7 @@ for(int i=0;i<33;i++)
 }
 
 
-for(int j=0;j<8;j++)
+for(int j=1;j<9;j++)
 {
   stm32f103.set_pin_state(GPIOB,data_pin,data_state[j]);
     delay_us(1);
@@ -834,17 +883,10 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
 
 void init_SPI1(SPI_TypeDef*SPIx )
 {
-
-
-
-
- 
    //SPI1->CR1 |= SPI_CR1_BIDIMODE;          // 1 line
    //SPI1->CR1 |= SPI_CR1_BIDIOE;            // MOSI
    SPI1->CR1 |= SPI_CR1_BR;                //Baud rate = Fpclk/4 = 30/4 = 7.5 ???
    SPI1->CR1 |= SPI_CR1_DFF;               //16 ??? ???????
-
-
    SPI1->CR1 &= ~SPI_CR1_CPOL;             //Polarity signal CPOL = 0;
    SPI1->CR1 &= ~SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
 
@@ -853,14 +895,11 @@ void init_SPI1(SPI_TypeDef*SPIx )
    SPI1->CR1 |=SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
 */
 
-
    SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
    SPI1->CR1 |= SPI_CR1_MSTR;              //Mode Master  
    SPI1->CR2  |= SPI_CR2_SSOE;     
    SPI1->CR1 |= SPI_CR1_SPE;                //Enable SPI2
-
 }
-
 
 void spi_transmit(uint16_t data)
 {
@@ -869,10 +908,64 @@ SPI1->DR = data ;
 delay_ms(1);  
 }
 
-uint16_t spi_receive(void)
+uint16_t flex_cable(uint8_t val)
+{  
+if(val==1)
 {
-
-  //stm32f103.set_pin_state(GPIOB,clk_165,0);  
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin1);
+}
+if(val==2)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin2);
+}
+if(val==3)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin3);
+}
+if(val==4)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin4);
+}
+if(val==5)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin5);
+}
+if(val==6)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin6);
+}
+if(val==7)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin7);
+}
+if(val==8)
+{
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(0x00);
+  HC74_595(pin8);
+}
   stm32f103.set_pin_state(GPIOC,A0,1);
   stm32f103.set_pin_state(GPIOB,A1,0);
   stm32f103.set_pin_state(GPIOD,A2,1);
@@ -881,55 +974,50 @@ uint16_t spi_receive(void)
   delay_us(5);
   stm32f103.set_pin_state(GPIOB,pl_165,1);
 
-  for(int i=0;i<1;i++)
+  for(int i=0;i<4;i++)
   {
     while(!(SPI1->SR & SPI_SR_TXE)) ;  
-    SPI1->DR=0xFF;  
+    SPI1->DR=0x00;  
     while(!(SPI1->SR & SPI_SR_RXNE)) ;  
-
     res[i]= SPI1->DR;
-    // delay_us(50);
   }
-  while(SPI1->SR&SPI_SR_BSY); //Передача завершена
-   
+  /*                                                                                                                           while(SPI1->SR&SPI_SR_BSY); //Передача завершена
+  stm32f103.set_pin_state(GPIOC,A0,0);
+  stm32f103.set_pin_state(GPIOB,A1,0);
+  stm32f103.set_pin_state(GPIOD,A2,0);*/
+  
+ return *res;
+}
+
+uint16_t km_cable(void)
+{
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+/*
+  stm32f103.set_pin_state(GPIOC,A0,0);
+  stm32f103.set_pin_state(GPIOB,A1,1);
+  stm32f103.set_pin_state(GPIOD,A2,0);
+*/
+
+  stm32f103.set_pin_state(GPIOB,pl_165,0);
+  delay_us(5);
+  stm32f103.set_pin_state(GPIOB,pl_165,1);
+
+  for(int i=0;i<5;i++)
+  {
+    while(!(SPI1->SR & SPI_SR_TXE)) ;  
+    SPI1->DR=0x00;  
+    while(!(SPI1->SR & SPI_SR_RXNE)) ;  
+    res[4+i]= SPI1->DR;
+  }
+
   stm32f103.set_pin_state(GPIOC,A0,0);
   stm32f103.set_pin_state(GPIOB,A1,0);
   stm32f103.set_pin_state(GPIOD,A2,0);
+  return *res;
 }
-
-
-
- uint16_t read(void)
- {
-uint64_t resalt,bitVal;
-stm32f103.set_pin_state(GPIOC,A0,1);
-stm32f103.set_pin_state(GPIOB,A1,0);
-stm32f103.set_pin_state(GPIOD,A2,1);
-   delay_us(100);
-   // опрашиваем регистр о состоянии пинов
-    // stm32f103.set_pin_state(GPIOB,clk_165,1);
-     stm32f103.set_pin_state(GPIOB,pl_165,0);
-     delay_us(10);
-     stm32f103.set_pin_state(GPIOB,pl_165,1);
-     //stm32f103.set_pin_state(GPIOB,clk_165,0);
-      delay_us(50);
-    // считываем полученные данные о пинах
-    for(int i = 0; i<8; i++)
-    {
-        if((stm32f103.get_state_pin(GPIOB,data_flex))==0) 
-      // breakpoint("on");
-      res[i]=1;
-       else 
-        res[i]=0;
-       // breakpoint("off");
-        stm32f103.set_pin_state(GPIOB,clk_165,1);
-        delay_us(20);
-        stm32f103.set_pin_state(GPIOB,clk_165,0);
-        delay_us(15);
-    }
-return *res;
- }
-
 
 
 int main()
@@ -968,11 +1056,10 @@ breakpoint("DMA_init!");
                       RegCR1::ACTIVE,
                           RegCR1::MASTER,
                           1 /*Mbps*/,
-                          RegCR1::SPI_MODE3,
+                          RegCR1::SPI_MODE1,//3
                           RegCR1::DFF8bit,
                           RegCR1::MSBF);
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
-
 
 
 /*
@@ -1024,18 +1111,38 @@ breakpoint("gpio_init!");
 breakpoint("usart_init!");
 breakpoint("DMA_init!");
 */
+/*
   HC74_595(0x00);
   HC74_595(0x00);
   HC74_595(0x00);
-  HC74_595(0x00);
+  HC74_595(0x00);*/
 
 
  uint64_t pinValues;
 
+/*
+  HC74_595(0xFF); //byte3
+  HC74_595(0xFF); //byte2
+  HC74_595(0xFF); //byte1
+  HC74_595(0xFF); //byte0*/
+
+
 while(1)
 {
-spi_receive();
-delay_ms(50);
+
+
+
+
+flex_cable(5);
+km_cable();
+
+
+
+
+
+delay_ms(5);
+
+
 //HC74_165_();
 
 //HC74_165_();
