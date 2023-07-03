@@ -653,42 +653,7 @@ enum class registor_in
     pin32 =   0x01
 };*/
  uint16_t pin_HC595[32];
- //1 74HC595         
-  uint16_t  pin1 =   0x80;   
-  uint16_t  pin2 =   0x80;                  
-  uint16_t  pin3 =   0x10;                  
-  uint16_t  pin4 =   0x20;
-  uint16_t  pin5 =   0x04;                
-  uint16_t  pin6 =   0x08;                   
-  uint16_t  pin7 =   0x01;                
-  uint16_t  pin8 =   0x02;   
-  //2 74HC595
-  uint16_t  pin9 =    0x80;               
-  uint16_t  pin10=    0x40;                    
-  uint16_t  pin11 =   0x20;                 
-  uint16_t  pin12 =   0x10;
-  uint16_t  pin13 =   0x08;               
-  uint16_t  pin14 =  0x04;                    
-  uint16_t  pin15 =   0x02;                 
-  uint16_t  pin16 =   0x01;
-    //3 74HC595
-  uint16_t  pin17 =   0x40;               
-  uint16_t  pin18=    0x80;                   
-  uint16_t  pin19 =   0x10;                  
-  uint16_t  pin20 =   0x20;
-  uint16_t  pin21 =   0x04;               
-  uint16_t  pin22 =   0x08;                    
-  uint16_t pin23 =    0x02;                 
-  uint16_t  pin24 =   0x01;
-    //4 74HC595
-  uint16_t  pin25 =   0x40;                
-  uint16_t  pin26 =  0x80;                    
-  uint16_t  pin27 =   0x10;                  
-  uint16_t  pin28 =   0x20;
-  uint16_t  pin29 =   0x04;                
-  uint16_t  pin30 =   0x08;                    
-  uint16_t  pin31 =   0x02;               
-  uint16_t  pin32 =   0x01;
+ uint16_t pin_flex[32];
 
 
 uint16_t data_state[32];
@@ -897,7 +862,7 @@ void init_SPI1(SPI_TypeDef*SPIx )
 
    SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
    SPI1->CR1 |= SPI_CR1_MSTR;              //Mode Master  
-   SPI1->CR2  |= SPI_CR2_SSOE;     
+   SPI1->CR2 |= SPI_CR2_SSOE;     
    SPI1->CR1 |= SPI_CR1_SPE;                //Enable SPI2
 }
 
@@ -947,6 +912,44 @@ uint16_t pos=0;
   pin_HC595[30] =   0xF7;                    
   pin_HC595[31] =   0xFD;               
   pin_HC595[32] =   0xFE;
+
+
+  //1 74HC595         
+  pin_flex[1] =    0xFE;   //0x40
+  pin_flex[2] =    0xFD;   //0x80               
+  pin_flex[3] =    0xDF;   //10               
+  pin_flex[4] =    0xFB;   //20
+  pin_flex[5] =    0xEF;   //0x04             
+  pin_flex[6] =    0xF7;    //0x08               
+  pin_flex[7] =    0xFD;      //0x01          
+  pin_flex[8] =    0xFE;     //0x02
+  //2 74HC595
+  pin_flex[9]  =   0xBF;               
+  pin_flex[10] =   0x7F;                    
+  pin_flex[11] =   0xDF;                 
+  pin_flex[12] =   0xFB;
+  pin_flex[13] =   0xEF;               
+  pin_flex[14] =   0xF7;                    
+  pin_flex[15] =   0x7F;                 
+  pin_flex[16] =   0xFE;
+    //3 74HC595
+  pin_flex[17] =   0xBF;               
+  pin_flex[18] =   0xFD;                   
+  pin_flex[19] =   0xDF;                  
+  pin_flex[20] =   0xFB;
+  pin_flex[21] =   0xEF;               
+  pin_flex[22] =   0xF7;                    
+  pin_flex[23] =   0x7F;                 
+  pin_flex[24] =   0xFE;
+    //4 74HC595
+  pin_flex[25] =   0xBF;                
+  pin_flex[26] =   0xFD;                    
+  pin_flex[27] =   0xDF;                  
+  pin_flex[28] =   0xFB;
+  pin_flex[29] =   0xEF;                
+  pin_flex[30] =   0xF7;                    
+
+
 
 if((val>0)&&(val<9))
 {
@@ -1033,6 +1036,46 @@ uint16_t km_cable(void)
   stm32f103.set_pin_state(GPIOD,A2,0);
   return *res;
 }
+
+uint16_t check_flex_cable()
+{
+uint16_t state[32]={0,};
+uint16_t cable_map[32]={0,};  
+for(int i=1;i<17;i++)
+{
+flex_cable(i);
+if(i==8)
+{
+cable_map[i]=res[1];
+}
+if(i>0&&i<7)
+{
+cable_map[i]=res[0];
+} 
+if(i>6&&i<15)
+{
+cable_map[i]=res[1];
+} 
+if(i>14&&i<23)
+{
+cable_map[i]=res[2];
+} 
+if(i>22&&i<31)
+{
+cable_map[i]=res[3];
+} 
+
+if(cable_map[i]==pin_flex[i])
+{
+  state[i]=1;
+}
+else 
+ state[i]=0;
+}
+
+return *state;
+}
+
 
 
 int main()
@@ -1132,7 +1175,7 @@ breakpoint("DMA_init!");
   HC74_595(0x00);
   HC74_595(0x00);*/
 
-uint16_t cable_map[32]={0,};
+
 uint64_t pinValues;
 
 /*
@@ -1146,29 +1189,13 @@ while(1)
 {
 
 
-
-for(int i=1;i<17;i++)
-{
-flex_cable(i);
-if(i>0&&i<7)
-{
-cable_map[i]=res[0];
-} 
-if(i>6&&i<15)
-{
-cable_map[i]=res[1];
-} 
-if(i>14&&i<23)
-{
-cable_map[i]=res[2];
-} 
-if(i>22&&i<31)
-{
-cable_map[i]=res[3];
-} 
+//check_flex_cable();
+flex_cable(8);
 delay_ms(5);
-}
-delay_ms(100);
+//flex_cable(15);
+delay_ms(5);
+
+
 
 
 
