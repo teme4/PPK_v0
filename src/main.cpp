@@ -652,43 +652,43 @@ enum class registor_in
     pin31 =   0x02,                  
     pin32 =   0x01
 };*/
-
- //1 74HC595
-  uint8_t  pin1 =   0x40;               
-  uint8_t  pin2 =   0x80;                  
-  uint8_t  pin3 =   0x10;                  
-  uint8_t  pin4 =   0x20;
-  uint8_t  pin5 =   0x04;                
-  uint8_t  pin6 =   0x08;                   
-  uint8_t  pin7 =   0x01;                
-  uint8_t  pin8 =   0x02;   
+ uint16_t pin_HC595[32];
+ //1 74HC595         
+  uint16_t  pin1 =   0x80;   
+  uint16_t  pin2 =   0x80;                  
+  uint16_t  pin3 =   0x10;                  
+  uint16_t  pin4 =   0x20;
+  uint16_t  pin5 =   0x04;                
+  uint16_t  pin6 =   0x08;                   
+  uint16_t  pin7 =   0x01;                
+  uint16_t  pin8 =   0x02;   
   //2 74HC595
-  uint8_t  pin9 =    0x80;               
-  uint8_t  pin10=    0x40;                    
-  uint8_t  pin11 =   0x20;                 
-  uint8_t  pin12 =   0x10;
-  uint8_t  pin13 =   0x08;               
-  uint8_t   pin14 =  0x04;                    
-  uint8_t  pin15 =   0x02;                 
-  uint8_t  pin16 =   0x01;
+  uint16_t  pin9 =    0x80;               
+  uint16_t  pin10=    0x40;                    
+  uint16_t  pin11 =   0x20;                 
+  uint16_t  pin12 =   0x10;
+  uint16_t  pin13 =   0x08;               
+  uint16_t  pin14 =  0x04;                    
+  uint16_t  pin15 =   0x02;                 
+  uint16_t  pin16 =   0x01;
     //3 74HC595
-  uint8_t  pin17 =   0x40;               
-  uint8_t  pin18=    0x80;                   
-  uint8_t  pin19 =   0x10;                  
-  uint8_t  pin20 =   0x20;
-  uint8_t  pin21 =   0x04;               
-  uint8_t  pin22 =   0x08;                    
-  uint8_t pin23 =    0x02;                 
-  uint8_t  pin24 =   0x01;
+  uint16_t  pin17 =   0x40;               
+  uint16_t  pin18=    0x80;                   
+  uint16_t  pin19 =   0x10;                  
+  uint16_t  pin20 =   0x20;
+  uint16_t  pin21 =   0x04;               
+  uint16_t  pin22 =   0x08;                    
+  uint16_t pin23 =    0x02;                 
+  uint16_t  pin24 =   0x01;
     //4 74HC595
-  uint8_t  pin25 =   0x40;                
-  uint8_t   pin26 =  0x80;                    
-  uint8_t  pin27 =   0x10;                  
-  uint8_t  pin28 =   0x20;
-  uint8_t  pin29 =   0x04;                
-  uint8_t  pin30 =   0x08;                    
-  uint8_t  pin31 =   0x02;               
-  uint8_t  pin32 =   0x01;
+  uint16_t  pin25 =   0x40;                
+  uint16_t  pin26 =  0x80;                    
+  uint16_t  pin27 =   0x10;                  
+  uint16_t  pin28 =   0x20;
+  uint16_t  pin29 =   0x04;                
+  uint16_t  pin30 =   0x08;                    
+  uint16_t  pin31 =   0x02;               
+  uint16_t  pin32 =   0x01;
 
 
 uint16_t data_state[32];
@@ -910,62 +910,75 @@ delay_ms(1);
 
 uint16_t flex_cable(uint8_t val)
 {  
-if(val==1)
+uint16_t pos=0;
+  //1 74HC595         
+  pin_HC595[1] =    0xBF;   //0x40
+  pin_HC595[2] =    0x7F;   //0x80               
+  pin_HC595[3] =    0xEF;   //10               
+  pin_HC595[4] =    0xDF;   //20
+  pin_HC595[5] =    0xFB;   //0x04             
+  pin_HC595[6] =    0xF7;    //0x08               
+  pin_HC595[7] =    0xFE;      //0x01          
+  pin_HC595[8] =    0xFD;     //0x02
+  //2 74HC595
+  pin_HC595[9]  =   0x7F;               
+  pin_HC595[10] =   0xBF;                    
+  pin_HC595[11] =   0xDF;                 
+  pin_HC595[12] =   0xEF;
+  pin_HC595[13] =   0xF7;               
+  pin_HC595[14] =   0xFB;                    
+  pin_HC595[15] =   0xFD;                 
+  pin_HC595[16] =   0xFE;
+    //3 74HC595
+  pin_HC595[17] =   0xBF;               
+  pin_HC595[18] =   0x7F;                   
+  pin_HC595[19] =   0xEF;                  
+  pin_HC595[20] =   0xDF;
+  pin_HC595[21] =   0xFB;               
+  pin_HC595[22] =   0xF7;                    
+  pin_HC595[23] =   0xFD;                 
+  pin_HC595[24] =   0xFE;
+    //4 74HC595
+  pin_HC595[25] =   0xBF;                
+  pin_HC595[26] =   0x7F;                    
+  pin_HC595[27] =   0xEF;                  
+  pin_HC595[28] =   0xDF;
+  pin_HC595[29] =   0xFB;                
+  pin_HC595[30] =   0xF7;                    
+  pin_HC595[31] =   0xFD;               
+  pin_HC595[32] =   0xFE;
+
+if((val>0)&&(val<9))
 {
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin1);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(pin_HC595[val]);
+  pos=0;
+  
 }
-if(val==2)
+if((val>7)&&(val<17))
 {
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin2);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(pin_HC595[val]);
+  HC74_595(0xFF);
 }
-if(val==3)
+if((val>16)&&(val<25))
 {
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin3);
+  HC74_595(0xFF);
+  HC74_595(pin_HC595[val]);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
 }
-if(val==4)
+if((val>24)&&(val<33))
 {
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin4);
+  HC74_595(pin_HC595[val]);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
+  HC74_595(0xFF);
 }
-if(val==5)
-{
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin5);
-}
-if(val==6)
-{
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin6);
-}
-if(val==7)
-{
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin7);
-}
-if(val==8)
-{
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(0x00);
-  HC74_595(pin8);
-}
+
   stm32f103.set_pin_state(GPIOC,A0,1);
   stm32f103.set_pin_state(GPIOB,A1,0);
   stm32f103.set_pin_state(GPIOD,A2,1);
@@ -981,12 +994,14 @@ if(val==8)
     while(!(SPI1->SR & SPI_SR_RXNE)) ;  
     res[i]= SPI1->DR;
   }
-  /*                                                                                                                           while(SPI1->SR&SPI_SR_BSY); //Передача завершена
+                                                                                                                           while(SPI1->SR&SPI_SR_BSY); //Передача завершена
   stm32f103.set_pin_state(GPIOC,A0,0);
   stm32f103.set_pin_state(GPIOB,A1,0);
-  stm32f103.set_pin_state(GPIOD,A2,0);*/
-  
- return *res;
+  stm32f103.set_pin_state(GPIOD,A2,0);
+
+
+
+  return *res;
 }
 
 uint16_t km_cable(void)
@@ -1056,7 +1071,7 @@ breakpoint("DMA_init!");
                       RegCR1::ACTIVE,
                           RegCR1::MASTER,
                           1 /*Mbps*/,
-                          RegCR1::SPI_MODE1,//3
+                          RegCR1::SPI_MODE3,//3
                           RegCR1::DFF8bit,
                           RegCR1::MSBF);
 uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
@@ -1117,8 +1132,8 @@ breakpoint("DMA_init!");
   HC74_595(0x00);
   HC74_595(0x00);*/
 
-
- uint64_t pinValues;
+uint16_t cable_map[32]={0,};
+uint64_t pinValues;
 
 /*
   HC74_595(0xFF); //byte3
@@ -1132,15 +1147,34 @@ while(1)
 
 
 
-
-flex_cable(5);
-km_cable();
-
-
-
-
-
+for(int i=1;i<17;i++)
+{
+flex_cable(i);
+if(i>0&&i<7)
+{
+cable_map[i]=res[0];
+} 
+if(i>6&&i<15)
+{
+cable_map[i]=res[1];
+} 
+if(i>14&&i<23)
+{
+cable_map[i]=res[2];
+} 
+if(i>22&&i<31)
+{
+cable_map[i]=res[3];
+} 
 delay_ms(5);
+}
+delay_ms(100);
+
+
+
+//cable_map[1]=flex_cable(1);
+//km_cable();
+
 
 
 //HC74_165_();
