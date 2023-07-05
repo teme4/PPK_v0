@@ -6,7 +6,6 @@
 
 
 volatile uint16_t pin_bits[32][5]={{0,0,0,0,0},};
-volatile uint8_t res[32]={0,};
 extern gpio stm32f103;
 
 

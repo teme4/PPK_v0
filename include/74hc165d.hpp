@@ -4,6 +4,8 @@
 #include "hardware_config.hpp"
 //#include "gpio.hpp"
 
+extern uint8_t res[32];
+
 static const uint8_t pin_flex[32]
 {
 0,

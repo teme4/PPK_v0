@@ -3,7 +3,7 @@
 
 
 extern gpio stm32f103;
-
+extern uint16_t data_state[32];
 
 void HC74_595(uint16_t data)
 {

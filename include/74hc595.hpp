@@ -25,7 +25,7 @@ static const uint8_t pin_HC595[33]
  };*/
 
 const uint8_t mask[8]={1,2,4,8,16,32,64,128};
-uint16_t data_state[32];
+
 void HC74_595(uint16_t data);
 uint16_t set_pin_HC74_595(uint8_t val);
 

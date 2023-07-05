@@ -14,11 +14,17 @@
 
 char str[80];
 
-extern uint8_t res[32]={0,};
+uint8_t res[32]={0,};
 
 usart uart1;
 dma_usart dma_usart1;
 gpio stm32f103;
+extern gpio gpio_stm32f103RC;
+
+
+uint16_t data_state[32];
+
+
 char rx_str[255];
 char temp[1];
 
@@ -59,7 +65,7 @@ void delay_ms(uint32_t ms)
    DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
 }
 
-extern gpio gpio_stm32f103RC;
+
 
 
 
@@ -385,7 +391,9 @@ for(int i=0;i<16;i++)
 //sprintf(str,"%02X",test_data[i]);//%d  02X
 uart1.uart_tx_byte(test_data[i]);
 }*/
-
+dma_usart1.usart_rx((uint8_t*)rx_str);
+//USART_TX((uint8_t*)rx_str,sizeof(rx_str));
+dma_usart1.usart_tx((uint8_t*)rx_str);
 
 while(1)
 {
