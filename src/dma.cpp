@@ -94,7 +94,7 @@ void dma_usart::usart_rx (uint8_t* dt)
   DMA1_Channel5->CCR&=~ DMA_CCR_EN;
   //Set Number of data to transfer
   uint16_t sz=sizeof(dt);
-  DMA1_Channel5->CNDTR|= sz<<DMA_CNDTR_NDT_Pos;
+  DMA1_Channel5->CNDTR|= sz<<DMA_CNDTR_NDT_Pos;//DMA_CNDTR_NDT_Pos
  // MODIFY_REG(DMA1_Channel5->CNDTR, DMA_CNDTR_NDT, sz);
   //Enable DMA channel 5
   DMA1_Channel5->CCR|= DMA_CCR_EN;

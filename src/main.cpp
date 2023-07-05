@@ -4,6 +4,7 @@
 #include "dma.hpp"
 #include "string.h"
 #include "hardware_config.hpp"
+#include "math.h"
 
 #include "registers.hpp"
 #include "arial.hpp"
@@ -13,7 +14,7 @@
 
 char str[80];
 
-
+extern uint8_t res[32]={0,};
 
 usart uart1;
 dma_usart dma_usart1;
@@ -26,8 +27,8 @@ char temp[1];
 #define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
 
 volatile uint32_t *DWT_CONTROL2 = (uint32_t *)0xE0001000;
-volatile uint32_t *DWT_CYCCNT2 = (uint32_t *)0xE0001004; 
-volatile uint32_t *DEMCR2 = (uint32_t *)0xE000EDFC; 
+volatile uint32_t *DWT_CYCCNT2 = (uint32_t *)0xE0001004;
+volatile uint32_t *DEMCR2 = (uint32_t *)0xE000EDFC;
 uint32_t Mcounter, count;
 
 void delay_us(uint32_t us)
@@ -38,12 +39,12 @@ void delay_us(uint32_t us)
    //обнуляем значение счётного регистра
    DWT_CYCCNT  = 0;
    //запускаем счётчик
-   DWT_CONTROL |= DWT_CTRL_CYCCNTENA_Msk; 
+   DWT_CONTROL |= DWT_CTRL_CYCCNTENA_Msk;
    while(DWT_CYCCNT < us_count_tick);
    //останавливаем счётчик
    DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
 }
- 
+
 void delay_ms(uint32_t ms)
 {
    int32_t ms_count_tick =  ms * (SystemCoreClock/1000);
@@ -52,7 +53,7 @@ void delay_ms(uint32_t ms)
    //обнуляем значение счётного регистра
    DWT_CYCCNT  = 0;
    //запускаем счётчик
-   DWT_CONTROL|= DWT_CTRL_CYCCNTENA_Msk; 
+   DWT_CONTROL|= DWT_CTRL_CYCCNTENA_Msk;
    while(DWT_CYCCNT < ms_count_tick);
    //останавливаем счётчик
    DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
@@ -67,7 +68,7 @@ extern "C" void DMA1_Channel4_IRQHandler(void)
   if((DMA1->ISR & DMA_ISR_TCIF4) == DMA_ISR_TCIF4)
   {
     DMA1->IFCR|= DMA_IFCR_CTCIF4;
-   //dma_usart1::fl_tx = 1;    
+   //dma_usart1::fl_tx = 1;
    dma_usart1._fl_tx=1;
   }
   else if((DMA1->ISR & DMA_ISR_TEIF4)== DMA_ISR_TEIF4)
@@ -84,12 +85,12 @@ extern "C" void DMA1_Channel5_IRQHandler(void)
   {
     DMA1->IFCR|= DMA_IFCR_CTCIF5;
     dma_usart1._fl_rx = 1;
-  }  
+  }
   else if(READ_BIT(DMA1->ISR, DMA_ISR_TEIF5) == (DMA_ISR_TEIF5))
   {
     //Disable DMA channels
     DMA1_Channel4->CCR&=~ DMA_CCR_EN;
-    DMA1_Channel5->CCR&=~ DMA_CCR_EN;     
+    DMA1_Channel5->CCR&=~ DMA_CCR_EN;
   }
 }
 
@@ -97,40 +98,6 @@ void breakpoint(const char * data)
 {
 uart1.uart_tx_bytes(data);
 uart1.uart_enter();
-}
-
-
-volatile uint8_t res[32]={0,};
-
-uint8_t HC74_165_()
-{
-stm32f103.set_pin_state(GPIOC,A0,1);
-stm32f103.set_pin_state(GPIOB,A1,0);
-stm32f103.set_pin_state(GPIOD,A2,1);
-
-stm32f103.set_pin_state(GPIOB,pl_165,0);
-//stm32f103.set_pin_state(GPIOB,clk_165,0); 
-//stm32f103.set_pin_state(GPIOB,clk_165,1); 
-stm32f103.set_pin_state(GPIOB,pl_165,1);
-//delay_us(2);
-for(int i=0;i<8;i++)
-{   
- if((stm32f103.get_state_pin(GPIOB,1))==1)
-    {
-    res[i]=77;
-    }
-    else
-    {
-    res[i]=99;  
-    } 
-stm32f103.set_pin_state(GPIOB,clk_165,0); 
-delay_us(1);
-stm32f103.set_pin_state(GPIOB,clk_165,1);
-delay_us(1);
-   // delay_us(5);
-
-}
-return *res;
 }
 
 
@@ -147,7 +114,7 @@ stm32f103.set_pin_state(GPIOB,A1,0);
 stm32f103.set_pin_state(GPIOD,A2,1);
 
 // щелкнули защелкой
-stm32f103.set_pin_state(GPIOB,clk_165,0); 
+stm32f103.set_pin_state(GPIOB,clk_165,0);
 stm32f103.set_pin_state(GPIOB,pl_165,0);
 delay_us(5);
 stm32f103.set_pin_state(GPIOB,pl_165,1);
@@ -170,40 +137,6 @@ delay_us(5);
 }
 delay_us(500);
 return *res;
-}
-const uint8_t mask[8]={1,2,4,8,16,32,64,128};
-uint16_t data_state[32];
-void HC74_595(uint16_t data)
-{
-//data--;
-uint8_t k=7;
-stm32f103.set_pin_state(GPIOD,EN_1,1);
-stm32f103.set_pin_state(GPIOC,latcg_pin,0);
-for(int i=1;i<33;i++)
-{
-  data_state[i]=data;
-  data_state[i]= data_state[i]&mask[k];
-  k--;
-  if(data_state[i]!=0)
-  {
-     data_state[i]=1;
-  }
-}
-
-
-for(int j=1;j<9;j++)
-{
-  stm32f103.set_pin_state(GPIOB,data_pin,data_state[j]);
-    delay_us(1);
-  stm32f103.set_pin_state(GPIOC,clock_pin,1);
-  delay_us(1);
-  stm32f103.set_pin_state(GPIOC,clock_pin,0);
-    delay_us(1);
-  stm32f103.set_pin_state(GPIOB,data_pin,0);
-  delay_us(1);
-}
-stm32f103.set_pin_state(GPIOC,latcg_pin,1);
-stm32f103.set_pin_state(GPIOD,EN_1,0);
 }
 
 
@@ -388,295 +321,85 @@ SPI1->DR = data ;
 delay_ms(1);
 }
 
-uint16_t set_pin_HC74_595(uint8_t val)
-{
-if((val>=1)&&(val<=8))
-{
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(pin_HC595[val]);
- }
-if((val>=9)&&(val<=16))
-{
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(pin_HC595[val]);
-  HC74_595(0xFF);
-}
-if((val>=17)&&(val<=24))
-{
-  HC74_595(0xFF);
-  HC74_595(pin_HC595[val]);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-}
-if((val>=25)&&(val<=32))
-{
-  HC74_595(pin_HC595[val]);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-}
-}
 
-
-uint16_t flex_cable(uint8_t val)
-{
-  set_pin_HC74_595(val);
-  stm32f103.set_pin_state(GPIOB,pl_165,0);
-  stm32f103.set_pin_state(GPIOB,pl_165,1);
-
-  stm32f103.set_pin_state(GPIOC,A0,1);
-  stm32f103.set_pin_state(GPIOB,A1,0);
-  stm32f103.set_pin_state(GPIOD,A2,1);
-
-  for(int i=0;i<4;i++)
-  {
-    while(!(SPI1->SR & SPI_SR_TXE)) ;
-    SPI1->DR=0x00;
-    while(!(SPI1->SR & SPI_SR_RXNE)) ;
-    res[i]= SPI1->DR;
-  }
-                                                                                                                           while(SPI1->SR&SPI_SR_BSY); //Передача завершена
-  stm32f103.set_pin_state(GPIOC,A0,0);
-  stm32f103.set_pin_state(GPIOB,A1,0);
-  stm32f103.set_pin_state(GPIOD,A2,0);
-  return *res;
-}
-
-uint16_t km_cable(void)
-{
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-/*
-  stm32f103.set_pin_state(GPIOC,A0,0);
-  stm32f103.set_pin_state(GPIOB,A1,1);
-  stm32f103.set_pin_state(GPIOD,A2,0);
-*/
-
-  stm32f103.set_pin_state(GPIOB,pl_165,0);
-  delay_us(5);
-  stm32f103.set_pin_state(GPIOB,pl_165,1);
-
-  for(int i=0;i<5;i++)
-  {
-    while(!(SPI1->SR & SPI_SR_TXE)) ;  
-    SPI1->DR=0x00;  
-    while(!(SPI1->SR & SPI_SR_RXNE)) ;  
-    res[4+i]= SPI1->DR;
-  }
-
-  stm32f103.set_pin_state(GPIOC,A0,0);
-  stm32f103.set_pin_state(GPIOB,A1,0);
-  stm32f103.set_pin_state(GPIOD,A2,0);
-  return *res;
-}
-
-uint16_t check_flex_cable()
-{
-uint16_t state[32]={0,};
-uint16_t cable_map[32][3]={0,};
-
-for(int i=1;i<20+1;i++)
-{
-cable_map[i][2]=i;
-flex_cable(i);
-
-if(i>0&&i<7)
-{
-cable_map[i][0]=res[0];
-cable_map[i][1]=i;
-}
-if(i>6&&i<15)
-{
-cable_map[i][0]=res[1];
-cable_map[i][1]=i;
-}
-if(i>14&&i<23)
-{
-cable_map[i][0]=res[2];
-cable_map[i][1]=i;
-}
-if(i>22&&i<31)
-{
-cable_map[i][0]=res[3];
-cable_map[i][1]=i;
-}
-if(i==8)
-{
-cable_map[i][0]=res[2];
-cable_map[i][1]=i;
-}
-
-if(cable_map[i][0]==pin_flex[i])
-{
-  state[i]=77;
-}
-else
- state[i]=cable_map[i][1];
-}
-
-return *state;
-}
-
+uint16_t pin_mask[8]={0,1,2,4,8,16,32,64};
+uint16_t error[32]={0,};
 
 
 volatile uint8_t buf[33][2]={{0,0},};
-void test()
-{
-for(int k=1;k<33;k++)
-{
-flex_cable(5);
-buf[k][1]=k;
-for(int n=1;n<33;n++)
-{
-if(res[0]==pin_flex[n])
-{
-buf[n][0]=n;
-}
-if(res[1]==pin_flex[n])
-{
-buf[n][0]=n;
-}
-if(res[2]==pin_flex[n])
-{
-buf[n][0]=n;
-}
-if(res[3]==pin_flex[n])
-{
-buf[n][0]=n;
-}
-}
-}
-}
 
 
+typedef unsigned char uint8_t;
+uint8_t gencrc(uint8_t *data, size_t len)
+{
+    uint8_t crc = 0x00;
+    size_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if ((crc & 0x80) != 0)
+                crc = (uint8_t)((crc << 1) ^ 0x07);
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
+}
 
 int main()
 {
-//RCC_init();
+
 gpio_init();
-dma_usart1.DMA1_Init();
 uart1.usart_init();
+dma_usart1.DMA1_Init();
+
 
 //AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
 //gpio_stm32f103RC.gpio_conf(GPIOA,WR,gpio_stm32f103RC.gpio_mode_pp_10);
 
 
 
-breakpoint("gpio_init!");
-breakpoint("usart_init!");
-breakpoint("DMA_init!");
 
-   SettingsSPI(SPI1, 
+   SettingsSPI(SPI1,
                       RegCR1::ACTIVE,
                           RegCR1::MASTER,
                           1 /*Mbps*/,
                           RegCR1::SPI_MODE3,//3
                           RegCR1::DFF8bit,
                           RegCR1::MSBF);
-//uint32_t colors[8]={0x0000,0x1111, 0x2222,0x3333,0x4444,0x5555,0x6666,0x7777};
 
-/*
-breakpoint("gpio_init!");
-breakpoint("usart_init!");
-breakpoint("DMA_init!");
-*/
 
-/*
-test();
-delay_ms(5);
-*/
 
-for(int k=0;k<33;k++)
-{
-  flex_cable(k);
-  buf[k][1]=k;
-   if(k>=1&&k<=6)
-   {
-    //1 register
-    if(pin_flex[k]==res[0])
-    {
-      buf[k][0]=1;
-    }
-    }
-
-  if(k>=7&&k<=14)
-   {
-    //2 register
-    if(pin_flex[k]==res[1])
-    {
-      buf[k][0]=1;
-    }
-    }
-
-    if(k>=15&&k<=22)
-   {
-    //3 register
-    if(pin_flex[k]==res[2])
-    {
-      buf[k][0]=1;
-    }
-    }
-
-     if(k>=23&&k<=30)
-   {
-    //4 register
-    if(pin_flex[k]==res[3])
-    {
-      buf[k][0]=1;
-    }
-    }
-
-}
 
   delay_ms(50);
+
+uint8_t data[32]={0,};
+uint8_t test_data[16]={0xAA,0x55,0x01,0xAB,0xCD,0xEF,0x00,0x01,0x02,0x03,0x00,0x01,0x02,0x03,0x00};
+//AA 55 01 AB CD EF 00 01 02 03 00 01 02 03 F6
+
+
 /*
-buf[i][0]=i;
-
-if(pin_flex[i]==res[0])
+test_data[14]= gencrc(test_data,14);
+for(int i=0;i<16;i++)
 {
-buf[i][1]=1;
-}
-else
-{
-buf[i][1]=0;
-}
+//sprintf(str,"%02X",test_data[i]);//%d  02X
+uart1.uart_tx_byte(test_data[i]);
 }*/
-
-
-delay_ms(5);
-
 
 
 while(1)
 {
-
-//check_flex_cable();
-//flex_cable(8);
-
-//flex_cable(15);
+for(int k=1;k<33;k++)
+{
+  flex_cable(k);
+}
+delay_ms(50);
+}
 }
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-}
 
 extern "C"
 {

@@ -3,11 +3,11 @@
 
 class usart
 {
-private: 
+private:
 
 
 public:
-void uart_tx_byte( unsigned char data);
+void uart_tx_byte( uint8_t data);
 void uart_tx_bytes(const char * data);
 void uart_enter(void);
 void usart_init(void);
