@@ -23,10 +23,9 @@ extern gpio gpio_stm32f103RC;
 
 
 uint16_t data_state[32];
-
-
-char rx_str[255];
+//volatile char rx_str[32];
 char temp[1];
+
 
 #define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
 #define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
@@ -65,40 +64,6 @@ void delay_ms(uint32_t ms)
    DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
 }
 
-
-
-
-
-extern "C" void DMA1_Channel4_IRQHandler(void)
-{
-  if((DMA1->ISR & DMA_ISR_TCIF4) == DMA_ISR_TCIF4)
-  {
-    DMA1->IFCR|= DMA_IFCR_CTCIF4;
-   //dma_usart1::fl_tx = 1;
-   dma_usart1._fl_tx=1;
-  }
-  else if((DMA1->ISR & DMA_ISR_TEIF4)== DMA_ISR_TEIF4)
-  {
-    //Disable DMA channels
-    DMA1_Channel4->CCR&=~ DMA_CCR_EN;
-    DMA1_Channel5->CCR&=~ DMA_CCR_EN;
-  }
-}
-//----------------------------------------------------------
-extern "C" void DMA1_Channel5_IRQHandler(void)
-{
-  if(READ_BIT(DMA1->ISR, DMA_ISR_TCIF5) == (DMA_ISR_TCIF5))
-  {
-    DMA1->IFCR|= DMA_IFCR_CTCIF5;
-    dma_usart1._fl_rx = 1;
-  }
-  else if(READ_BIT(DMA1->ISR, DMA_ISR_TEIF5) == (DMA_ISR_TEIF5))
-  {
-    //Disable DMA channels
-    DMA1_Channel4->CCR&=~ DMA_CCR_EN;
-    DMA1_Channel5->CCR&=~ DMA_CCR_EN;
-  }
-}
 
 void breakpoint(const char * data)
 {
@@ -145,6 +110,38 @@ delay_us(500);
 return *res;
 }
 
+//----------------------------------------------------------
+extern "C" void DMA1_Channel4_IRQHandler(void)
+{
+  if((DMA1->ISR & DMA_ISR_TCIF4) == DMA_ISR_TCIF4)
+  {
+    DMA1->IFCR|= DMA_IFCR_CTCIF4;
+   //dma_usart1::fl_tx = 1;
+   dma_usart1._fl_tx=1;    
+  }
+  else if((DMA1->ISR & DMA_ISR_TEIF4)== DMA_ISR_TEIF4)
+  {
+    //Disable DMA channels
+    DMA1_Channel4->CCR&=~ DMA_CCR_EN;
+    DMA1_Channel5->CCR&=~ DMA_CCR_EN;
+  }
+}
+//----------------------------------------------------------
+extern "C" void DMA1_Channel5_IRQHandler(void)
+{
+  if(READ_BIT(DMA1->ISR, DMA_ISR_TCIF5) == (DMA_ISR_TCIF5))
+  {
+    DMA1->IFCR|= DMA_IFCR_CTCIF5;
+    dma_usart1._fl_rx = 1;
+  }
+  else if(READ_BIT(DMA1->ISR, DMA_ISR_TEIF5) == (DMA_ISR_TEIF5))
+  {
+    //Disable DMA channels
+    DMA1_Channel4->CCR&=~ DMA_CCR_EN;
+    DMA1_Channel5->CCR&=~ DMA_CCR_EN;
+  }
+}
+//----------------------------------------------------------
 
 void eth_config_out()
 {
@@ -335,29 +332,14 @@ uint16_t error[32]={0,};
 volatile uint8_t buf[33][2]={{0,0},};
 
 
-typedef unsigned char uint8_t;
-uint8_t gencrc(uint8_t *data, size_t len)
-{
-    uint8_t crc = 0x00;
-    size_t i, j;
-    for (i = 0; i < len; i++) {
-        crc ^= data[i];
-        for (j = 0; j < 8; j++) {
-            if ((crc & 0x80) != 0)
-                crc = (uint8_t)((crc << 1) ^ 0x07);
-            else
-                crc <<= 1;
-        }
-    }
-    return crc;
-}
+
 
 int main()
 {
 
 gpio_init();
 uart1.usart_init();
-dma_usart1.DMA1_Init();
+//dma_usart1.DMA1_Init();
 
 
 //AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
@@ -391,16 +373,18 @@ for(int i=0;i<16;i++)
 //sprintf(str,"%02X",test_data[i]);//%d  02X
 uart1.uart_tx_byte(test_data[i]);
 }*/
-dma_usart1.usart_rx((uint8_t*)rx_str);
-//USART_TX((uint8_t*)rx_str,sizeof(rx_str));
-dma_usart1.usart_tx((uint8_t*)rx_str);
 
+//USART_TX((uint8_t*)rx_str,sizeof(rx_str));
+//dma_usart1.usart_tx((uint8_t*)rx_str);
+char rx_str[30]={0,}, tx_str[30], tmp_str[10];
 while(1)
 {
-for(int k=1;k<33;k++)
+//dma_usart1.usart_rx((uint8_t*)rx_str);
+//USART_RX_TX_Str (uint8_t* rx_dt);
+/*for(int k=1;k<33;k++)
 {
   flex_cable(k);
-}
+}*/
 delay_ms(50);
 }
 }
