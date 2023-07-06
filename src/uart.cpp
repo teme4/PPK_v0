@@ -2,12 +2,8 @@
 #include "uart.hpp"
 #include <string.h>
 
-
-
 uint8_t len=0;
 uint8_t RX_data[32];
-
-
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte( uint8_t data)
@@ -24,21 +20,7 @@ while(len--)
 {
 uart_tx_byte(*data++);
 }
-}  
-
-
-
-
-/*
-void uart_tx_data(unsigned char * data)
-{
-len = strlen(data); 
-while(len--)
-{
-uart_tx_byte(*data++);
 }
-}
-*/
 
 /*Enter*/
 void usart::uart_enter()
@@ -57,38 +39,10 @@ USART1->CR3  = 0;
 USART1->CR2 =  0;
 USART1->CR1  = 0;
 USART1->BRR = 70;//625     256000 //31
-//USART1->CR1 |= USART_CR1_UE| USART_CR1_RE |USART_CR1_TE;
 USART1->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE |USART_CR1_TE; 
-//USART1->CR2&=~ (USART_CR2_LINEN | USART_CR2_CLKEN);
-//USART1->CR3|=USART_CR3_DMAT|USART_CR3_DMAR;
-//USART1->SR = 1<<USART_SR_PE_Pos;//625     256000 //31
-//USART1->SR |=USART_SR_PE;
-
 NVIC_EnableIRQ(USART1_IRQn);
 __enable_irq();
-
 }
-//extern  char rx_str[30], tx_str[30], tmp_str[10];
-
-
-/*
-uint16_t USART_RX_TX_Str (uint8_t* tx_dt, uint8_t* rx_dt)
-{
-  uint16_t ind = 0;
-  while (READ_BIT(USART1->SR, USART_SR_RXNE) != (USART_SR_RXNE)) {}
-  rx_dt[ind] = (uint8_t)(USART1->DR & 0x00FF);
-  while (READ_BIT(USART1->SR, USART_SR_TXE) != (USART_SR_TXE)) {}
-  USART1->DR = (uint16_t)*(uint8_t*)(tx_dt+ind);
-  while(rx_dt[ind])
-  {
-    ind++;
-    while (READ_BIT(USART1->SR, USART_SR_RXNE) != (USART_SR_RXNE)) {}
-    rx_dt[ind] = (uint8_t)(USART1->DR & 0x00FF);
-    while (READ_BIT(USART1->SR, USART_SR_TXE) != (USART_SR_TXE)) {}
-    USART1->DR = (uint16_t)*(uint8_t*)(tx_dt+ind);
-  }
-  return ind;
-}*/
 
 typedef unsigned char uint8_t;
 uint8_t gencrc(uint8_t *data, size_t len)
@@ -125,7 +79,7 @@ extern "C" void USART1_IRQHandler()
         flag_pream2=0;
         counter=0;
         RX_data[1]=0;
-        }      
+        }
     }
 
     if(RX_data[0]==0xAA)
@@ -138,7 +92,7 @@ extern "C" void USART1_IRQHandler()
         counter=0;
         RX_data[0]=0;
     }
-   
+
     if((flag_pream1==1)&&(flag_pream2==1)&&(counter>=3))
     {
       crc = gencrc(RX_data,3);

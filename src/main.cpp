@@ -292,31 +292,6 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
     SPIx->CR1 |= static_cast<uint32_t>(SPE);
                       }
 
-
-
-                          // RegDMACR::RXDMA_DIS,
-                         // RegDMACR::TXDMA_DIS);
-
-void init_SPI1(SPI_TypeDef*SPIx )
-{
-   //SPI1->CR1 |= SPI_CR1_BIDIMODE;          // 1 line
-   //SPI1->CR1 |= SPI_CR1_BIDIOE;            // MOSI
-   SPI1->CR1 |= SPI_CR1_BR;                //Baud rate = Fpclk/4 = 30/4 = 7.5 ???
-   SPI1->CR1 |= SPI_CR1_DFF;               //16 ??? ???????
-   SPI1->CR1 &= ~SPI_CR1_CPOL;             //Polarity signal CPOL = 0;
-   SPI1->CR1 &= ~SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
-
-/*
-   SPI1->CR1 |=SPI_CR1_CPOL;             //Polarity signal CPOL = 0;
-   SPI1->CR1 |=SPI_CR1_CPHA;             //Phase signal    CPHA = 0;
-*/
-
-   SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI; // ???????? ??? ??? ????? ??????. Nss ????????? ?????? ??? ??????
-   SPI1->CR1 |= SPI_CR1_MSTR;              //Mode Master
-   SPI1->CR2 |= SPI_CR2_SSOE;
-   SPI1->CR1 |= SPI_CR1_SPE;                //Enable SPI2
-}
-
 void spi_transmit(uint16_t data)
 {
 while (!(SPI1->SR & SPI_SR_TXE));
@@ -324,67 +299,35 @@ SPI1->DR = data ;
 delay_ms(1);
 }
 
-
-uint16_t pin_mask[8]={0,1,2,4,8,16,32,64};
 uint16_t error[32]={0,};
-
-
-volatile uint8_t buf[33][2]={{0,0},};
-
-
 
 
 int main()
 {
-
 gpio_init();
 uart1.usart_init();
-//dma_usart1.DMA1_Init();
-
-
-//AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
-//gpio_stm32f103RC.gpio_conf(GPIOA,WR,gpio_stm32f103RC.gpio_mode_pp_10);
-
-
-
 
    SettingsSPI(SPI1,
-                      RegCR1::ACTIVE,
-                          RegCR1::MASTER,
-                          1 /*Mbps*/,
-                          RegCR1::SPI_MODE3,//3
-                          RegCR1::DFF8bit,
+                RegCR1::ACTIVE,
+                  RegCR1::MASTER,
+                    1 /*Mbps*/,
+                      RegCR1::SPI_MODE3,
+                        RegCR1::DFF8bit,
                           RegCR1::MSBF);
-
-
-
-
-  delay_ms(50);
 
 uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x01,0xAB,0xCD,0xEF,0x00,0x01,0x02,0x03,0x00,0x01,0x02,0x03,0x00};
 //AA 55 01 AB CD EF 00 01 02 03 00 01 02 03 F6
 
-
-/*
-test_data[14]= gencrc(test_data,14);
-for(int i=0;i<16;i++)
-{
-//sprintf(str,"%02X",test_data[i]);//%d  02X
-uart1.uart_tx_byte(test_data[i]);
-}*/
-
-//USART_TX((uint8_t*)rx_str,sizeof(rx_str));
-//dma_usart1.usart_tx((uint8_t*)rx_str);
-char rx_str[30]={0,}, tx_str[30], tmp_str[10];
 while(1)
 {
-//dma_usart1.usart_rx((uint8_t*)rx_str);
-//USART_RX_TX_Str (uint8_t* rx_dt);
-/*for(int k=1;k<33;k++)
+
+
+for(int k=1;k<33;k++)
 {
   flex_cable(k);
-}*/
+}
+
 delay_ms(50);
 }
 }
