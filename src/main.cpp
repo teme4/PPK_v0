@@ -301,6 +301,23 @@ delay_ms(1);
 
 uint16_t error[32]={0,};
 
+uint8_t dof_check()
+{
+uint8_t dof_pins[21]={0,};
+for(int k=1;k<21;k++)
+{
+  flex_cable(k);
+  if(res[9]==dof[k])
+  dof_pins[k]=1;
+   if(res[10]==dof[k])
+  dof_pins[k]=1;
+   if(res[11]==dof[k])
+  dof_pins[k]=1;
+}
+return *dof_pins;
+}
+
+
 
 int main()
 {
@@ -322,12 +339,12 @@ uint8_t test_data[16]={0xAA,0x55,0x01,0xAB,0xCD,0xEF,0x00,0x01,0x02,0x03,0x00,0x
 while(1)
 {
 
-
+/*
 for(int k=1;k<33;k++)
 {
   flex_cable(k);
-}
-
+}*/
+dof_check();
 delay_ms(50);
 }
 }

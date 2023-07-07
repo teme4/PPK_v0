@@ -32,34 +32,59 @@ stm32f103.set_pin_state(GPIOD,EN_1,0);
 }
 
 
-uint16_t set_pin_HC74_595(uint8_t val)
+void set_pin_HC74_595(uint8_t _val,uint8_t state)
 {
-if((val>=1)&&(val<=8))
+   uint8_t mask,val;
+  
+//uint8_t revers=0x00;
+//revers=~(pin_HC595[5]);
+if(state==1)
 {
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(pin_HC595[val]);
+  mask=0x00;
+}
+if(state==0)
+{
+  mask=0xFF;
+}
+
+if((_val>=1)&&(_val<=8))
+{
+  HC74_595(mask);
+  HC74_595(mask);
+  HC74_595(mask);
+  if(state==1)
+    HC74_595(~pin_HC595[_val]);
+  else
+      HC74_595(pin_HC595[_val]);
  }
-if((val>=9)&&(val<=16))
+if((_val>=9)&&(_val<=16))
 {
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(pin_HC595[val]);
-  HC74_595(0xFF);
+  HC74_595(mask);
+  HC74_595(mask);
+   if(state==1)
+    HC74_595(~pin_HC595[_val]);
+  else
+   HC74_595(pin_HC595[_val]);
+   HC74_595(mask);
 }
-if((val>=17)&&(val<=24))
+if((_val>=17)&&(_val<=24))
 {
-  HC74_595(0xFF);
-  HC74_595(pin_HC595[val]);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
+  HC74_595(mask);
+   if(state==1)
+    HC74_595(~pin_HC595[_val]);
+  else
+      HC74_595(pin_HC595[_val]);
+  HC74_595(mask);
+  HC74_595(mask);
 }
-if((val>=25)&&(val<=32))
+if((_val>=25)&&(_val<=32))
 {
-  HC74_595(pin_HC595[val]);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
-  HC74_595(0xFF);
+   if(state==1)
+    HC74_595(~pin_HC595[_val]);
+  else
+      HC74_595(pin_HC595[_val]);
+  HC74_595(mask);
+  HC74_595(mask);
+  HC74_595(mask);
 }
 }
