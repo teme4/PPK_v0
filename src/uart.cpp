@@ -4,6 +4,7 @@
 
 uint8_t len=0;
 uint8_t RX_data[32];
+uint8_t dof_check();
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte( uint8_t data)
@@ -96,12 +97,145 @@ extern "C" void USART1_IRQHandler()
     if((flag_pream1==1)&&(flag_pream2==1)&&(counter>=3))
     {
       crc = gencrc(RX_data,3);
-      counter=0;
-    }
+     counter++;
+if(RX_data[3]==crc)
+{
+switch (RX_data[2])
+{
+case 0x01:
+    
+    counter=0; 
+    break;
+case 0x02:
+    
+    counter=0; 
+    break;
+case 0x03:
+    
+    counter=0; 
+    break;
+case 0x04:
+    
+    counter=0; 
+    break;
+case 0x05:
+    
+    counter=0; 
+    break;
+case 0x06:
+    
+    counter=0; 
+    break;
+case 0x07:
+    
+    counter=0; 
+    break;
+case 0x08:
+    
+    counter=0; 
+    break;
+case 0x09:
+    
+    counter=0; 
+    break;
+case 0x10:
+    
+    counter=0; 
+    break;
+case 0x11:
+    dof_check();
+    counter=0; 
+    break;
+case 0x12:
+    
+    counter=0; 
+    break;
+case 0x13:
+    
+    counter=0; 
+    break;
+case 0x14:
+    
+    counter=0; 
+    break;
+case 0x15:
+    
+    counter=0; 
+    break;
+case 0x16:
+    
+    counter=0; 
+    break;
 
-    if(RX_data[4]==crc)
-    {
 
-    }
+
+default:
+    break;
+}
+}
+
+}
  counter++;
 }
+/*
+    if((RX_data[3]==crc) &&(RX_data[2]==0x01)) //NKK-MLI
+    {
+        counter=0; 
+    }
+     if((RX_data[3]==crc) &&(RX_data[2]==0x02)) //NKK-SW
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x03)) //SW1-SW2
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x04)) //PKU-KM1
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x05)) //PKU-KM2
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x06)) //PKU-SD-SC
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x07)) //NKK-KM
+    {
+        counter=0; 
+    }
+     if((RX_data[3]==crc) &&(RX_data[2]==0x08)) //PKU-NKK(UART)
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x09)) //PKU-NKK(BATT)
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x10)) //PKU- DOF-NKK
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x11)) //PKU- DOF-DOF
+    {
+        dof_check();
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x12)) //PKU-SD-SC
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x13)) //PKU-KM2
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x14)) //PKU-SD-SC
+    {
+        counter=0; 
+    }
+    if((RX_data[3]==crc) &&(RX_data[2]==0x15)) //PKU-SD-SC
+    {
+        counter=0; 
+    }*/

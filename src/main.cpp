@@ -182,7 +182,7 @@ uint8_t state[8]={0};
   stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
   delay_ms(1000);
   stm32f103.set_pin_state(ports_eth[i],pins_eth_out[i],1);
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],1); 
+  stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
   }
   //otchet
   eth_config_in();
@@ -304,17 +304,40 @@ uint16_t error[32]={0,};
 uint8_t dof_check()
 {
 uint8_t dof_pins[21]={0,};
+uint8_t dof_state[25]={1,};
 for(int k=1;k<21;k++)
 {
   flex_cable(k);
   if(res[9]==dof[k])
-  dof_pins[k]=1;
+  dof_pins[k]=0x00;
    if(res[10]==dof[k])
-  dof_pins[k]=1;
+  dof_pins[k]=0x00;
    if(res[11]==dof[k])
-  dof_pins[k]=1;
+  dof_pins[k]=0x00;
 }
-return *dof_pins;
+dof_state[0]=0xAA;
+dof_state[1]=0x55;
+dof_state[2]=0x11;
+for(int k=3;k<23;k++)
+{
+dof_state[k]=dof_pins[k-2];
+}
+dof_state[9]=0x77;
+dof_state[11]=0x77;
+
+for(int z=0;z<21;z++)
+{
+if(dof_state[z]==0x77)
+{
+dof_state[z]=dof_state[z+1];
+}
+}
+dof_state[21]=gencrc(dof_state,21);
+for(int k=0;k<22;k++)
+{
+uart1.uart_tx_byte(dof_state[k]);
+}
+return *dof_state;
 }
 
 
@@ -333,19 +356,38 @@ uart1.usart_init();
                           RegCR1::MSBF);
 
 uint8_t data[32]={0,};
-uint8_t test_data[16]={0xAA,0x55,0x01,0xAB,0xCD,0xEF,0x00,0x01,0x02,0x03,0x00,0x01,0x02,0x03,0x00};
-//AA 55 01 AB CD EF 00 01 02 03 00 01 02 03 F6
+uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
+//AA 55 02 00 01 02 3B 00 01 02 53 F0
+//0x00 = OK
+//0x01 = K3
+//0x02 = OB
+//0x3x = HP
+/*
+delay_ms(500);
+test_data[12]=gencrc(test_data ,12);
+for(int k=0;k<12;k++)
+{
+uart1.uart_tx_byte(test_data[k]);
+}*/
+
+
+
+//dof_check();
 
 while(1)
 {
+
+
+
+
 
 /*
 for(int k=1;k<33;k++)
 {
   flex_cable(k);
 }*/
-dof_check();
-delay_ms(50);
+//dof_check();
+//delay_ms(50);
 }
 }
 
