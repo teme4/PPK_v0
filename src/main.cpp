@@ -309,12 +309,29 @@ for(int k=1;k<21;k++)
 {
   flex_cable(k);
   if(res[9]==dof[k])
-  dof_pins[k]=0x00;
-   if(res[10]==dof[k])
-  dof_pins[k]=0x00;
-   if(res[11]==dof[k])
-  dof_pins[k]=0x00;
+  dof_pins[k]=k;//0x00
+  if(res[10]==dof[k])
+  dof_pins[k]=k;
+  if(res[11]==dof[k])
+  dof_pins[k]=k;
 }
+  /**/
+  for(int k=1;k<21;k++)
+  {
+  if(k==7)
+  {
+  dof_pins[7]=dof_pins[8]-1;
+  }
+  if(k==8)
+  {
+   dof_pins[8]=dof_pins[10]-2;
+  }
+  if(k>8)
+   {
+   dof_pins[k]=dof_pins[k+2]-2;
+  }
+  }
+
 dof_state[0]=0xAA;
 dof_state[1]=0x55;
 dof_state[2]=0x11;
@@ -322,14 +339,16 @@ for(int k=3;k<23;k++)
 {
 dof_state[k]=dof_pins[k-2];
 }
-dof_state[9]=0x77;
-dof_state[11]=0x77;
 
-for(int z=0;z<21;z++)
+for(int k=3;k<21;k++)
 {
-if(dof_state[z]==0x77)
+if(dof_state[k]==0)
 {
-dof_state[z]=dof_state[z+1];
+dof_state[k]=0x02;
+}
+if(dof_state[k]==k-2)
+{
+  dof_state[k]=0;// state ok
 }
 }
 dof_state[21]=gencrc(dof_state,21);

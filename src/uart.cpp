@@ -144,7 +144,7 @@ case 0x10:
     break;
 case 0x11:
     dof_check();
-    counter=0; 
+    flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
     break;
 case 0x12:
     
@@ -170,7 +170,7 @@ case 0x16:
 
 
 default:
-    break;
+break;
 }
 }
 
