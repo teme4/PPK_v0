@@ -315,44 +315,19 @@ for(int k=1;k<21;k++)
   if(res[11]==dof[k])
   dof_pins[k]=k;
 }
-  /**/
-  for(int k=1;k<21;k++)
-  {
-  if(k==7)
-  {
-  dof_pins[7]=dof_pins[8]-1;
-  }
-  if(k==8)
-  {
-   dof_pins[8]=dof_pins[10]-2;
-  }
-  if(k>8)
-   {
-   dof_pins[k]=dof_pins[k+2]-2;
-  }
-  }
-
 dof_state[0]=0xAA;
 dof_state[1]=0x55;
 dof_state[2]=0x11;
-for(int k=3;k<23;k++)
-{
-dof_state[k]=dof_pins[k-2];
-}
+  for(int z=1;z<21;z++)
+  {
+   if(dof_pins[z]==dof_[z])
+    {
+      dof_state[2+z]=0x0;      
+    }
+  }
 
-for(int k=3;k<21;k++)
-{
-if(dof_state[k]==0)
-{
-dof_state[k]=0x02;
-}
-if(dof_state[k]==k-2)
-{
-  dof_state[k]=0;// state ok
-}
-}
-dof_state[21]=gencrc(dof_state,21);
-for(int k=0;k<22;k++)
+dof_state[23]=gencrc(dof_state,23);
+for(int k=0;k<24;k++)
 {
 uart1.uart_tx_byte(dof_state[k]);
 }
