@@ -326,8 +326,9 @@ for(int k=1;k<21;k++)
   km_pins[k]=k;
 }
 
-int index=0;
-while(index<14)
+int index=0,flag=0;
+
+while(1)
 {
 if(km_pins[index]==0)
 {
@@ -336,8 +337,14 @@ for(int i=index;i<21;i++)
   km_pins[i]=km_pins[i+1];
 }
 }
-//if(km_pins[index]!=0)
 index++;
+if(index>20)
+{
+if(flag>2)
+break;  
+index=0;
+flag++;
+}
 }
 km_state[0]=0xAA;
 km_state[1]=0x55;
@@ -462,7 +469,7 @@ uart1.uart_tx_byte(test_data[k]);
 
 while(1)
 {
-
+km_check();
 //flex_cable(1);
 }
 }
