@@ -304,12 +304,18 @@ uint16_t error[32]={0,};
 uint8_t dof_check()
 {
 uint8_t dof_pins[21]={0,};
-uint8_t dof_state[25]={1,};
+uint8_t dof_state[25]={'z',};
+
+for(int k=1;k<21;k++)
+{
+dof_state[k]='z';
+}
+
 for(int k=1;k<21;k++)
 {
   flex_cable(k);
   if(res[9]==dof[k])
-  dof_pins[k]=k;//0x00
+  dof_pins[k]=k;
   if(res[10]==dof[k])
   dof_pins[k]=k;
   if(res[11]==dof[k])
@@ -318,11 +324,11 @@ for(int k=1;k<21;k++)
 dof_state[0]=0xAA;
 dof_state[1]=0x55;
 dof_state[2]=0x11;
-  for(int z=1;z<21;z++)
+  for(int q=1;q<21;q++)
   {
-   if(dof_pins[z]==dof_[z])
+   if(dof_pins[q]==dof_[q])
     {
-      dof_state[2+z]=0x0;      
+      dof_state[2+q]=0x0;
     }
   }
 

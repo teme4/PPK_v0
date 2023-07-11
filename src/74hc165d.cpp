@@ -56,4 +56,4 @@ uint16_t flex_cable(uint8_t val)
     {
       pin_bits[val][0]=res[3];
     }
- } 
+ }
