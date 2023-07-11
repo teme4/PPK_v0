@@ -5,7 +5,7 @@
 uint8_t len=0;
 uint8_t RX_data[32];
 uint8_t dof_check();
-
+uint8_t km_check();
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte( uint8_t data)
 {
@@ -126,11 +126,11 @@ case 0x02:
     counter=0; 
     break;
 case 0x03:
-    
+    km_check();
     counter=0; 
     break;
 case 0x04:
-    
+    km_check();
     counter=0; 
     break;
 case 0x05:

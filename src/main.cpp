@@ -299,19 +299,76 @@ SPI1->DR = data ;
 delay_ms(1);
 }
 
-uint16_t error[32]={0,};
+
+uint8_t dof_pins[21]={0,};
+uint8_t km_pins[21]={0,};
+uint8_t km_state[24]={1,};
+uint8_t dof_state[24]={'z',};
+uint8_t dof_state_[24]={'x',};
+
+uint8_t km_check()
+{
+for(int k=0;k<21;k++)
+{
+km_state[k]=1;
+km_pins[k]=0;
+}
+for(int k=1;k<21;k++)
+{
+  flex_cable(k);
+  if(res[4]==km[k])
+  km_pins[k]=k;
+  if(res[5]==km[k])
+  km_pins[k]=k;
+  if(res[7]==km[k])
+  km_pins[k]=k;
+  if(res[8]==km[k])
+  km_pins[k]=k;
+}
+
+int index=0;
+while(index<14)
+{
+if(km_pins[index]==0)
+{
+for(int i=index;i<21;i++)
+{
+  km_pins[i]=km_pins[i+1];
+}
+}
+//if(km_pins[index]!=0)
+index++;
+}
+km_state[0]=0xAA;
+km_state[1]=0x55;
+km_state[2]=0x04;
+for(int i=0;i<14;i++)
+{
+if(km_pins[i]==km_[i])
+km_state[i+3]=0x00;
+}
+for(int i=0;i<14;i++)
+{
+  if(km_state[i]==1)
+    km_state[i]=0x01;
+}
+km_state[17]=gencrc(km_state,17);
+for(int k=0;k<18;k++)
+{
+uart1.uart_tx_byte(km_state[k]);
+}
+return *km_state;
+}
+
+
 
 uint8_t dof_check()
 {
-uint8_t dof_pins[21]={0,};
-uint8_t dof_state[25]={'z',};
-
 for(int k=1;k<21;k++)
 {
 dof_state[k]='z';
 }
-
-for(int k=1;k<21;k++)
+for(int k=0;k<21;k++)
 {
   flex_cable(k);
   if(res[9]==dof[k])
@@ -321,23 +378,54 @@ for(int k=1;k<21;k++)
   if(res[11]==dof[k])
   dof_pins[k]=k;
 }
-dof_state[0]=0xAA;
-dof_state[1]=0x55;
-dof_state[2]=0x11;
   for(int q=1;q<21;q++)
   {
-   if(dof_pins[q]==dof_[q])
+   if(q>8)
     {
-      dof_state[2+q]=0x0;
+      dof_state[q]=dof_state[q+1]; //state
     }
   }
+  for(int q=1;q<21;q++)
+  {
+   if(q>9)
+    {
+      dof_state[q]=dof_state[q+1]; //state
+    }
+  }
+   for(int q=1;q<19;q++)
+  {
+   if(dof_pins[q]=='z')
+    {
+      dof_state[2+q]=0x02; //state
+    }
+  }
+ /*for(int q=3;q<19;q++)
+  {
+   if(dof_pins[q-3]==dof_[q-3])
+    {
+      dof_state[q]=0x0;  //state ok
+    }
+  }*/
+  for(int g=0;g<24;g++)
+  {
+   dof_state_[g+3]=dof_state[g];
+  }
+ 
+dof_state_[0]=0xAA;
+dof_state_[1]=0x55;
+dof_state_[2]=0x11;
+ 
 
-dof_state[23]=gencrc(dof_state,23);
+  
+
+
+
+dof_state_[21]=gencrc(dof_state_,20);
 for(int k=0;k<24;k++)
 {
-uart1.uart_tx_byte(dof_state[k]);
+uart1.uart_tx_byte(dof_state_[k]);
 }
-return *dof_state;
+return *dof_state_;
 }
 
 
@@ -372,22 +460,10 @@ uart1.uart_tx_byte(test_data[k]);
 
 
 
-//dof_check();
-
 while(1)
 {
 
-
-
-
-
-/*
-for(int k=1;k<33;k++)
-{
-  flex_cable(k);
-}*/
-//dof_check();
-//delay_ms(50);
+//flex_cable(1);
 }
 }
 
