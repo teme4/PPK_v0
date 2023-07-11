@@ -311,26 +311,28 @@ uint8_t km_check()
 for(int k=0;k<21;k++)
 {
 km_state[k]=1;
-km_pins[k]=0;
+km_pins[k]='z';
 }
 for(int k=1;k<21;k++)
 {
   flex_cable(k);
   if(res[4]==km[k])
   km_pins[k]=k;
-  if(res[5]==km[k])
+  else if(res[5]==km[k])
   km_pins[k]=k;
-  if(res[7]==km[k])
+  else if(res[7]==km[k])
   km_pins[k]=k;
-  if(res[8]==km[k])
+  else if(res[8]==km[k])
   km_pins[k]=k;
+  else 
+  km_pins[k]='n';
 }
 
-int index=0,flag=0;
-
+int index=0,flag=0,pin=0;
+//***********Выкинуть неиспользуемые элементы массива**********************************//
 while(1)
 {
-if(km_pins[index]==0)
+if(km_pins[index]=='n')
 {
 for(int i=index;i<21;i++)
 {
@@ -346,19 +348,42 @@ index=0;
 flag++;
 }
 }
+//*********************************************//
 km_state[0]=0xAA;
 km_state[1]=0x55;
 km_state[2]=0x04;
-for(int i=0;i<14;i++)
+
+for(int i=1;i<14;i++)
+{
+  if(km_state[i]==0x0)
+    km_state[i]=0x02;
+}
+
+for(int i=1;i<18;i++)
 {
 if(km_pins[i]==km_[i])
-km_state[i+3]=0x00;
-}
-for(int i=0;i<14;i++)
 {
-  if(km_state[i]==1)
-    km_state[i]=0x01;
+km_state[i+2]=0x00;
 }
+else if (km_pins[i]!=km_[i])
+{
+for(int j=0;j<14;j++)
+{
+  if(km_pins[i]==km_pins[j])
+  {
+  pin=km_pins[j];
+  km_state[i+2]=pin<<2|0x03;
+  }
+   
+}
+}
+else
+{
+km_state[i+2]=0x03;
+}
+
+}
+
 km_state[17]=gencrc(km_state,17);
 for(int k=0;k<18;k++)
 {
@@ -470,6 +495,7 @@ uart1.uart_tx_byte(test_data[k]);
 while(1)
 {
 km_check();
+delay_ms(3000);
 //flex_cable(1);
 }
 }
