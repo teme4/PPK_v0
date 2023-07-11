@@ -66,7 +66,22 @@ uint8_t flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
 
 extern "C" void USART1_IRQHandler()
 {
-    data = (uint8_t)(USART1->DR);
+/*
+while ((USART1->SR & 0b10000000) == 0) {}//ждем опустошения USART1->DR
+		RX_data[counter]=USART1->DR; // отправить символ
+		counter++;	// перейти на следующий символ
+		if(counter==4)
+        counter = 0;//обнулить если конец строки
+		for(long i=0;i<1000000;i++){} // задержка
+    */
+
+
+
+
+ //while ((USART1->SR & USART_SR_RXNE) == 0)
+   
+   USART1->SR |= USART_SR_RXNE;
+ data = (uint8_t)(USART1->DR);
     RX_data[counter]=data;
     if(RX_data[1]==0x55 && (flag_pream1==1))
     {
@@ -144,7 +159,7 @@ case 0x10:
     break;
 case 0x11:
     dof_check();
-    flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
+    //flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
     break;
 case 0x12:
     
@@ -167,8 +182,6 @@ case 0x16:
     counter=0; 
     break;
 
-
-
 default:
 break;
 }
@@ -177,65 +190,4 @@ break;
 }
  counter++;
 }
-/*
-    if((RX_data[3]==crc) &&(RX_data[2]==0x01)) //NKK-MLI
-    {
-        counter=0; 
-    }
-     if((RX_data[3]==crc) &&(RX_data[2]==0x02)) //NKK-SW
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x03)) //SW1-SW2
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x04)) //PKU-KM1
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x05)) //PKU-KM2
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x06)) //PKU-SD-SC
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x07)) //NKK-KM
-    {
-        counter=0; 
-    }
-     if((RX_data[3]==crc) &&(RX_data[2]==0x08)) //PKU-NKK(UART)
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x09)) //PKU-NKK(BATT)
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x10)) //PKU- DOF-NKK
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x11)) //PKU- DOF-DOF
-    {
-        dof_check();
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x12)) //PKU-SD-SC
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x13)) //PKU-KM2
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x14)) //PKU-SD-SC
-    {
-        counter=0; 
-    }
-    if((RX_data[3]==crc) &&(RX_data[2]==0x15)) //PKU-SD-SC
-    {
-        counter=0; 
-    }*/
+
