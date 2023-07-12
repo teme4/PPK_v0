@@ -486,27 +486,23 @@ return *dof_state_;
 
 uint8_t flex_check()
 {
-for(int k=1;k<21;k++)
-{
-km_state[k]=1;
-km_pins[k]='z';
-}
 for(int k=0;k<21;k++)
 {
+km_state[k]=2;
+km_pins[k]=0;
+}
+for(int k=1;k<21;k++)
+{
   flex_cable(k,0);
-  if(res[5]==0x10 && res[8]==0x10)
-  {
-  km_pins[21]=1;
-  }
+  delay_ms(3);
   if(res[0]==flex_16[k])
   km_pins[k]=k;
   if(res[1]==flex_16[k])
   km_pins[k]=k;
   if(res[2]==flex_16[k])
   km_pins[k]=k;
- /* if(res[0]==0 && res[1]==0 && res[2]==0)
-  km_pins[k]='N';*/
 }
+
 delay_ms(1);
 //*********************************************//
 uint8_t pin=0;
@@ -515,10 +511,6 @@ for(int i=0;i<21;i++)
 if(km_pins[i]==flex_16_[i])
 {
 km_state[i+3]=0x00;
-}
-if(km_pins[i]=='z')
-{
-km_state[i+3]=0x02;
 }
 delay_ms(1);
 }
