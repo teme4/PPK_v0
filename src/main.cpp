@@ -308,31 +308,56 @@ uint8_t dof_state_[24]={'x',};
 
 uint8_t km_check()
 {
-for(int k=0;k<21;k++)
+for(int k=1;k<21;k++)
 {
 km_state[k]=1;
 km_pins[k]='z';
 }
-for(int k=1;k<21;k++)
+for(int k=0;k<21;k++)
 {
-  flex_cable(k);
+  flex_cable(k,1);
+  if(res[5]==0x10 && res[8]==0x10)
+  {
+  km_pins[21]=1;
+  }
   if(res[4]==km[k])
   km_pins[k]=k;
-  else if(res[5]==km[k])
+  if(res[5]==km[k])
   km_pins[k]=k;
-  else if(res[7]==km[k])
+  if(res[7]==km[k])
   km_pins[k]=k;
-  else if(res[8]==km[k])
+  if(res[8]==km[k])
   km_pins[k]=k;
-  else 
-  km_pins[k]='n';
+  if(res[4]==0 && res[5]==0 && res[7]==0 && res[8]==0)
+  km_pins[k]='N';
+  delay_ms(1);
 }
-
+km_pins[1]=km_pins[21];
+if(km_pins[1]==0)
+km_pins[1]='N';
+delay_ms(1);
+//поменять местами четные и нечетные элементы//
+uint8_t temp=0;
+for(int i=1;i<21;i++)
+{
+temp=km_pins[i];
+km_pins[i]=km_pins[i+1];
+km_pins[i+1]=temp;
+i++;
+}
+delay_ms(1);
+//занулим не используемые пины//
+uint8_t no_pin_km[6]={0,5,6,7,8,20};
+for(int i=0;i<6;i++)
+{
+  km_pins[no_pin_km[i]]=0;
+}
+delay_ms(1);
 int index=0,flag=0,pin=0;
 //***********Выкинуть неиспользуемые элементы массива**********************************//
 while(1)
 {
-if(km_pins[index]=='n')
+if(km_pins[index]==0)
 {
 for(int i=index;i<21;i++)
 {
@@ -343,49 +368,47 @@ index++;
 if(index>20)
 {
 if(flag>2)
-break;  
+break;
 index=0;
 flag++;
 }
 }
 //*********************************************//
-km_state[0]=0xAA;
-km_state[1]=0x55;
-km_state[2]=0x04;
-
-for(int i=1;i<14;i++)
-{
-  if(km_state[i]==0x0)
-    km_state[i]=0x02;
-}
-
-for(int i=1;i<18;i++)
+delay_ms(1);
+for(int i=0;i<15;i++)
 {
 if(km_pins[i]==km_[i])
 {
-km_state[i+2]=0x00;
+km_state[i+3]=0x00;
 }
-else if (km_pins[i]!=km_[i])
+if(km_pins[i]=='N')
 {
-for(int j=0;j<14;j++)
+km_state[i+3]=0x02;
+}
+delay_ms(1);
+if (km_pins[i]!=km_[i] && km_pins[i]!='N')
+{
+for(int j=1;j<20;j++)
 {
   if(km_pins[i]==km_pins[j])
   {
   pin=km_pins[j];
+  if(pin==0)
+  {
+  km_state[i+2]=0x02;
+  }
+  else
   km_state[i+2]=pin<<2|0x03;
   }
-   
 }
 }
-else
-{
-km_state[i+2]=0x03;
 }
 
-}
-
-km_state[17]=gencrc(km_state,17);
-for(int k=0;k<18;k++)
+km_state[0]=0xAA;
+km_state[1]=0x55;
+km_state[2]=0x04;
+km_state[18]=gencrc(km_state,18);
+for(int k=0;k<19;k++)
 {
 uart1.uart_tx_byte(km_state[k]);
 }
@@ -402,7 +425,7 @@ dof_state[k]='z';
 }
 for(int k=0;k<21;k++)
 {
-  flex_cable(k);
+  flex_cable(k,1);
   if(res[9]==dof[k])
   dof_pins[k]=k;
   if(res[10]==dof[k])
@@ -461,6 +484,55 @@ return *dof_state_;
 }
 
 
+uint8_t flex_check()
+{
+for(int k=1;k<21;k++)
+{
+km_state[k]=1;
+km_pins[k]='z';
+}
+for(int k=0;k<21;k++)
+{
+  flex_cable(k,0);
+  if(res[5]==0x10 && res[8]==0x10)
+  {
+  km_pins[21]=1;
+  }
+  if(res[0]==flex_16[k])
+  km_pins[k]=k;
+  if(res[1]==flex_16[k])
+  km_pins[k]=k;
+  if(res[2]==flex_16[k])
+  km_pins[k]=k;
+ /* if(res[0]==0 && res[1]==0 && res[2]==0)
+  km_pins[k]='N';*/
+}
+delay_ms(1);
+//*********************************************//
+uint8_t pin=0;
+for(int i=0;i<21;i++)
+{
+if(km_pins[i]==flex_16_[i])
+{
+km_state[i+3]=0x00;
+}
+if(km_pins[i]=='z')
+{
+km_state[i+3]=0x02;
+}
+delay_ms(1);
+}
+km_state[0]=0xAA;
+km_state[1]=0x55;
+km_state[2]=0x06;
+km_state[19]=gencrc(km_state,19);
+for(int k=0;k<20;k++)
+{
+uart1.uart_tx_byte(km_state[k]);
+}
+return *km_state;
+}
+
 
 int main()
 {
@@ -494,8 +566,13 @@ uart1.uart_tx_byte(test_data[k]);
 
 while(1)
 {
-km_check();
-delay_ms(3000);
+//km_check();
+//for(int i=1;i<21;i++)
+
+flex_check();
+delay_ms(1000);
+
+
 //flex_cable(1);
 }
 }

@@ -9,10 +9,10 @@ volatile uint16_t pin_bits[32][5]={{0,0,0,0,0},};
 extern gpio stm32f103;
 
 
-uint16_t flex_cable(uint8_t val)
+uint16_t flex_cable(uint8_t val,uint8_t state)
 {
   uint8_t chip=13;
-  set_pin_HC74_595(val,1);
+  set_pin_HC74_595(val,state);
   stm32f103.set_pin_state(GPIOB,pl_165,0);
   stm32f103.set_pin_state(GPIOB,pl_165,1);
 

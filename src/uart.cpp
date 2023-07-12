@@ -66,22 +66,8 @@ uint8_t flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
 
 extern "C" void USART1_IRQHandler()
 {
-/*
-while ((USART1->SR & 0b10000000) == 0) {}//ждем опустошения USART1->DR
-		RX_data[counter]=USART1->DR; // отправить символ
-		counter++;	// перейти на следующий символ
-		if(counter==4)
-        counter = 0;//обнулить если конец строки
-		for(long i=0;i<1000000;i++){} // задержка
-    */
-
-
-
-
- //while ((USART1->SR & USART_SR_RXNE) == 0)
-   
    USART1->SR |= USART_SR_RXNE;
- data = (uint8_t)(USART1->DR);
+    data = (uint8_t)(USART1->DR);
     RX_data[counter]=data;
     if(RX_data[1]==0x55 && (flag_pream1==1))
     {
@@ -126,7 +112,7 @@ case 0x02:
     counter=0; 
     break;
 case 0x03:
-    km_check();
+   
     counter=0; 
     break;
 case 0x04:
@@ -134,7 +120,7 @@ case 0x04:
     counter=0; 
     break;
 case 0x05:
-    
+    km_check();
     counter=0; 
     break;
 case 0x06:
