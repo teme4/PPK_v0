@@ -553,11 +553,11 @@ delay_ms(1);
 uint8_t pin=0;
 for(int i=0;i<21;i++)
 {
-  
+  /*
 if(km_pins[i]!=2)
 {
 km_state[i+3]=km_pins[i];
-}
+}*/
 
 if(km_pins[i]==flex_16_[i])
 {
