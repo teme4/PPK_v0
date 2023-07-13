@@ -6,6 +6,8 @@ uint8_t len=0;
 uint8_t RX_data[32];
 uint8_t dof_check();
 uint8_t km_check();
+uint8_t SD_SC_check();
+
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte( uint8_t data)
 {
@@ -124,7 +126,7 @@ case 0x05:
     counter=0; 
     break;
 case 0x06:
-    
+    SD_SC_check();
     counter=0; 
     break;
 case 0x07:

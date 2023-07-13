@@ -484,35 +484,86 @@ return *dof_state_;
 }
 
 
-uint8_t flex_check()
+uint8_t SD_SC_check()
 {
 for(int k=0;k<21;k++)
 {
 km_state[k]=2;
 km_pins[k]=0;
 }
-for(int k=1;k<21;k++)
+for(int k=1;k<17;k++)
 {
   flex_cable(k,0);
-  delay_ms(3);
   if(res[0]==flex_16[k])
   km_pins[k]=k;
   if(res[1]==flex_16[k])
   km_pins[k]=k;
   if(res[2]==flex_16[k])
   km_pins[k]=k;
+  if(res[0]==0xFF && res[1]==0xFF && res[2]==0xFF)
+  {
+  km_pins[k]='N';
+  }
+  if(res[0]!=flex_16[k] && res[1]!=flex_16[k] && res[2]!=flex_16[k])
+  {
+  for(int h=0;h<1;h++)
+  {
+
+  if(res[0]!=0xFF)
+  {
+    for(int l=0;l<7;l++)
+    {
+      if(res[0]==flex_16[l])
+       km_pins[k]=l;
+    } 
+  break;
+  }
+
+  if(res[1]!=0xFF)
+  {
+    for(int l=7;l<15;l++)
+    {
+      if(res[1]==flex_16[l])
+      {
+      l=l<<2;
+      l=l+3;
+      km_pins[k]=l;
+      }
+    }
+  break;
+  }
+
+  if(res[2]!=0xFF)
+  {
+   for(int l=15;l<17;l++)
+    {
+      if(res[2]==flex_16[l])
+       km_pins[k]=l;
+    }
+  break;
+  }
+  }
+  }
 }
+
+
 
 delay_ms(1);
 //*********************************************//
 uint8_t pin=0;
 for(int i=0;i<21;i++)
 {
+  
+if(km_pins[i]!=2)
+{
+km_state[i+3]=km_pins[i];
+}
+
 if(km_pins[i]==flex_16_[i])
 {
 km_state[i+3]=0x00;
 }
-delay_ms(1);
+
 }
 km_state[0]=0xAA;
 km_state[1]=0x55;
@@ -561,8 +612,8 @@ while(1)
 //km_check();
 //for(int i=1;i<21;i++)
 
-flex_check();
-delay_ms(1000);
+
+//delay_ms(1000);
 
 
 //flex_cable(1);
