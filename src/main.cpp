@@ -5,6 +5,7 @@
 #include "string.h"
 #include "hardware_config.hpp"
 #include "math.h"
+#include "delay.hpp"
 
 #include "registers.hpp"
 #include "arial.hpp"
@@ -25,45 +26,6 @@ extern gpio gpio_stm32f103RC;
 uint16_t data_state[32];
 //volatile char rx_str[32];
 char temp[1];
-
-
-#define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
-#define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
-#define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
-
-volatile uint32_t *DWT_CONTROL2 = (uint32_t *)0xE0001000;
-volatile uint32_t *DWT_CYCCNT2 = (uint32_t *)0xE0001004;
-volatile uint32_t *DEMCR2 = (uint32_t *)0xE000EDFC;
-uint32_t Mcounter, count;
-
-void delay_us(uint32_t us)
-{
-   int32_t us_count_tick =  us * (SystemCoreClock/1000000);
-   //разрешаем использовать счётчик
-   SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-   //обнуляем значение счётного регистра
-   DWT_CYCCNT  = 0;
-   //запускаем счётчик
-   DWT_CONTROL |= DWT_CTRL_CYCCNTENA_Msk;
-   while(DWT_CYCCNT < us_count_tick);
-   //останавливаем счётчик
-   DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
-}
-
-void delay_ms(uint32_t ms)
-{
-   int32_t ms_count_tick =  ms * (SystemCoreClock/1000);
-   //разрешаем использовать счётчик
-   SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-   //обнуляем значение счётного регистра
-   DWT_CYCCNT  = 0;
-   //запускаем счётчик
-   DWT_CONTROL|= DWT_CTRL_CYCCNTENA_Msk;
-   while(DWT_CYCCNT < ms_count_tick);
-   //останавливаем счётчик
-   DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
-}
-
 
 void breakpoint(const char * data)
 {
@@ -117,7 +79,7 @@ extern "C" void DMA1_Channel4_IRQHandler(void)
   {
     DMA1->IFCR|= DMA_IFCR_CTCIF4;
    //dma_usart1::fl_tx = 1;
-   dma_usart1._fl_tx=1;    
+   dma_usart1._fl_tx=1;
   }
   else if((DMA1->ISR & DMA_ISR_TEIF4)== DMA_ISR_TEIF4)
   {
@@ -204,7 +166,7 @@ void RCC_init()
 {
    BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
    BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
-   BKP->CSR =0;                                             //ничего важного 
+   BKP->CSR =0;                                             //ничего важного
    PWR->CR |= PWR_CR_DBP;                                   //1: Включен доступ к RTC и резервным регистрам
    RCC->BDCR &=~ RCC_BDCR_BDRST;
    RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
@@ -212,7 +174,7 @@ void RCC_init()
    while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // ждем пока генератор выключится
 
    RCC->CR &=~ RCC_CR_HSEON;                                // выключаем HSE
-   RCC->CR |= RCC_CR_HSION;                                 // включаем HSI генератор 
+   RCC->CR |= RCC_CR_HSION;                                 // включаем HSI генератор
    while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // ждем пока генератор не включится
 
    RCC->CFGR |= RCC_CFGR_SW_HSI;                            // выбрали HSI в качестве системного тактирования
@@ -465,13 +427,11 @@ for(int k=0;k<21;k++)
   {
    dof_state_[g+3]=dof_state[g];
   }
- 
+
 dof_state_[0]=0xAA;
 dof_state_[1]=0x55;
 dof_state_[2]=0x11;
- 
 
-  
 
 
 
@@ -515,7 +475,7 @@ for(int k=1;k<17;k++)
     {
       if(res[0]==flex_16[l])
        km_pins[k]=l;
-    } 
+    }
   break;
   }
 
@@ -546,8 +506,6 @@ for(int k=1;k<17;k++)
   }
 }
 
-
-
 delay_ms(1);
 //*********************************************//
 uint8_t pin=0;
@@ -576,6 +534,18 @@ uart1.uart_tx_byte(km_state[k]);
 return *km_state;
 }
 
+void HC74_595_SPI(uint16_t data)
+{
+uint8_t k=7;
+stm32f103.set_pin_state(GPIOD,EN_1,0);
+//stm32f103.set_pin_state(GPIOC,latcg_pin,0);//pl_165
+stm32f103.set_pin_state(GPIOC,pl_165,0);//pl_165
+spi_transmit(2);
+stm32f103.set_pin_state(GPIOC,pl_165,1);
+//stm32f103.set_pin_state(GPIOC,latcg_pin,1);
+stm32f103.set_pin_state(GPIOD,EN_1,1);
+}
+
 
 int main()
 {
@@ -597,31 +567,19 @@ uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0x
 //0x01 = K3
 //0x02 = OB
 //0x3x = HP
-/*
-delay_ms(500);
-test_data[12]=gencrc(test_data ,12);
-for(int k=0;k<12;k++)
-{
-uart1.uart_tx_byte(test_data[k]);
-}*/
-
-
 
 while(1)
 {
-//km_check();
-//for(int i=1;i<21;i++)
-
-
-//delay_ms(1000);
-
-
-//flex_cable(1);
-}
+delay_ms(100);
+//test_data[12]=gencrc(test_data,12);
+for(int k=0;k<12;k++)
+{
+uart1.uart_tx_byte(test_data[k]);
 }
 
 
-
+}
+}
 
 
 extern "C"

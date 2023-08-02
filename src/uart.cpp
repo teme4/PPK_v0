@@ -13,12 +13,13 @@ void usart::uart_tx_byte( uint8_t data)
 {
 while ((USART1->SR & USART_SR_TXE) == 0)  {}
 USART1->DR = data;
-} 
-/*Trancmited array bytes*/
+while ((USART1->SR & USART_SR_TC)==1){};
+}
 
+/*Trancmited array bytes*/
 void usart::uart_tx_bytes(const char * data)
 {
-len = strlen(data); 
+len = strlen(data);
 while(len--)
 {
 uart_tx_byte(*data++);
@@ -32,7 +33,8 @@ while ((USART1->SR & USART_SR_TXE) == 0)  {}
 USART1->DR = 0x0D;
 while ((USART1->SR & USART_SR_TXE) == 0)  {}
 USART1->DR = 0x0A;
-} 
+}
+
 /*Init*/
 void usart::usart_init()
 {
@@ -42,7 +44,7 @@ USART1->CR3  = 0;
 USART1->CR2 =  0;
 USART1->CR1  = 0;
 USART1->BRR = 70;//625     256000 //31
-USART1->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE |USART_CR1_TE; 
+USART1->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE |USART_CR1_IDLEIE|USART_CR1_TE;
 NVIC_EnableIRQ(USART1_IRQn);
 __enable_irq();
 }
@@ -68,7 +70,7 @@ uint8_t flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
 
 extern "C" void USART1_IRQHandler()
 {
-   USART1->SR |= USART_SR_RXNE;
+    USART1->SR |= USART_SR_RXNE;
     data = (uint8_t)(USART1->DR);
     RX_data[counter]=data;
     if(RX_data[1]==0x55 && (flag_pream1==1))
@@ -106,68 +108,56 @@ if(RX_data[3]==crc)
 switch (RX_data[2])
 {
 case 0x01:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x02:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x03:
-   
-    counter=0; 
+    counter=0;
     break;
 case 0x04:
     km_check();
-    counter=0; 
+    counter=0;
     break;
 case 0x05:
     km_check();
-    counter=0; 
+    counter=0;
     break;
 case 0x06:
     SD_SC_check();
-    counter=0; 
+    counter=0;
     break;
 case 0x07:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x08:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x09:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x10:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x11:
     dof_check();
     //flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
     break;
 case 0x12:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x13:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x14:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x15:
-    
-    counter=0; 
+    counter=0;
     break;
 case 0x16:
-    
-    counter=0; 
+    counter=0;
     break;
 
 default:
