@@ -5,6 +5,9 @@
 //#include "gpio.hpp"
 
 extern uint8_t res[32];
+uint16_t flex_cable();
+
+
 
 static const uint8_t pin_flex[32]
 {
@@ -38,7 +41,7 @@ static const uint8_t dof_[21]//1 2 3 4 5 6 11 12
 0,  1,  2,  3,  4,  5,  6,  0,  8,  0,
 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
 };
-uint16_t flex_cable(uint8_t val,uint8_t state);
+
 
 static const uint8_t km[21]//1 2 3 4 5 6 11 12
 {

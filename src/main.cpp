@@ -33,7 +33,7 @@ uart1.uart_tx_bytes(data);
 uart1.uart_enter();
 }
 
-
+/*
 uint8_t HC74_165()
 {
 for(int i=0;i<32;i++)
@@ -70,7 +70,7 @@ delay_us(5);
 }
 delay_us(500);
 return *res;
-}
+}*/
 
 //----------------------------------------------------------
 extern "C" void DMA1_Channel4_IRQHandler(void)
@@ -104,63 +104,6 @@ extern "C" void DMA1_Channel5_IRQHandler(void)
   }
 }
 //----------------------------------------------------------
-
-void eth_config_out()
-{
-gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.gpio_mode_pp_50);
-}
-
-
-void eth_config_in()
-{
-gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.input_mode_floating);
-}
-
-
-void eth_test()
-{
-GPIO_TypeDef *ports_eth[8]={GPIOC,GPIOC,GPIOC,GPIOC,GPIOB,GPIOC,GPIOC,GPIOC};
-uint8_t pins_eth[8]={eth1,eth2,eth3,eth4,eth5,eth6,eth7,eth8};
-uint8_t pins_eth_out[8]={eth1_out,eth2_out,eth3_out,eth4_out,eth5_out,eth6_out,eth7_out,eth8_out};
-uint8_t state[8]={0};
-  //visible
-  eth_config_out();
-  for(int i=0;i<8;i++)
-  {
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
-  delay_ms(1000);
-  stm32f103.set_pin_state(ports_eth[i],pins_eth_out[i],1);
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
-  }
-  //otchet
-  eth_config_in();
-  for(int i=0;i<8;i++)
-  {
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
-  for(int k=0;k<8;k++)
-  {
- if(stm32f103.get_state_pin(ports_eth[k],pins_eth_out[k])==1)
-  {
-  state[k]=k;
-  }
-  }
-  }
- //  eth_config_out();
-}
 
 void RCC_init()
 {
@@ -231,7 +174,7 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
                       RegCR1 WordSize,
                       RegCR1 LsbMsbFirst)
                       {
-   RCC->APB2ENR |= RCC_APB2ENR_SPI1EN  ; // ??? ???????????? SPI
+   RCC->APB1ENR |= RCC_APB1ENR_SPI2EN  ; // ??? ???????????? SPI
 
     SPIx->CR1    = 0;
     SPIx->CR2    = 0;
@@ -256,8 +199,8 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
 
 void spi_transmit(uint16_t data)
 {
-while (!(SPI1->SR & SPI_SR_TXE));
-SPI1->DR = data ;
+while (!(SPI2->SR & SPI_SR_TXE));
+SPI2->DR = data ;
 delay_ms(1);
 }
 
@@ -268,6 +211,7 @@ uint8_t km_state[24]={1,};
 uint8_t dof_state[24]={'z',};
 uint8_t dof_state_[24]={'x',};
 
+/*
 uint8_t km_check()
 {
 for(int k=1;k<21;k++)
@@ -316,7 +260,7 @@ for(int i=0;i<6;i++)
 }
 delay_ms(1);
 int index=0,flag=0,pin=0;
-//***********Выкинуть неиспользуемые элементы массива**********************************//
+//Выкинуть неиспользуемые элементы массива//
 while(1)
 {
 if(km_pins[index]==0)
@@ -335,7 +279,7 @@ index=0;
 flag++;
 }
 }
-//*********************************************//
+
 delay_ms(1);
 for(int i=0;i<15;i++)
 {
@@ -375,10 +319,10 @@ for(int k=0;k<19;k++)
 uart1.uart_tx_byte(km_state[k]);
 }
 return *km_state;
-}
+}*/
 
 
-
+/*
 uint8_t dof_check()
 {
 for(int k=1;k<21;k++)
@@ -416,13 +360,7 @@ for(int k=0;k<21;k++)
       dof_state[2+q]=0x02; //state
     }
   }
- /*for(int q=3;q<19;q++)
-  {
-   if(dof_pins[q-3]==dof_[q-3])
-    {
-      dof_state[q]=0x0;  //state ok
-    }
-  }*/
+
   for(int g=0;g<24;g++)
   {
    dof_state_[g+3]=dof_state[g];
@@ -442,8 +380,10 @@ uart1.uart_tx_byte(dof_state_[k]);
 }
 return *dof_state_;
 }
+*/
 
 
+/*
 uint8_t SD_SC_check()
 {
 for(int k=0;k<21;k++)
@@ -507,15 +447,10 @@ for(int k=1;k<17;k++)
 }
 
 delay_ms(1);
-//*********************************************//
+
 uint8_t pin=0;
 for(int i=0;i<21;i++)
 {
-  /*
-if(km_pins[i]!=2)
-{
-km_state[i+3]=km_pins[i];
-}*/
 
 if(km_pins[i]==flex_16_[i])
 {
@@ -533,30 +468,34 @@ uart1.uart_tx_byte(km_state[k]);
 }
 return *km_state;
 }
+*/
 
-void HC74_595_SPI(uint16_t data)
+void HC74_595_SPI(uint32_t data)
 {
-uint8_t k=7;
-stm32f103.set_pin_state(GPIOD,EN_1,0);
-//stm32f103.set_pin_state(GPIOC,latcg_pin,0);//pl_165
-stm32f103.set_pin_state(GPIOC,pl_165,0);//pl_165
-spi_transmit(2);
-stm32f103.set_pin_state(GPIOC,pl_165,1);
-//stm32f103.set_pin_state(GPIOC,latcg_pin,1);
-stm32f103.set_pin_state(GPIOD,EN_1,1);
+uint32_t mask;
+stm32f103.set_pin_state(GPIOB,EN_595,1);
+stm32f103.set_pin_state(GPIOB,CS_595,0);
+
+//for(int i=0;i<4;i++)
+//{
+//data=data<<(i*8);
+spi_transmit(data);
+//}
+
+stm32f103.set_pin_state(GPIOB,CS_595,1);
+stm32f103.set_pin_state(GPIOB,EN_595,0);
 }
 
 
 int main()
 {
 gpio_init();
-uart1.usart_init();
-
-   SettingsSPI(SPI1,
+//uart1.usart_init();
+SettingsSPI(SPI2,
                 RegCR1::ACTIVE,
                   RegCR1::MASTER,
                     1 /*Mbps*/,
-                      RegCR1::SPI_MODE3,
+                      RegCR1::SPI_MODE3,//3
                         RegCR1::DFF8bit,
                           RegCR1::MSBF);
 
@@ -568,14 +507,37 @@ uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0x
 //0x02 = OB
 //0x3x = HP
 
+
+
+/*
+uint8_t pin_16[16]={1,2,4,8,10,20,40,80};
+for(int i=0;i<16;i++)
+{
+if((i>=0) ||(i<=7))
+{
+HC74_595_SPI(pin_16[i]);
+}
+if(i>=8)
+{
+HC74_595_SPI(pin_16[i-7]);
+}
+delay_ms(2000);
+}
+*/
+HC74_595_SPI(0xFF);
+HC74_595_SPI(0xFF);
+
+
 while(1)
 {
+flex_cable();
+/*
 delay_ms(100);
-//test_data[12]=gencrc(test_data,12);
 for(int k=0;k<12;k++)
 {
 uart1.uart_tx_byte(test_data[k]);
 }
+*/
 
 
 }

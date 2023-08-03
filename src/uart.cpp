@@ -71,6 +71,8 @@ uint8_t flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
 extern "C" void USART1_IRQHandler()
 {
     USART1->SR |= USART_SR_RXNE;
+
+    /*
     data = (uint8_t)(USART1->DR);
     RX_data[counter]=data;
     if(RX_data[1]==0x55 && (flag_pream1==1))
@@ -166,6 +168,6 @@ break;
 }
 
 }
- counter++;
+ counter++;*/
 }
 
