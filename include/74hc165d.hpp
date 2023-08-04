@@ -3,9 +3,12 @@
 #include <stm32f1xx.h>
 #include "hardware_config.hpp"
 //#include "gpio.hpp"
+#include "vector"
+
+
 
 extern uint8_t res[32];
-uint16_t flex_cable();
+std::vector<uint16_t> flex_cable(void);
 
 
 

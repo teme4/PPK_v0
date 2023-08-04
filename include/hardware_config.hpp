@@ -43,7 +43,7 @@
 #define data_db     		                 2 //data
 
 #define SCK_595                              13
-#define MISO_595   		                 14
+#define MISO_595   		                     14
 #define MOSI_595    		                 15
 
 void gpio_init(void);
