@@ -197,7 +197,7 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
     SPIx->CR1 |= static_cast<uint32_t>(SPE);
                       }
 
-void spi_transmit(uint16_t data)
+void spi_transmit(uint32_t data)
 {
 while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
@@ -472,15 +472,13 @@ return *km_state;
 
 void HC74_595_SPI(uint32_t data)
 {
-uint32_t mask;
 stm32f103.set_pin_state(GPIOB,EN_595,1);
 stm32f103.set_pin_state(GPIOB,CS_595,0);
 
-//for(int i=0;i<4;i++)
-//{
-//data=data<<(i*8);
+for(int i=0;i<21;i++)
+{
 spi_transmit(data);
-//}
+}
 
 stm32f103.set_pin_state(GPIOB,CS_595,1);
 stm32f103.set_pin_state(GPIOB,EN_595,0);
@@ -524,14 +522,22 @@ HC74_595_SPI(pin_16[i-7]);
 delay_ms(2000);
 }
 */
-HC74_595_SPI(0xFF);
-HC74_595_SPI(0xFF);
+//HC74_595_SPI(0xFF);
+// 1 2 4 8 16 32 64 128
 
 
+uint32_t dt=1;
 while(1)
 {
+HC74_595_SPI(dt);
+dt=dt<<1;
+delay_ms(100);
+/*
 flex_cable();
 delay_ms(100);
+*/
+
+
 /*
 delay_ms(100);
 for(int k=0;k<12;k++)
