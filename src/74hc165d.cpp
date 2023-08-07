@@ -10,16 +10,15 @@ std::vector<uint16_t> vector_pins;  // создали вектор
 volatile uint16_t pin_bits[32][5]={{0,0,0,0,0},};
 extern gpio stm32f103;
 
-std::vector<uint16_t> flex_cable()
+//std::vector<uint16_t> flex_cable()
+uint16_t flex_cable()
 {
   uint8_t chip=14;
   vector_pins.reserve(16);  // указали число ячеек
  // set_pin_HC74_595(val,state);
   stm32f103.set_pin_state(GPIOB,EN_165,0);
   stm32f103.set_pin_state(GPIOB,pl_165,1);
-  delay_ms(1);
   stm32f103.set_pin_state(GPIOB,pl_165,0);
-  delay_ms(1);
   stm32f103.set_pin_state(GPIOB,pl_165,1);
   for(int i=0;i<chip;i++)
   {
@@ -30,5 +29,5 @@ std::vector<uint16_t> flex_cable()
     res[i]=SPI2->DR;
   }
   stm32f103.set_pin_state(GPIOB,EN_165,1);
-  return vector_pins;
+return *res;
  }

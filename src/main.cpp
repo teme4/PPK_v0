@@ -531,6 +531,7 @@ HC74_595_SPI(0xFF);
 while(1)
 {
 flex_cable();
+delay_ms(100);
 /*
 delay_ms(100);
 for(int k=0;k<12;k++)

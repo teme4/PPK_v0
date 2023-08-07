@@ -8,8 +8,8 @@
 
 
 extern uint8_t res[32];
-std::vector<uint16_t> flex_cable(void);
-
+//std::vector<uint16_t> flex_cable(void);
+uint16_t flex_cable();
 
 
 static const uint8_t pin_flex[32]
