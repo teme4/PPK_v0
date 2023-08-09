@@ -208,6 +208,24 @@ SettingsSPI(SPI2,
 
 uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
+
+uint16_t flex_14_[14]=
+{
+  1,
+  2,
+  4,
+  8,
+  16,
+  32,
+  64,
+  128,
+  256,
+  512,
+  1024,
+  2048,
+  4096,
+  8192,
+};
 //AA 55 02 00 01 02 3B 00 01 02 53 F0
 //0x00 = OK
 //0x01 = K3
@@ -242,12 +260,15 @@ HC74_595_SPI(0);
 HC74_595_SPI2(0xAA);
 delay_ms(500);
 */
-
-  HC74_595_SET(0x000F,0x0000);
-  delay_ms(5);
-
+for(int i=0;i<14;i++)
+{
+  HC74_595_SET(flex_14_[i],0x0000);
+  delay_ms(1);
 flex_cable();
 delay_ms(1);
+
+}
+
 
 while(1)
 {
