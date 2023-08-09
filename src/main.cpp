@@ -159,25 +159,38 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
     SPIx->CR1 |= static_cast<uint32_t>(SPE);
                       }
 
-void spi_transmit(uint32_t data)
+void spi_transmit(uint16_t data)
 {
 while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
 
 
+
 void HC74_595_SPI(uint32_t data)
 {
+uint16_t data1,data2;
+data1=data&0xFF;
+data2=data>>8;
 stm32f103.set_pin_state(GPIOB,EN_595,1);
 stm32f103.set_pin_state(GPIOB,CS_595,0);
 
-for(int i=0;i<21;i++)
-{
-spi_transmit(data);
-}
+spi_transmit(data2);
+spi_transmit(data1);
 
 stm32f103.set_pin_state(GPIOB,CS_595,1);
 stm32f103.set_pin_state(GPIOB,EN_595,0);
+}
+
+
+
+void HC74_595_SPI2(uint32_t data)
+{
+stm32f103.set_pin_state(GPIOB,EN_595,0);
+spi_transmit(data);
+stm32f103.set_pin_state(GPIOB,CS_595,0);
+stm32f103.set_pin_state(GPIOB,CS_595,1);
+stm32f103.set_pin_state(GPIOB,EN_595,1);
 }
 
 
@@ -186,12 +199,12 @@ int main()
 gpio_init();
 //uart1.usart_init();
 SettingsSPI(SPI2,
-                RegCR1::ACTIVE,
-                  RegCR1::MASTER,
-                    1 /*Mbps*/,
-                      RegCR1::SPI_MODE3,//3
-                        RegCR1::DFF8bit,
-                          RegCR1::MSBF);
+            RegCR1::ACTIVE,
+            RegCR1::MASTER,
+            1 /*Mbps*/,
+            RegCR1::SPI_MODE1,//1 => 595 3=>165D
+            RegCR1::DFF8bit,
+            RegCR1::MSBF);
 
 uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
@@ -201,23 +214,51 @@ uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0x
 //0x02 = OB
 //0x3x = HP
 
-
 //HC74_595_SPI(0xFF);
 // 1 2 4 8 16 32 64 128
 
+/*
+uint8_t buff[9]={0,0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80};
+for(int i=1;i<9;i++)
+{
+HC74_595_SPI(buff[i]);
+delay_ms(5);
+}
+*/
 
-uint32_t dt=1;
+/*
+HC74_595_SPI(0);
+HC74_595_SPI(0);
+HC74_595_SPI(0);
+HC74_595_SPI(0xAA);
+*/
+/*
+HC74_595_SPI(0);
+HC74_595_SPI(0);
+HC74_595_SPI(0);
+*/
+
+/*
+HC74_595_SPI2(0xAA);
+delay_ms(500);
+*/
+
+
+
+
 while(1)
 {
+HC74_595_SPI(0x0000);
+HC74_595_SPI(0x7755);
+delay_ms(500);
 
-HC74_595_SPI(dt);
-dt=dt<<1;
-delay_ms(100);
+
+
+
 /*
 flex_cable();
 delay_ms(100);
 */
-
 
 /*
 delay_ms(100);
@@ -227,10 +268,8 @@ uart1.uart_tx_byte(test_data[k]);
 }
 */
 
-
 }
 }
-
 
 extern "C"
 {
