@@ -174,29 +174,25 @@ data1=data&0xFF;
 data2=data>>8;
 stm32f103.set_pin_state(GPIOB,EN_595,1);
 stm32f103.set_pin_state(GPIOB,CS_595,0);
+//delay_ms(1);
 
 spi_transmit(data2);
 spi_transmit(data1);
 
+delay_ms(1);
 stm32f103.set_pin_state(GPIOB,CS_595,1);
 stm32f103.set_pin_state(GPIOB,EN_595,0);
+
+
 }
 
 void HC74_595_SET(uint16_t data1,uint16_t data2)
 {
-HC74_595_SPI(data1);
+SPI2->CR1 |= static_cast<uint32_t>(0b01);//mode3
 HC74_595_SPI(data2);
+HC74_595_SPI(data1);
 }
 
-
-void HC74_595_SPI2(uint32_t data)
-{
-stm32f103.set_pin_state(GPIOB,EN_595,0);
-spi_transmit(data);
-stm32f103.set_pin_state(GPIOB,CS_595,0);
-stm32f103.set_pin_state(GPIOB,CS_595,1);
-stm32f103.set_pin_state(GPIOB,EN_595,1);
-}
 
 
 int main()
@@ -206,7 +202,7 @@ gpio_init();
 SettingsSPI(SPI2,
             RegCR1::ACTIVE,
             RegCR1::MASTER,
-            1 /*Mbps*/,
+            2 /*Mbps*/,
             RegCR1::SPI_MODE1,//1 => 595 3=>165D
             RegCR1::DFF8bit,
             RegCR1::MSBF);
@@ -254,16 +250,16 @@ delay_ms(500);
 while(1)
 {
 
-  HC74_595_SET(0x0000,0x7755);
+  HC74_595_SET(0xFFFF,0x0000);
   delay_ms(500);
 
 
 
 
-/*
+
 flex_cable();
 delay_ms(100);
-*/
+
 
 /*
 delay_ms(100);
