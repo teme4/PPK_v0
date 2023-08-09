@@ -182,6 +182,11 @@ stm32f103.set_pin_state(GPIOB,CS_595,1);
 stm32f103.set_pin_state(GPIOB,EN_595,0);
 }
 
+void HC74_595_SET(uint16_t data1,uint16_t data2)
+{
+HC74_595_SPI(data1);
+HC74_595_SPI(data2);
+}
 
 
 void HC74_595_SPI2(uint32_t data)
@@ -248,9 +253,9 @@ delay_ms(500);
 
 while(1)
 {
-HC74_595_SPI(0x0000);
-HC74_595_SPI(0x7755);
-delay_ms(500);
+
+  HC74_595_SET(0x0000,0x7755);
+  delay_ms(500);
 
 
 
