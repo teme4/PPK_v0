@@ -4,12 +4,11 @@
 
 uint8_t len=0;
 uint8_t RX_data[32];
-uint8_t dof_check();
-uint8_t km_check();
-uint8_t SD_SC_check();
+void check_SD_SC();
+
 
 /*Trancmited 1 byte*/
-void usart::uart_tx_byte( uint8_t data)
+void usart::uart_tx_byte(uint8_t data)
 {
 while ((USART1->SR & USART_SR_TXE) == 0)  {}
 USART1->DR = data;
@@ -38,12 +37,11 @@ USART1->DR = 0x0A;
 /*Init*/
 void usart::usart_init()
 {
-RCC->APB2ENR |= RCC_APB2ENR_USART1EN|RCC_APB2ENR_AFIOEN;
-AFIO->MAPR|=AFIO_MAPR_USART1_REMAP;
+RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 USART1->CR3  = 0;
 USART1->CR2 =  0;
 USART1->CR1  = 0;
-USART1->BRR = 70;//625     256000 //31
+USART1->BRR = 625;//625     256000 //31
 USART1->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE |USART_CR1_IDLEIE|USART_CR1_TE;
 NVIC_EnableIRQ(USART1_IRQn);
 __enable_irq();
@@ -71,8 +69,6 @@ uint8_t flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
 extern "C" void USART1_IRQHandler()
 {
     USART1->SR |= USART_SR_RXNE;
-
-    /*
     data = (uint8_t)(USART1->DR);
     RX_data[counter]=data;
     if(RX_data[1]==0x55 && (flag_pream1==1))
@@ -119,15 +115,15 @@ case 0x03:
     counter=0;
     break;
 case 0x04:
-    km_check();
+ 
     counter=0;
     break;
 case 0x05:
-    km_check();
+    
     counter=0;
     break;
 case 0x06:
-    SD_SC_check();
+   check_SD_SC();
     counter=0;
     break;
 case 0x07:
@@ -143,8 +139,6 @@ case 0x10:
     counter=0;
     break;
 case 0x11:
-    dof_check();
-    //flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
     break;
 case 0x12:
     counter=0;
@@ -168,6 +162,6 @@ break;
 }
 
 }
- counter++;*/
+ counter++;
 }
 

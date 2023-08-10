@@ -7,8 +7,8 @@ extern gpio stm32f103;
 void gpio_init()
 {
 //usart
-gpio_stm32f103RC.gpio_conf(usart_port,usart_tx_pin,gpio_stm32f103RC.alternate_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(usart_port,usart_rx_pin,gpio_stm32f103RC.input_mode_floating);
+gpio_stm32f103RC.gpio_conf(GPIOA,usart_tx_pin,gpio_stm32f103RC.alternate_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOA,usart_rx_pin,gpio_stm32f103RC.input_mode_floating);
 //parallel BUS
 /*
 RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
