@@ -234,30 +234,24 @@ for (int i{0}; i < 8; i ++)
         return count;
 }
 
-uint8_t result[14]={0,},n=0,m=0;
+uint8_t result[14]={0x77,},n=0,m=0;
 uint8_t k3[14]={0,};
 uint8_t error[14]={0,};
 uint8_t result_buff[32]={0,};
 
 void check_SD_SC()
 {
-//Найдем КЗ
+////////////////////////////////Найдем КЗ
 for(int i=0;i<14;i++)
 {
   HC74_595_SET(flex_14_[i],0x0000,0);
   flex_cable();
 
-  if(i<8)
+  if(i<8)// && res[10]!=0)
   k3[i]=res[10];
-
-  if(i>7)
+  if(i>7)// && res[9]!=0)
   k3[i]=res[9];
-}/*
-for(int k=0;k<14;k++)
-{
-  result[k]=-1;
-}*/
-
+}
 for(int i=0;i<14;i++)
 {
 for(int j=0;j<14;j++)
@@ -266,11 +260,16 @@ for(int j=0;j<14;j++)
     {
         if(i!=j)
         {
-            //result[i]=result[i]+1;
             result[i]=0x99;
         }
     }
 }
+}
+////////////////////////////////////////////////////////
+for(int i=0;i<14;i++)
+{
+if(k3[i]==~SD_CS[i])
+result[i]=0x00;
 }
 
 result_buff[0]=0xAA;
