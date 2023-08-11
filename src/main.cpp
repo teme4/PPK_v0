@@ -201,8 +201,11 @@ uint16_t SD_CS[14]=
 0x20,
 };
 
-void HC74_595_SPI(uint32_t data)
+void HC74_595_SPI(uint32_t data,uint8_t mode)
 {
+if(mode==0)
+data=~data;
+
 uint16_t data1,data2;
 data1=data&0xFF;
 data2=data>>8;
@@ -216,70 +219,81 @@ stm32f103.set_pin_state(GPIOB,CS_595,1);
 stm32f103.set_pin_state(GPIOB,EN_595,0);
 }
 
-void HC74_595_SET(uint16_t data1,uint16_t data2)
+void HC74_595_SET(uint16_t data1,uint16_t data2,uint8_t mode)
 {
 SPI2->CR1 |= static_cast<uint32_t>(0b11);//mode3
-HC74_595_SPI(data2);
-HC74_595_SPI(data1);
+HC74_595_SPI(data2,mode);
+HC74_595_SPI(data1,mode);
 }
 
+uint8_t check_K3(uint8_t value)
+{
+  uint8_t count=0;
+for (int i{0}; i < 8; i ++)
+        count += static_cast<bool>(value & (1<<i));
+        return count;
+}
 
-uint8_t result[14]={0x77,};
+uint8_t result[14]={0,},n=0,m=0;
+uint8_t k3[14]={0,};
+uint8_t error[14]={0,};
 uint8_t result_buff[32]={0,};
 
 void check_SD_SC()
 {
+//Найдем КЗ
 for(int i=0;i<14;i++)
 {
-  HC74_595_SET(flex_14_[i],0x0000);
+  HC74_595_SET(flex_14_[i],0x0000,0);
   flex_cable();
-    
-    if(i<8) //OK
-    {
-      if(res[10]!=0 && res[9]==0)//OK
-      {
-        result[i]=res[10];
-      }
-      if(res[10]==0 && res[9]==0)//OBR
-      {
-       result[i]=0x77;
-      }
-      if(res[10]!=0 && res[9]!=0)
-      {
-       result[i]=0x55;
-      }
-    }
 
-    if(i>7) //OK
+  if(i<8)
+  k3[i]=res[10];
+
+  if(i>7)
+  k3[i]=res[9];
+}/*
+for(int k=0;k<14;k++)
+{
+  result[k]=-1;
+}*/
+
+for(int i=0;i<14;i++)
+{
+for(int j=0;j<14;j++)
+{
+    if(k3[i]==k3[j])
     {
-      if(res[9]!=0 && res[10]==0)//OK
-      {
-        result[i]=res[9];
-      }
-      if(res[9]==0 && res[10]==0)//OBR
-      {
-       result[i]=0x77;
-      }
-      if(res[9]!=0 && res[10]!=0)
-      {
-       result[i]=0x55;
-      }
+        if(i!=j)
+        {
+            //result[i]=result[i]+1;
+            result[i]=0x99;
+        }
     }
 }
+}
+
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
-result_buff[2]=0x06;//SD_CS
+result_buff[2]=0x06;
+
 for(int i=0;i<14;i++)
 {
   //Условие все верно
-  if(result[i]==SD_CS[i])  // OK
+  if(result[i]==~SD_CS[i])  // OK
   result_buff[i+3]=0x00;
+
   //Условие обрыв линии
   if(result[i]==0x77)  // OБ
- result_buff[i+3]=0x02;
+  result_buff[i+3]=0x02;
+
   //Условие неверная расиновка
   if(result[i]==0x55)  //НР
   result_buff[i+3]=0x03;
+
+  //Условие короткое замыкание
+  if(result[i]==0x99)  //НР
+  result_buff[i+3]=0x01;
 }
 result_buff[17]=gencrc(result_buff, 17);
 
@@ -287,7 +301,12 @@ for(int k=0;k<18;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-
+//Отчистка буффера
+for(int i=0;i<32;i++)
+{
+    result_buff[i]=0;
+    result[i]=0;
+}
 }
 
 
@@ -312,14 +331,15 @@ uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
 usart1.uart_tx_bytes("Start");
 
+
+
 //AA 55 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 XX;
 //0x00 = OK
 //0x01 = K3
 //0x02 = OB
 //0x3x = HP
-
 check_SD_SC();
-check_SD_SC();
+//check_SD_SC();
 
 while(1)
 {
