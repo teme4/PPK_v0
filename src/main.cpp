@@ -236,8 +236,9 @@ for (int i{0}; i < 8; i ++)
 
 uint8_t result[14]={0x77,},n=0,m=0;
 uint8_t k3[14]={0,};
-uint8_t error[14]={0,};
+uint8_t error[14]={0x77,};
 uint8_t result_buff[32]={0,};
+uint8_t temp_=0;
 
 uint8_t check_num_0(uint8_t value)
 {
@@ -293,6 +294,16 @@ for(int i=0;i<14;i++)
         else
         {
             result[i]=9;
+            for(int j=0;j<14;j++)
+            {
+                if(k3[i]==SD_CS[j])
+                {
+                  temp_=j+1;
+                   temp_=temp_<<2;
+                   temp_=temp_ | 3;
+                    error[i]=temp_;
+                }
+            }
         }
     }
 }
@@ -315,7 +326,10 @@ for(int i=0;i<14;i++)
 
   //Условие неверная расиновка
   if(result[i]==9)  //НР
-  result_buff[i+3]=0x03;
+  {
+  result_buff[i+3]=error[i];//0x03
+  }
+  
 
   //Условие короткое замыкание
   if(result[i]==4)  //НР
