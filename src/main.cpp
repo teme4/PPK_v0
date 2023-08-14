@@ -239,9 +239,26 @@ uint8_t k3[14]={0,};
 uint8_t error[14]={0,};
 uint8_t result_buff[32]={0,};
 
+uint8_t check_num_0(uint8_t value)
+{
+uint8_t count=0;
+for (uint8_t i=0; i<8; i++)
+{
+count += static_cast<bool>(value & (1<<i));
+}
+return count;
+}
+
+
+
 void check_SD_SC()
 {
-////////////////////////////////Найдем КЗ
+////////////////////////////////Обнулим буффер
+for(int i=0;i<14;i++)
+{
+k3[i]=0;
+result[i]=0x77;
+}
 for(int i=0;i<14;i++)
 {
   HC74_595_SET(flex_14_[i],0x0000,0);
@@ -252,25 +269,35 @@ for(int i=0;i<14;i++)
   if(i>7)// && res[9]!=0)
   k3[i]=res[9];
 }
+//Найдем КЗ ОБ и OK
 for(int i=0;i<14;i++)
 {
-for(int j=0;j<14;j++)
+result[i]=check_num_0(k3[i]);
+}
+for(int i=0;i<14;i++)
 {
-    if(k3[i]==k3[j])
+    if(result[i]!=4 && result[i]!=6)
     {
-        if(i!=j)
+        HC74_595_SET(flex_14_[i],0x0000,1);
+        flex_cable();
+
+        if(i<8)// && res[10]!=0)
+        k3[i]=res[10];
+        if(i>7)// && res[9]!=0)
+        k3[i]=res[9];
+
+        if(k3[i]==SD_CS[i])
         {
-            result[i]=0x99;
+            result[i]=5;
+        }
+        else
+        {
+            result[i]=9;
         }
     }
 }
-}
-////////////////////////////////////////////////////////
-for(int i=0;i<14;i++)
-{
-if(k3[i]==~SD_CS[i])
-result[i]=0x00;
-}
+
+
 
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
@@ -279,19 +306,19 @@ result_buff[2]=0x06;
 for(int i=0;i<14;i++)
 {
   //Условие все верно
-  if(result[i]==~SD_CS[i])  // OK
+  if(result[i]==5)  // OK SD_CS[i]
   result_buff[i+3]=0x00;
 
   //Условие обрыв линии
-  if(result[i]==0x77)  // OБ
+  if(result[i]==6)  // OБ/0x77
   result_buff[i+3]=0x02;
 
   //Условие неверная расиновка
-  if(result[i]==0x55)  //НР
+  if(result[i]==9)  //НР
   result_buff[i+3]=0x03;
 
   //Условие короткое замыкание
-  if(result[i]==0x99)  //НР
+  if(result[i]==4)  //НР
   result_buff[i+3]=0x01;
 }
 result_buff[17]=gencrc(result_buff, 17);
