@@ -165,23 +165,29 @@ void spi_transmit(uint16_t data)
 while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
-uint16_t flex_14_[14]=
+
+uint32_t flex_14_[20]=
 {
-  1,
-  2,
-  4,
-  8,
-  16,
-  32,
-  64,
-  128,
-  256,
-  512,
-  1024,
-  2048,
-  4096,
-  8192,
-};
+  1,//1
+  2,//2
+  4,//3
+  8,//4
+  16,//5
+  32,//6
+  64,//7
+  128,//8
+  256,//9
+  512,//10
+  1024,//11
+  2048,//12
+  4096,//13
+  8192,//14
+  16384,//15
+  32768,//16
+  65536,//17
+  131072,//18
+  524288,//19
+  };
 
 uint16_t SD_CS[14]=
 {
@@ -234,9 +240,9 @@ for (int i{0}; i < 8; i ++)
         return count;
 }
 
-uint8_t result[14]={0x77,},n=0,m=0;
-uint8_t k3[14]={0,};
-uint8_t error[14]={0x77,};
+uint8_t result[32]={0x77,},n=0,m=0;
+uint8_t k3[32]={0,};
+uint8_t error[32]={0x77,};
 uint8_t result_buff[32]={0,};
 uint8_t temp_=0;
 
@@ -250,17 +256,15 @@ count += static_cast<bool>(value & (1<<i));
 return count;
 }
 
-
-
-void check_SD_SC()
+void check_SD_SC(uint8_t num,uint8_t num_cable)
 {
 ////////////////////////////////Обнулим буффер
-for(int i=0;i<14;i++)
+for(int i=0;i<num;i++)
 {
 k3[i]=0;
 result[i]=0x77;
-}
-for(int i=0;i<14;i++)
+}////////////////////////////////Опросим каждый пин
+for(int i=0;i<num;i++)
 {
   HC74_595_SET(flex_14_[i],0x0000,0);
   flex_cable();
@@ -271,11 +275,12 @@ for(int i=0;i<14;i++)
   k3[i]=res[9];
 }
 //Найдем КЗ ОБ и OK
-for(int i=0;i<14;i++)
+for(int i=0;i<num;i++)
 {
 result[i]=check_num_0(k3[i]);
 }
-for(int i=0;i<14;i++)
+//Найдем НР
+for(int i=0;i<num;i++)
 {
     if(result[i]!=4 && result[i]!=6)
     {
@@ -294,7 +299,7 @@ for(int i=0;i<14;i++)
         else
         {
             result[i]=9;
-            for(int j=0;j<14;j++)
+            for(int j=0;j<num;j++)
             {
                 if(k3[i]==SD_CS[j])
                 {
@@ -308,13 +313,11 @@ for(int i=0;i<14;i++)
     }
 }
 
-
-
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
-result_buff[2]=0x06;
+result_buff[2]=num_cable;
 
-for(int i=0;i<14;i++)
+for(int i=0;i<num+3;i++)
 {
   //Условие все верно
   if(result[i]==5)  // OK SD_CS[i]
@@ -335,9 +338,9 @@ for(int i=0;i<14;i++)
   if(result[i]==4)  //НР
   result_buff[i+3]=0x01;
 }
-result_buff[17]=gencrc(result_buff, 17);
+result_buff[num+3]=gencrc(result_buff, num+3);
 
-for(int k=0;k<18;k++)
+for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
@@ -378,7 +381,6 @@ usart1.uart_tx_bytes("Start");
 //0x01 = K3
 //0x02 = OB
 //0x3x = HP
-check_SD_SC();
 //check_SD_SC();
 
 while(1)
