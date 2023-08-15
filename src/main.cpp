@@ -166,7 +166,7 @@ while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
 
-uint32_t flex_14_[20]=
+uint32_t flex_14_[14]=
 {
   1,//1
   2,//2
@@ -182,11 +182,11 @@ uint32_t flex_14_[20]=
   2048,//12
   4096,//13
   8192,//14
-  16384,//15
+  /*16384,//15
   32768,//16
   65536,//17
   131072,//18
-  524288,//19
+  524288,//19*/
   };
 
 uint16_t SD_CS[14]=
@@ -273,11 +273,16 @@ for(int i=0;i<num;i++)
   k3[i]=res[10];
   if(i>7)// && res[9]!=0)
   k3[i]=res[9];
+  if(num==14 && i>7)
+  {
+   k3[i]=k3[i]|0xC0;
+  }
 }
 //Найдем КЗ ОБ и OK
 for(int i=0;i<num;i++)
 {
-result[i]=check_num_0(k3[i]);
+result[i]=8-check_num_0(k3[i]);
+
 }
 //Найдем НР
 for(int i=0;i<num;i++)
@@ -292,11 +297,15 @@ for(int i=0;i<num;i++)
         if(i>7)// && res[9]!=0)
         k3[i]=res[9];
 
+        if(result[i]==1)
+        {
+            result[i]=0;
+        }
         if(k3[i]==SD_CS[i])
         {
-            result[i]=5;
+            result[i]=2;
         }
-        else
+        if(k3[i]!=SD_CS[i] &&  result[i]!=0)
         {
             result[i]=9;
             for(int j=0;j<num;j++)
@@ -320,11 +329,11 @@ result_buff[2]=num_cable;
 for(int i=0;i<num+3;i++)
 {
   //Условие все верно
-  if(result[i]==5)  // OK SD_CS[i]
+  if(result[i]==2)  // OK SD_CS[i]
   result_buff[i+3]=0x00;
 
   //Условие обрыв линии
-  if(result[i]==6)  // OБ/0x77
+  if(result[i]==0)  // OБ/0x77
   result_buff[i+3]=0x02;
 
   //Условие неверная расиновка
@@ -332,10 +341,9 @@ for(int i=0;i<num+3;i++)
   {
   result_buff[i+3]=error[i];//0x03
   }
-  
 
   //Условие короткое замыкание
-  if(result[i]==4)  //НР
+  if(result[i]==2)  //НР
   result_buff[i+3]=0x01;
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
@@ -372,7 +380,7 @@ int k=ClockInit();
 
 uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
-usart1.uart_tx_bytes("Start");
+
 
 
 
