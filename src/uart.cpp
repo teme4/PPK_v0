@@ -10,9 +10,9 @@ void check_SD_SC(uint8_t num,uint8_t num_cable);
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
 {
-while ((USART1->SR & USART_SR_TXE) == 0)  {}
+while (!(USART1->SR & USART_SR_TXE))  {}
 USART1->DR = data;
-while ((USART1->SR & USART_SR_TC)==1){};
+while ((USART1->SR & USART_SR_TC)){}
 }
 
 /*Trancmited array bytes*/

@@ -191,20 +191,20 @@ uint32_t flex_14_[14]=
 
 uint16_t SD_CS[14]=
 {
-0x1,
-0x2,
-0x4,
-0x8,
-0x10,
-0x20,
-0x40,
-0x80,
-0x1,
-0x2,
-0x4,
-0x8,
-0x10,
-0x20,
+    0b000000000011111111111110,
+    0b000000000011111111111101,
+    0b000000000011111111111011,
+    0b000000000011111111110011,
+    0b000000000011111111101011,
+    0b000000000011111111011011,
+    0b000000000011111110111011,
+    0b000000000011111101111011,
+    0b000000000011111011111011,
+    0b000000000011110111111011,
+    0b000000000011101111111011,
+    0b000000000011011111111011,
+    0b000000000001111111111011,
+    0b000000000010111111111011,
 };
 
 void HC74_595_SPI(uint32_t data,uint8_t mode)
@@ -241,9 +241,10 @@ for (int i{0}; i < 8; i ++)
 }
 
 uint8_t result[32]={0x77,},n=0,m=0;
-uint8_t k3[32]={0,};
+uint32_t k3[32]={0,};
+uint32_t ob[32]={0,};
 uint8_t error[32]={0x77,};
-uint8_t result_buff[32]={0,};
+uint8_t result_buff[32]={0x88,};
 uint8_t temp_=0;
 
 uint8_t check_num_0(uint8_t value)
@@ -256,6 +257,9 @@ count += static_cast<bool>(value & (1<<i));
 return count;
 }
 
+
+
+
 void check_SD_SC(uint8_t num,uint8_t num_cable)
 {
 ////////////////////////////////Обнулим буффер
@@ -264,63 +268,49 @@ for(int i=0;i<num;i++)
 k3[i]=0;
 result[i]=0x77;
 }////////////////////////////////Опросим каждый пин
+usart1.uart_tx_bytes("\n");
 for(int i=0;i<num;i++)
 {
-  HC74_595_SET(flex_14_[i],0x0000,0);
-  flex_cable();
-
-  if(i<8)// && res[10]!=0)
-  k3[i]=res[10];
-  if(i>7)// && res[9]!=0)
-  k3[i]=res[9];
-  if(num==14 && i>7)
-  {
-   k3[i]=k3[i]|0xC0;
-  }
+    uint8_t count=0;
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    //Отлададка по уарту
+   /* usart1.uart_tx_bytes("\t0b");
+    for (int j=23; j>=0; j--)
+    {
+        usart1.uart_tx_byte(static_cast<bool>(k3[i] & (1<<j))?('1'):('0'));
+        count=static_cast<bool>(k3[i] & (1<<j));
+    }
+    usart1.uart_tx_bytes("\n");*/
 }
-//Найдем КЗ ОБ и OK
+
+//Найдем K3
+ for(int j=0;j<num;j++)
+        {
+               //Проверкв ОК
+               if(k3[j]==SD_CS[j])
+               {
+                 result[j]=0x88;
+               }
+               //Провека K3
+               for(int k=0;k<num;k++)
+               {
+                    if(k3[j]==k3[k] && j!=k)
+                    result[j]=0x99;
+               }
+               //Проверкв ОБ
+                HC74_595_SET(1<<j,0x0000,1);
+                flex_cable();
+                ob[j]=(res[8]<<16)|(res[9]<<8)|res[10];
+                if(ob[j]==0 && result[j]!=0x99)
+                result[j]=0x77;
+        }
+/*
 for(int i=0;i<num;i++)
 {
 result[i]=8-check_num_0(k3[i]);
-
-}
-//Найдем НР
-for(int i=0;i<num;i++)
-{
-    if(result[i]!=4 && result[i]!=6)
-    {
-        HC74_595_SET(flex_14_[i],0x0000,1);
-        flex_cable();
-
-        if(i<8)// && res[10]!=0)
-        k3[i]=res[10];
-        if(i>7)// && res[9]!=0)
-        k3[i]=res[9];
-
-        if(result[i]==1)
-        {
-            result[i]=0;
-        }
-        if(k3[i]==SD_CS[i])
-        {
-            result[i]=2;
-        }
-        if(k3[i]!=SD_CS[i] &&  result[i]!=0)
-        {
-            result[i]=9;
-            for(int j=0;j<num;j++)
-            {
-                if(k3[i]==SD_CS[j])
-                {
-                  temp_=j+1;
-                   temp_=temp_<<2;
-                   temp_=temp_ | 3;
-                    error[i]=temp_;
-                }
-            }
-        }
-    }
-}
+}*/
 
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
@@ -329,11 +319,11 @@ result_buff[2]=num_cable;
 for(int i=0;i<num+3;i++)
 {
   //Условие все верно
-  if(result[i]==2)  // OK SD_CS[i]
+  if(result[i]==0x88)  // OK SD_CS[i]
   result_buff[i+3]=0x00;
 
   //Условие обрыв линии
-  if(result[i]==0)  // OБ/0x77
+  if(result[i]==0x77)  // OБ/0x77
   result_buff[i+3]=0x02;
 
   //Условие неверная расиновка
@@ -343,7 +333,7 @@ for(int i=0;i<num+3;i++)
   }
 
   //Условие короткое замыкание
-  if(result[i]==2)  //НР
+  if(result[i]==0x99)  //НР
   result_buff[i+3]=0x01;
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
@@ -382,7 +372,7 @@ uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
 
 
-
+   check_SD_SC(14,0x06);
 
 //AA 55 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 XX;
 //0x00 = OK
