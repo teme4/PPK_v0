@@ -203,8 +203,8 @@ uint16_t SD_CS[14]=
     0b000000000011110111111011,
     0b000000000011101111111011,
     0b000000000011011111111011,
-    0b000000000001111111111011,
     0b000000000010111111111011,
+    0b000000000001111111111011,
 };
 
 void HC74_595_SPI(uint32_t data,uint8_t mode)
@@ -293,6 +293,21 @@ for(int i=0;i<num;i++)
                {
                  result[j]=0x88;
                }
+               else
+               {
+            for(int k=0;k<14;k++)
+            {
+                if(k3[j]==SD_CS[k])
+                {
+                result[j]=0x66;
+                  temp_=k+1;
+                   temp_=temp_<<2;
+                   temp_=temp_ | 3;
+                    error[j]=temp_;
+                }
+            }
+
+               }
                //Провека K3
                for(int k=0;k<num;k++)
                {
@@ -306,12 +321,6 @@ for(int i=0;i<num;i++)
                 if(ob[j]==0 && result[j]!=0x99)
                 result[j]=0x77;
         }
-/*
-for(int i=0;i<num;i++)
-{
-result[i]=8-check_num_0(k3[i]);
-}*/
-
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
@@ -327,7 +336,7 @@ for(int i=0;i<num+3;i++)
   result_buff[i+3]=0x02;
 
   //Условие неверная расиновка
-  if(result[i]==9)  //НР
+  if(result[i]==0x66)  //НР
   {
   result_buff[i+3]=error[i];//0x03
   }
