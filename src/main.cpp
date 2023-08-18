@@ -189,22 +189,28 @@ uint32_t flex_14_[14]=
   524288,//19*/
   };
 
-uint16_t SD_CS[14]=
+uint16_t SD_CS[20]=
 {
-    0b000000000011111111111110,
-    0b000000000011111111111101,
-    0b000000000011111111111011,
-    0b000000000011111111110011,
-    0b000000000011111111101011,
-    0b000000000011111111011011,
-    0b000000000011111110111011,
-    0b000000000011111101111011,
-    0b000000000011111011111011,
-    0b000000000011110111111011,
-    0b000000000011101111111011,
-    0b000000000011011111111011,
-    0b000000000010111111111011,
-    0b000000000001111111111011,
+    0b000000000011111111111110,//1
+    0b000000000011111111111101,//2
+    0b000000000011111111111011,//3
+    0b000000000011111111110111,//4
+    0b000000000011111111101111,//5
+    0b000000000011111111011111,//6
+    0b000000000011111110111111,//7
+    0b000000000011111101111111,//8
+    0b000000000011111011111111,//9
+    0b000000000011110111111111,//10
+    0b000000000011101111111111,//11
+    0b000000000011011111111111,//12
+    0b000000000010111111111111,//13
+    0b000000000001111111111111,//14
+    0b000000000011111011111111,//15
+    0b000000000011110111111111,//16
+    0b000000000011101111111111,//17
+    0b000000000011011111111111,//18
+    0b000000000010111111111111,//19
+    0b000000000001111111111111,//20
 };
 
 void HC74_595_SPI(uint32_t data,uint8_t mode)
@@ -246,6 +252,7 @@ uint32_t ob[32]={0,};
 uint8_t error[32]={0x77,};
 uint8_t result_buff[32]={0x88,};
 uint8_t temp_=0;
+uint8_t state_pin[32]={0,};
 
 uint8_t check_num_0(uint8_t value)
 {
@@ -257,8 +264,59 @@ count += static_cast<bool>(value & (1<<i));
 return count;
 }
 
+void check_SD_SC2(uint8_t num,uint8_t num_cable)
+{
+////////////////////////////////Обнулим буффер
+for(int i=0;i<num;i++)
+{
+k3[i]=0;
+ob[i]=0;
+result[i]=0x77;
+}////////////////////////////////Опросим каждый пин
+//usart1.uart_tx_bytes("\n");
+for(int i=0;i<num;i++)
+{
+    uint8_t count=0;
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
 
-
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+}
+//Провери на короткое замыкание и исключим из следующей проверки
+/////////////////////////////////////////////////
+    for(int i=0;i<num;i++)
+        {
+            for(int k=0;k<num;k++)
+                {
+                    if(k3[i]==k3[k] && i!=k)
+                        {
+                              result[i]=0x99;
+                              state_pin[i]=0x01;
+                        }
+                }
+        }
+/////////////////////////////////////////////////
+//Проверим на обрыв
+      for(int i=0;i<num;i++)
+        {
+            if(ob[i]==0 && state_pin[i]!=0x01)
+            {
+                state_pin[i]=0x03;//OB
+                for(int k=0;k<num;k++)
+                {
+                    k3[k]|=1<<i;
+                }
+            }
+           if(k3[i]==SD_CS[i] && state_pin[i]==0x00)
+            {
+                state_pin[i]=0x00;
+            }
+        }
+result[21]=0x77;
+}
 
 void check_SD_SC(uint8_t num,uint8_t num_cable)
 {
@@ -275,19 +333,49 @@ for(int i=0;i<num;i++)
     HC74_595_SET(1<<i,0x0000,0);
     flex_cable();
     k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+       //Провека K3
+           /*    for(int k=0;k<num;k++)
+               {
+                    if(k3[i]==k3[k] && i!=k)
+                    {
+                        result[i]=0x99;
+                        state_pin[i]=0x1;
+                    }
+               }*/
+     //Проверкв ОК
+               if(k3[i]==SD_CS[i])
+               {
+                 state_pin[i]=0x02;
+                 result[i]=0x02;
+               }
+               else
+               {
+                 state_pin[i]=0x01;
+                 result[i]=0x1;
+               }
+
     //Отлададка по уарту
-   /* usart1.uart_tx_bytes("\t0b");
+    usart1.uart_tx_bytes("\t0b");
     for (int j=23; j>=0; j--)
     {
         usart1.uart_tx_byte(static_cast<bool>(k3[i] & (1<<j))?('1'):('0'));
         count=static_cast<bool>(k3[i] & (1<<j));
     }
-    usart1.uart_tx_bytes("\n");*/
+    usart1.uart_tx_bytes("\n");
 }
 
 //Найдем K3
  for(int j=0;j<num;j++)
         {
+                //Проверкв ОБ
+                HC74_595_SET(1<<j,0x0000,1);
+                flex_cable();
+
+                ob[j]=(res[8]<<16)|(res[9]<<8)|res[10];
+                if(ob[j]==0 && result[j]!=0x99)
+                result[j]=0x77;
+
                //Проверкв ОК
                if(k3[j]==SD_CS[j])
                {
@@ -297,7 +385,7 @@ for(int i=0;i<num;i++)
                {
             for(int k=0;k<14;k++)
             {
-                if(k3[j]==SD_CS[k])
+                if(k3[j]==SD_CS[k])////Проверкв K3
                 {
                 result[j]=0x66;
                   temp_=k+1;
@@ -308,19 +396,7 @@ for(int i=0;i<num;i++)
             }
 
                }
-               //Провека K3
-               for(int k=0;k<num;k++)
-               {
-                    if(k3[j]==k3[k] && j!=k)
-                    result[j]=0x99;
-               }
-               //Проверкв ОБ
-                HC74_595_SET(1<<j,0x0000,1);
-                flex_cable();
-                ob[j]=(res[8]<<16)|(res[9]<<8)|res[10];
-                if(ob[j]==0 && result[j]!=0x99)
-                result[j]=0x77;
-        }
+           }
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
@@ -328,22 +404,25 @@ result_buff[2]=num_cable;
 for(int i=0;i<num+3;i++)
 {
   //Условие все верно
-  if(result[i]==0x88)  // OK SD_CS[i]
+  //if(result[i]==0x88)  // OK SD_CS[i]
+  if(state_pin[i]=0x00)
   result_buff[i+3]=0x00;
 
+  //Условие короткое замыкание
+  //if(result[i]==0x99)  //НР
+  if(state_pin[i]=0x01)
+  result_buff[i+3]=0x01;
+
   //Условие обрыв линии
-  if(result[i]==0x77)  // OБ/0x77
+  //if(result[i]==0x77)  // OБ/0x77
+  if(state_pin[i]=0x02)
   result_buff[i+3]=0x02;
 
   //Условие неверная расиновка
-  if(result[i]==0x66)  //НР
-  {
+  //if(result[i]==0x66)  //НР
+  if(state_pin[i]=0x03)
   result_buff[i+3]=error[i];//0x03
-  }
 
-  //Условие короткое замыкание
-  if(result[i]==0x99)  //НР
-  result_buff[i+3]=0x01;
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
@@ -381,7 +460,7 @@ uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
 
 
-   check_SD_SC(14,0x06);
+   check_SD_SC2(14,0x06);
 
 //AA 55 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 XX;
 //0x00 = OK
