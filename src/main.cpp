@@ -293,8 +293,7 @@ for(int i=0;i<num;i++)
                 {
                     if(k3[i]==k3[k] && i!=k)
                         {
-                              result[i]=0x99;
-                              state_pin[i]=0x01;
+                          state_pin[i]=0x01;
                         }
                 }
         }
@@ -304,7 +303,7 @@ for(int i=0;i<num;i++)
         {
             if(ob[i]==0 && state_pin[i]!=0x01)
             {
-                state_pin[i]=0x03;//OB
+                state_pin[i]=0x02;//OB
                 for(int k=0;k<num;k++)
                 {
                     k3[k]|=1<<i;
@@ -315,7 +314,25 @@ for(int i=0;i<num;i++)
                 state_pin[i]=0x00;
             }
         }
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+
+
 result[21]=0x77;
+
 }
 
 void check_SD_SC(uint8_t num,uint8_t num_cable)
@@ -426,10 +443,12 @@ for(int i=0;i<num+3;i++)
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
+usart1.uart_tx_bytes("\n");
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
+usart1.uart_tx_bytes("\n");
 //Отчистка буффера
 for(int i=0;i<32;i++)
 {
@@ -460,15 +479,13 @@ uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
 
 
-   check_SD_SC2(14,0x06);
-
 //AA 55 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 XX;
 //0x00 = OK
 //0x01 = K3
 //0x02 = OB
 //0x3x = HP
 //check_SD_SC();
-
+check_SD_SC2(14,0x06);
 while(1)
 {
 
