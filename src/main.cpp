@@ -249,6 +249,8 @@ for (int i{0}; i < 8; i ++)
 uint8_t result[32]={0x77,},n=0,m=0;
 uint32_t k3[32]={0,};
 uint32_t ob[32]={0,};
+uint32_t kz[32]={0,};
+uint32_t obr[32]={0,};
 uint8_t error[32]={0x77,};
 uint8_t result_buff[32]={0x88,};
 uint8_t temp_=0;
@@ -284,6 +286,31 @@ for(int i=0;i<num;i++)
     HC74_595_SET(1<<i,0x0000,1);
     flex_cable();
     ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+
+
+   for(int z=0;z<14;z++)
+   {
+        kz[z]=k3[i]&1<<z;
+        obr[z]=ob[i]&1<<z;
+
+      if(kz[z]>0)
+         kz[z]=1;
+
+      if(obr[z]>0)
+        obr[z]=1;
+
+        if(kz[z]==0 && obr[z]==0)
+        {
+          uint8_t k=0;//OBR
+        }
+
+        if(kz[z]==1 &&obr[z]==0)
+        {
+          uint8_t k=0;//KZ
+        }
+   }
+
 }
 //Провери на короткое замыкание и исключим из следующей проверки
 /////////////////////////////////////////////////
@@ -335,159 +362,35 @@ result[21]=0x77;
 
 }
 
-void check_SD_SC(uint8_t num,uint8_t num_cable)
-{
-////////////////////////////////Обнулим буффер
-for(int i=0;i<num;i++)
-{
-k3[i]=0;
-result[i]=0x77;
-}////////////////////////////////Опросим каждый пин
-usart1.uart_tx_bytes("\n");
-for(int i=0;i<num;i++)
-{
-    uint8_t count=0;
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
-
-       //Провека K3
-           /*    for(int k=0;k<num;k++)
-               {
-                    if(k3[i]==k3[k] && i!=k)
-                    {
-                        result[i]=0x99;
-                        state_pin[i]=0x1;
-                    }
-               }*/
-     //Проверкв ОК
-               if(k3[i]==SD_CS[i])
-               {
-                 state_pin[i]=0x02;
-                 result[i]=0x02;
-               }
-               else
-               {
-                 state_pin[i]=0x01;
-                 result[i]=0x1;
-               }
-
-    //Отлададка по уарту
-    usart1.uart_tx_bytes("\t0b");
-    for (int j=23; j>=0; j--)
-    {
-        usart1.uart_tx_byte(static_cast<bool>(k3[i] & (1<<j))?('1'):('0'));
-        count=static_cast<bool>(k3[i] & (1<<j));
-    }
-    usart1.uart_tx_bytes("\n");
-}
-
-//Найдем K3
- for(int j=0;j<num;j++)
-        {
-                //Проверкв ОБ
-                HC74_595_SET(1<<j,0x0000,1);
-                flex_cable();
-
-                ob[j]=(res[8]<<16)|(res[9]<<8)|res[10];
-                if(ob[j]==0 && result[j]!=0x99)
-                result[j]=0x77;
-
-               //Проверкв ОК
-               if(k3[j]==SD_CS[j])
-               {
-                 result[j]=0x88;
-               }
-               else
-               {
-            for(int k=0;k<14;k++)
-            {
-                if(k3[j]==SD_CS[k])////Проверкв K3
-                {
-                result[j]=0x66;
-                  temp_=k+1;
-                   temp_=temp_<<2;
-                   temp_=temp_ | 3;
-                    error[j]=temp_;
-                }
-            }
-
-               }
-           }
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=num_cable;
-
-for(int i=0;i<num+3;i++)
-{
-  //Условие все верно
-  //if(result[i]==0x88)  // OK SD_CS[i]
-  if(state_pin[i]=0x00)
-  result_buff[i+3]=0x00;
-
-  //Условие короткое замыкание
-  //if(result[i]==0x99)  //НР
-  if(state_pin[i]=0x01)
-  result_buff[i+3]=0x01;
-
-  //Условие обрыв линии
-  //if(result[i]==0x77)  // OБ/0x77
-  if(state_pin[i]=0x02)
-  result_buff[i+3]=0x02;
-
-  //Условие неверная расиновка
-  //if(result[i]==0x66)  //НР
-  if(state_pin[i]=0x03)
-  result_buff[i+3]=error[i];//0x03
-
-}
-result_buff[num+3]=gencrc(result_buff, num+3);
-
-usart1.uart_tx_bytes("\n");
-for(int k=0;k<num+4;k++)
-{
-usart1.uart_tx_byte(result_buff[k]);
-}
-usart1.uart_tx_bytes("\n");
-//Отчистка буффера
-for(int i=0;i<32;i++)
-{
-    result_buff[i]=0;
-    result[i]=0;
-}
-}
-
 
 
 
 
 int main()
 {
+
 gpio_init();
 usart1.usart_init();
 SettingsSPI(SPI2,
             RegCR1::ACTIVE,
             RegCR1::MASTER,
-            2 /*Mbps*/,
+            2 ,
             RegCR1::SPI_MODE1,//1 => 595 3=>165D
             RegCR1::DFF8bit,
             RegCR1::MSBF);
 
 int k=ClockInit();
-
+/*
 uint8_t data[32]={0,};
 uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
+*/
 
-
-//AA 55 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 XX;
-//0x00 = OK
-//0x01 = K3
-//0x02 = OB
-//0x3x = HP
-//check_SD_SC();
 check_SD_SC2(14,0x06);
 while(1)
 {
+
+k++;
+
 
 }
 }
