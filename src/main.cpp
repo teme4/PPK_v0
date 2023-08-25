@@ -248,6 +248,7 @@ for (int i{0}; i < 8; i ++)
 
 uint8_t result[32]={0x77,},n=0,m=0;
 uint32_t k3[32]={0,};
+uint8_t pin_map[32][32]={{0},{0}};
 uint32_t ob[32]={0,};
 uint32_t kz[32]={0,};
 uint32_t obr[32]={0,};
@@ -266,8 +267,26 @@ count += static_cast<bool>(value & (1<<i));
 return count;
 }
 
+void check_DOF(uint8_t num,uint8_t num_cable)
+{
+    uint8_t count=0;
+for(int i=0;i<num;i++)
+{
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[1]<<24)|(res[2]<<16)|(res[3]<<8)|res[4];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[1]<<24)|(res[2]<<16)|(res[3]<<8)|res[4];
+}
+count++;
+}
+
+
 void check_SD_SC2(uint8_t num,uint8_t num_cable)
 {
+   uint8_t count=0;
 ////////////////////////////////Обнулим буффер
 for(int i=0;i<num;i++)
 {
@@ -278,7 +297,6 @@ result[i]=0x77;
 //usart1.uart_tx_bytes("\n");
 for(int i=0;i<num;i++)
 {
-    uint8_t count=0;
     HC74_595_SET(1<<i,0x0000,0);
     flex_cable();
     k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
@@ -288,16 +306,16 @@ for(int i=0;i<num;i++)
     ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
 
 
-
+/*
    for(int z=0;z<14;z++)
    {
-        kz[z]=k3[i]&1<<z;
-        obr[z]=ob[i]&1<<z;
+        kz[z]=k3[i] & 1<<z;
+       // obr[z]=ob[i] & 1<<z;
 
       if(kz[z]>0)
          kz[z]=1;
 
-      if(obr[z]>0)
+      if(ob[z]>0)
         obr[z]=1;
 
         if(kz[z]==0 && obr[z]==0)
@@ -309,12 +327,37 @@ for(int i=0;i<num;i++)
         {
           uint8_t k=0;//KZ
         }
-   }
+   }*/
 
 }
+  for(int x=0;x<num;x++)
+   {
+     count=0;
+  for(int z=0;z<num;z++)
+   {
+        kz[z]=k3[z] & 1<<x;
+        if(kz[z]>0)
+        count++;
+   }
+  
+  if(count==0)
+  {
+    state_pin[x]=0x02; //OBR
+   // k3[x]=k3[x] & 1<<x;
+  }
+  if(count==num-1)
+  {
+      if(kz[x]==0)
+      state_pin[x]=0x00; //OK
+      else
+      state_pin[x]=0x03; //OK
+  }
+  if(count<num-1 && count!=0)
+   state_pin[x]=0x01; //K3
+   }
 //Провери на короткое замыкание и исключим из следующей проверки
 /////////////////////////////////////////////////
-    for(int i=0;i<num;i++)
+    /*for(int i=0;i<num;i++)
         {
             for(int k=0;k<num;k++)
                 {
@@ -323,10 +366,10 @@ for(int i=0;i<num;i++)
                           state_pin[i]=0x01;
                         }
                 }
-        }
+        }*/
 /////////////////////////////////////////////////
 //Проверим на обрыв
-      for(int i=0;i<num;i++)
+    /*  for(int i=0;i<num;i++)
         {
             if(ob[i]==0 && state_pin[i]!=0x01)
             {
@@ -337,10 +380,10 @@ for(int i=0;i<num;i++)
                 }
             }
            if(k3[i]==SD_CS[i] && state_pin[i]==0x00)
-            {
+            {pp
                 state_pin[i]=0x00;
             }
-        }
+        }*/
 
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
@@ -357,14 +400,8 @@ for(int k=0;k<num+4;k++)
 usart1.uart_tx_byte(result_buff[k]);
 }
 
-
 result[21]=0x77;
-
 }
-
-
-
-
 
 int main()
 {
@@ -374,22 +411,19 @@ usart1.usart_init();
 SettingsSPI(SPI2,
             RegCR1::ACTIVE,
             RegCR1::MASTER,
-            2 ,
+            2,
             RegCR1::SPI_MODE1,//1 => 595 3=>165D
             RegCR1::DFF8bit,
             RegCR1::MSBF);
 
 int k=ClockInit();
-/*
-uint8_t data[32]={0,};
-uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
-*/
 
-check_SD_SC2(14,0x06);
+
+
 while(1)
 {
 
-k++;
+check_DOF(26,0x06);
 
 
 }

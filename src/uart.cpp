@@ -106,57 +106,67 @@ if(RX_data[3]==crc)
 switch (RX_data[2])
 {
 case 0x01:
- //check_SD_SC2(16,0x01);
+    check_SD_SC2(16,0x01);
     counter=0;
     break;
 case 0x02:
-   // check_SD_SC2(20,0x02);
+    check_SD_SC2(20,0x02);
     counter=0;
     break;
 case 0x03:
+
     counter=0;
     break;
 case 0x04:
- 
+
     counter=0;
     break;
 case 0x05:
-    
+
     counter=0;
     break;
 case 0x06:
-    
-   //check_SD_SC2(14,0x06);
+   check_SD_SC2(14,0x06);
     counter=0;
     break;
 case 0x07:
-    //check_SD_SC2(10,0x07);
+    check_SD_SC2(10,0x07);
     counter=0;
     break;
 case 0x08:
+
     counter=0;
     break;
 case 0x09:
+
     counter=0;
     break;
 case 0x10:
+
     counter=0;
     break;
 case 0x11:
+
+    counter=0;
     break;
 case 0x12:
+
     counter=0;
     break;
 case 0x13:
+
     counter=0;
     break;
 case 0x14:
+
     counter=0;
     break;
 case 0x15:
+
     counter=0;
     break;
 case 0x16:
+
     counter=0;
     break;
 
