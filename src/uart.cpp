@@ -5,7 +5,7 @@
 uint8_t len=0;
 uint8_t RX_data[32];
 void check_SD_SC2(uint8_t num,uint8_t num_cable);
-
+void check_DOF(uint8_t num,uint8_t num_cable);
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
@@ -150,7 +150,7 @@ case 0x11:
     counter=0;
     break;
 case 0x12:
-
+    check_DOF(20,0x12);
     counter=0;
     break;
 case 0x13:

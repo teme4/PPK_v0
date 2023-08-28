@@ -314,7 +314,7 @@ return count;
 
 void check_DOF(uint8_t num,uint8_t num_cable)
 {
-uint8_t count=0,k;
+uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
   if(i<16)
@@ -339,6 +339,18 @@ if(i>15)
     ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
 }
 }
+/*
+for(int z=0;z<num;z++)
+{
+  q=0;
+while(1)
+{
+obr[z]=ob[z] & 1<<q;
+q++;
+if(obr[z]!=0)
+break;
+}
+}*/
 
   for(int x=0;x<num;x++)
    {
@@ -346,20 +358,15 @@ if(i>15)
   for(int z=0;z<num;z++)
    {
         kz[z]=ob[z] & 1<<dof_pins_2[x];
-        if(kz[z]==0)
-        state_pin[x]=0x00;
+        if(ob[z]==dof_pins[z])
+        state_pin[x]=0x00; //OK
+        if(ob[z]==0)
+        state_pin[x]=0x02;  //OB
+        if(ob[z]!=dof_pins[z])
+        state_pin[x]=0x03;  //HP
+   }
    }
 
-  if(count==num-2)
-  {
-      if(kz[x]==0)
-      state_pin[x]=0x00; //OK
-      else
-      state_pin[x]=0x03; //HP
-  }
-  if(count<num-1 && count!=0)
-   state_pin[x]=0x01; //K3
-   }
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
@@ -374,7 +381,6 @@ for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-
 result[21]=0x77;
 }
 
