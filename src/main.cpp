@@ -165,7 +165,52 @@ void spi_transmit(uint16_t data)
 while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
-
+uint32_t dof_pins[20]=
+{
+16777216,
+262144,
+33554432,
+16,
+1024,
+32,
+2048,
+1,
+512,
+0,
+524288,
+2097152,
+1048576,
+4194304,
+8192,
+8388608,
+16384,
+65536,
+32768,
+4096,
+};
+uint32_t dof_pins_2[20]=
+{
+25,
+19,
+26,
+5,
+11,
+6,
+12,
+0,
+10,
+0,
+20,
+22,
+21,
+23,
+14,
+24,
+15,
+17,
+16,
+13,
+};
 uint32_t flex_14_[14]=
 {
   1,//1
@@ -269,24 +314,90 @@ return count;
 
 void check_DOF(uint8_t num,uint8_t num_cable)
 {
+uint8_t count=0,k;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+}
+}
+
+  for(int x=0;x<num;x++)
+   {
+     count=0;
+  for(int z=0;z<num;z++)
+   {
+        kz[z]=ob[z] & 1<<dof_pins_2[x];
+        if(kz[z]==0)
+        state_pin[x]=0x00;
+   }
+
+  if(count==num-2)
+  {
+      if(kz[x]==0)
+      state_pin[x]=0x00; //OK
+      else
+      state_pin[x]=0x03; //HP
+  }
+  if(count<num-1 && count!=0)
+   state_pin[x]=0x01; //K3
+   }
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+
+result[21]=0x77;
+}
+
+void check_PKU_NKK(uint8_t num,uint8_t num_cable)
+{
     uint8_t count=0;
 for(int i=0;i<num;i++)
 {
     HC74_595_SET(1<<i,0x0000,0);
     flex_cable();
-    k3[i]=(res[1]<<24)|(res[2]<<16)|(res[3]<<8)|res[4];
+    k3[i]=res[1];
 
     HC74_595_SET(1<<i,0x0000,1);
     flex_cable();
-    ob[i]=(res[1]<<24)|(res[2]<<16)|(res[3]<<8)|res[4];
+    ob[i]=res[1];
+    count++;
 }
 count++;
 }
 
-
 void check_SD_SC2(uint8_t num,uint8_t num_cable)
 {
-   uint8_t count=0;
+   uint8_t count=0,k;
 ////////////////////////////////Обнулим буффер
 for(int i=0;i<num;i++)
 {
@@ -294,9 +405,11 @@ k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
 }////////////////////////////////Опросим каждый пин
-//usart1.uart_tx_bytes("\n");
+
 for(int i=0;i<num;i++)
 {
+    if(i<16)
+  {
     HC74_595_SET(1<<i,0x0000,0);
     flex_cable();
     k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
@@ -304,31 +417,18 @@ for(int i=0;i<num;i++)
     HC74_595_SET(1<<i,0x0000,1);
     flex_cable();
     ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
 
-
-/*
-   for(int z=0;z<14;z++)
-   {
-        kz[z]=k3[i] & 1<<z;
-       // obr[z]=ob[i] & 1<<z;
-
-      if(kz[z]>0)
-         kz[z]=1;
-
-      if(ob[z]>0)
-        obr[z]=1;
-
-        if(kz[z]==0 && obr[z]==0)
-        {
-          uint8_t k=0;//OBR
-        }
-
-        if(kz[z]==1 &&obr[z]==0)
-        {
-          uint8_t k=0;//KZ
-        }
-   }*/
-
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+}
 }
   for(int x=0;x<num;x++)
    {
@@ -339,7 +439,6 @@ for(int i=0;i<num;i++)
         if(kz[z]>0)
         count++;
    }
-  
   if(count==0)
   {
     state_pin[x]=0x02; //OBR
@@ -355,35 +454,6 @@ for(int i=0;i<num;i++)
   if(count<num-1 && count!=0)
    state_pin[x]=0x01; //K3
    }
-//Провери на короткое замыкание и исключим из следующей проверки
-/////////////////////////////////////////////////
-    /*for(int i=0;i<num;i++)
-        {
-            for(int k=0;k<num;k++)
-                {
-                    if(k3[i]==k3[k] && i!=k)
-                        {
-                          state_pin[i]=0x01;
-                        }
-                }
-        }*/
-/////////////////////////////////////////////////
-//Проверим на обрыв
-    /*  for(int i=0;i<num;i++)
-        {
-            if(ob[i]==0 && state_pin[i]!=0x01)
-            {
-                state_pin[i]=0x02;//OB
-                for(int k=0;k<num;k++)
-                {
-                    k3[k]|=1<<i;
-                }
-            }
-           if(k3[i]==SD_CS[i] && state_pin[i]==0x00)
-            {pp
-                state_pin[i]=0x00;
-            }
-        }*/
 
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
@@ -405,7 +475,6 @@ result[21]=0x77;
 
 int main()
 {
-
 gpio_init();
 usart1.usart_init();
 SettingsSPI(SPI2,
@@ -419,11 +488,13 @@ SettingsSPI(SPI2,
 int k=ClockInit();
 
 
+//check_PKU_NKK(20,0x09);
+check_DOF(20,0x12);
 
 while(1)
 {
 
-check_DOF(26,0x06);
+
 
 
 }
