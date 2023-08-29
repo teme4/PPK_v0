@@ -234,6 +234,34 @@ uint32_t flex_14_[14]=
   524288,//19*/
   };
 
+
+uint32_t resolve(uint32_t val)
+{
+for(int i=0;i<32;i++)
+{
+    if((val & 1<<i)==val)
+    {
+      return i+1;
+    }
+}
+}
+
+uint32_t find_K3(uint32_t *val)
+{
+for(int i=0;i<32;i++)
+{
+  for(int j=0;j<32;j++)
+  {
+     if(val[i]==val[j] && i!=j)
+     {
+
+     }
+  }
+}
+}
+
+
+
 uint16_t SD_CS[20]=
 {
     0b000000000011111111111110,//1
@@ -301,6 +329,7 @@ uint8_t error[32]={0x77,};
 uint8_t result_buff[32]={0x88,};
 uint8_t temp_=0;
 uint8_t state_pin[32]={0,};
+uint8_t ignore[32]={0,};
 
 uint8_t check_num_0(uint8_t value)
 {
@@ -311,6 +340,44 @@ count += static_cast<bool>(value & (1<<i));
 }
 return count;
 }
+
+
+
+void check_km(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+}
+}
+for(int x=0;x<num;x++)
+   {
+    if(ob[x]!=0)
+      kz[x]=resolve(ob[x]);
+   }
+count++;
+}
+
 
 void check_DOF(uint8_t num,uint8_t num_cable)
 {
@@ -339,34 +406,60 @@ if(i>15)
     ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
 }
 }
-/*
-for(int z=0;z<num;z++)
-{
-  q=0;
-while(1)
-{
-obr[z]=ob[z] & 1<<q;
-q++;
-if(obr[z]!=0)
-break;
-}
-}*/
-
   for(int x=0;x<num;x++)
    {
-     count=0;
+      kz[x]=resolve(ob[x]);
+    if(ob[x]==0)
+     {
+        state_pin[x]=0x02; //OB
+        kz[x]=100;
+        ignore[x]=0x88;
+     }
   for(int z=0;z<num;z++)
    {
-        kz[z]=ob[z] & 1<<dof_pins_2[x];
-        if(ob[z]==dof_pins[z])
-        state_pin[x]=0x00; //OK
-        if(ob[z]==0)
-        state_pin[x]=0x02;  //OB
-        if(ob[z]!=dof_pins[z])
-        state_pin[x]=0x03;  //HP
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
    }
-   }
+ 
 
+          if(kz[x]==dof_pins_2[x])
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //OB
+                ignore[x]=0x99;
+              }
+        }
+
+
+}
+for(int i=0;i<32;i++)
+{
+if(ob[i]==0)
+     state_pin[i]=0x02; //OB
+}
+
+ if(state_pin[7]==state_pin[9])
+{
+state_pin[7]=0;
+state_pin[9]=0;
+}
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
@@ -398,6 +491,84 @@ for(int i=0;i<num;i++)
     ob[i]=res[1];
     count++;
 }
+count++;
+}
+
+void check_eth(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0;
+for(int i=0;i<num;i++)
+{
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[6];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[6];  
+}
+  for(int x=0;x<num;x++)
+   {
+      kz[x]=resolve(ob[x]);
+    if(ob[x]==0)
+     {
+        state_pin[x]=0x02; //OB
+        kz[x]=100;      
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+ 
+
+          if(kz[x]==x+1)
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //OB
+                ignore[x]=0x99;
+              }
+        }
+
+
+}
+for(int i=0;i<32;i++)
+{
+if(ob[i]==0)
+  state_pin[i]=0x02; //OB
+}
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
 count++;
 }
 
@@ -494,8 +665,16 @@ SettingsSPI(SPI2,
 int k=ClockInit();
 
 
+
 //check_PKU_NKK(20,0x09);
-check_DOF(20,0x12);
+//check_DOF(20,0x12);
+
+//check_km(30,0x04);
+
+check_eth(8,0x17);
+
+
+
 
 while(1)
 {

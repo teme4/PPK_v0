@@ -6,6 +6,7 @@ uint8_t len=0;
 uint8_t RX_data[32];
 void check_SD_SC2(uint8_t num,uint8_t num_cable);
 void check_DOF(uint8_t num,uint8_t num_cable);
+void check_eth(uint8_t num,uint8_t num_cable);
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
@@ -167,6 +168,12 @@ case 0x15:
     break;
 case 0x16:
 
+    counter=0;
+    break;
+
+
+case 0x17:
+    check_eth(8,0x17);
     counter=0;
     break;
 
