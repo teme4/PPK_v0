@@ -2,8 +2,12 @@
 #include <delay.hpp>
 #include <tft.hpp>
 #include "registers.hpp"
+#include "gpio.hpp"
+#include "hardware_config.hpp"
 
   uint32_t t;
+extern gpio stm32f103;
+
 
 void writeRegister32(uint8_t r, uint32_t d)
  {
