@@ -165,28 +165,77 @@ void spi_transmit(uint16_t data)
 while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
-uint32_t dof_pins[20]=
+
+uint32_t pku_nkk_21[20]=
 {
-16777216,
-262144,
-33554432,
-16,
-1024,
-32,
-2048,
 1,
-512,
 0,
-524288,
-2097152,
-1048576,
-4194304,
-8192,
-8388608,
-16384,
-65536,
-32768,
-4096,
+2,
+3,
+0,
+4,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+
+uint32_t pku_nkk_22[20]=
+{
+1,
+0,
+2,
+3,
+0,
+4,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+
+uint32_t pku_nkk_uart[20]=
+{
+7,
+0,
+6,
+0,
+0,
+0,
+0,
+0,
+0,
+5,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
 };
 uint32_t dof_pins_2[20]=
 {
@@ -477,11 +526,13 @@ usart1.uart_tx_byte(result_buff[k]);
 result[21]=0x77;
 }
 
-void check_PKU_NKK(uint8_t num,uint8_t num_cable)
+void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable)
 {
-    uint8_t count=0;
+uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
+  if(i<16)
+  {
     HC74_595_SET(1<<i,0x0000,0);
     flex_cable();
     k3[i]=res[1];
@@ -489,8 +540,232 @@ for(int i=0;i<num;i++)
     HC74_595_SET(1<<i,0x0000,1);
     flex_cable();
     ob[i]=res[1];
-    count++;
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
 }
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+         if(ob[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+         if(kz[x]==pku_nkk_21[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=pku_nkk_21[x] && ob[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+count++;
+}
+
+void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[1];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
+}
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+         if(ob[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+          if(kz[x]==pku_nkk_22[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=pku_nkk_22[x] && ob[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+count++;
+}
+
+void check_PKU_NKK_3(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[1];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
+}
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+        if(kz[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+          if(kz[x]==pku_nkk_uart[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=pku_nkk_uart[x] && kz[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
 count++;
 }
 
@@ -505,15 +780,18 @@ for(int i=0;i<num;i++)
 
     HC74_595_SET(1<<i,0x0000,1);
     flex_cable();
-    ob[i]=res[6];  
+    ob[i]=res[6];
 }
   for(int x=0;x<num;x++)
    {
+     if(ob[x]!=0)
+     {
       kz[x]=resolve(ob[x]);
+     }
     if(ob[x]==0)
      {
         state_pin[x]=0x02; //OB
-        kz[x]=100;      
+        kz[x]=100;
      }
   for(int z=0;z<num;z++)
    {
@@ -671,11 +949,11 @@ int k=ClockInit();
 
 //check_km(30,0x04);
 
-check_eth(8,0x17);
+//check_eth(8,0x17);
 
-
-
-
+/*
+check_PKU_NKK_3(20,0x08);
+check_PKU_NKK_2_1(20,0x09);*/
 while(1)
 {
 

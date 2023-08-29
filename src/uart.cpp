@@ -7,6 +7,10 @@ uint8_t RX_data[32];
 void check_SD_SC2(uint8_t num,uint8_t num_cable);
 void check_DOF(uint8_t num,uint8_t num_cable);
 void check_eth(uint8_t num,uint8_t num_cable);
+void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
+void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
+void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable);
+
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
@@ -115,7 +119,7 @@ case 0x02:
     counter=0;
     break;
 case 0x03:
-
+    check_SD_SC2(8,0x03);
     counter=0;
     break;
 case 0x04:
@@ -135,15 +139,15 @@ case 0x07:
     counter=0;
     break;
 case 0x08:
-
+    check_PKU_NKK_3(20,0x08);
     counter=0;
     break;
 case 0x09:
-
+    check_PKU_NKK_2_1(20,0x09);
     counter=0;
     break;
 case 0x10:
-
+    check_PKU_NKK_2_2(20,0x10);
     counter=0;
     break;
 case 0x11:

@@ -5,21 +5,19 @@
 #define usart_rx_pin						    10
 
 //Parallel_BUS
-/*
-#define D0							       	 12
-#define D1							         13
-#define D2							         14
-#define D3					                 15
-#define D4							       	 8
-#define D5							         9
-#define D6						             8
-#define D7				                     9
-#define RD							       	 10
+#define D0							       	 0
+#define D1							         1
+#define D2							         2
+#define D3					                 3
+#define D4							       	 4
+#define D5							         5
+#define D6						             6
+#define D7				                     7
+#define CS				                     8
+#define RS						             11
+#define RD							       	 12
 #define WR							         15
-#define RS						             12
-#define CS				                     11
-#define RST				                     10
-*/
+
 //595
 #define data_pin						     8
 #define clock_pin				             11

@@ -1,6 +1,69 @@
 #include <stm32f1xx.h>
-/*
+#include <delay.hpp>
+#include <tft.hpp>
+#include "registers.hpp"
+
   uint32_t t;
+
+void writeRegister32(uint8_t r, uint32_t d)
+ {
+  uint8_t temp;
+  GPIOA->BSRR= (1<<27);
+  GPIOA->BSRR= (1<<28);
+  write8(r);  
+  delay_us(1);
+  GPIOA->BSRR= (1<<12);
+  temp=d >> 24;
+  write8(temp);
+  delay_us(1);
+  temp=d >> 16;
+  write8(temp); 
+  delay_us(1);
+  temp=d >> 8;
+  write8(temp); 
+  delay_us(1);
+  write8(d);
+  GPIOA->BSRR= (1<<27);
+  delay_us(1);
+}
+
+void write8(uint8_t data)
+{                          
+    port_data(data);
+    GPIOA->BSRR= (1<<31);
+    GPIOA->BSRR= (1<<15); 
+     //delay_us(10);
+     //asm ("NOP"); asm ("NOP");asm ("NOP"); //asm ("NOP");  //asm ("NOP");// asm ("NOP");     
+}
+
+void writeRegister8(uint8_t a,uint8_t d) 
+{ 
+  GPIOA->BSRR= (1<<28);
+  write8(a); 
+  delay_us(5);
+  GPIOA->BSRR= (1<<12); 
+  write8(d); 
+  delay_us(5);
+}
+
+void writeRegister16(uint16_t a, uint16_t d)
+ { 
+  uint8_t hi, lo; 
+  hi = (a) >> 8; 
+  lo = (a); 
+  GPIOA->BRR= (1<<12);
+  write8(hi); 
+  write8(lo); 
+  hi = (d) >> 8;
+  lo = (d); 
+  delay_us(5);
+  GPIOA->BSRR= (1<<12);
+  write8(hi);
+  write8(lo);   
+  delay_us(5);
+  }
+
+
 void setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
  {
  //GPIOA->BRR= (1<<11);
@@ -57,7 +120,7 @@ void lcdFillRGB(uint16_t color)
     write8(color & 0xFF);
   }
 }
-
+/*
 extern const font_type TimesNewRoman;
 
 uint32_t LCD_Putchar(uint32_t x, uint32_t y, char c) {
@@ -78,7 +141,7 @@ uint32_t LCD_Putchar(uint32_t x, uint32_t y, char c) {
             }
         }
         return x+width;
-}
+}*/
 
 void LCD_DrawString(uint32_t x, uint32_t y, char *str)
 {
@@ -217,63 +280,6 @@ GPIOA->BRR= (1<<12);
 //GPIOA->BRR= (1<<11);
 }
 
-void writeRegister32(uint8_t r, uint32_t d)
- {
-  uint8_t temp;
-  GPIOA->BSRR= (1<<27);
-  GPIOA->BSRR= (1<<28);
-  write8(r);  
-  delay_us(1);
-  GPIOA->BSRR= (1<<12);
-  temp=d >> 24;
-  write8(temp);
-  delay_us(1);
-  temp=d >> 16;
-  write8(temp); 
-  delay_us(1);
-  temp=d >> 8;
-  write8(temp); 
-  delay_us(1);
-  write8(d);
-  GPIOA->BSRR= (1<<27);
-  delay_us(1);
-}
-
-void write8(uint8_t data)
-{                          
-    port_data(data);
-    GPIOA->BSRR= (1<<31);
-    GPIOA->BSRR= (1<<15); 
-     //delay_us(10);
-     //asm ("NOP"); asm ("NOP");asm ("NOP"); //asm ("NOP");  //asm ("NOP");// asm ("NOP");     
-}
-
-void writeRegister8(uint8_t a,uint8_t d) 
-{ 
-  GPIOA->BSRR= (1<<28);
-  write8(a); 
-  delay_us(5);
-  GPIOA->BSRR= (1<<12); 
-  write8(d); 
-  delay_us(5);
-}
-
-void writeRegister16(uint16_t a, uint16_t d)
- { 
-  uint8_t hi, lo; 
-  hi = (a) >> 8; 
-  lo = (a); 
-  GPIOA->BRR= (1<<12);
-  write8(hi); 
-  write8(lo); 
-  hi = (d) >> 8;
-  lo = (d); 
-  delay_us(5);
-  GPIOA->BSRR= (1<<12);
-  write8(hi);
-  write8(lo);   
-  delay_us(5);
-  }
 
 
 uint8_t cmd_temp;
@@ -299,17 +305,5 @@ for(int i=0;i<8;i++)
 }
 }
 
-#define TFTWIDTH   320
-#define TFTHEIGHT  240
-// Assign human-readable names to some common 16-bit color values:
-#define BLACK   0x0000
-#define BLUE    0x001F
-#define RED     0xF800
-#define GREEN   0x07E0
-#define CYAN    0x07FF
-#define MAGENTA 0xF81F
-#define YELLOW  0xFFE0
-#define WHITE   0xFFFF
 
 
-  */
