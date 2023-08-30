@@ -13,6 +13,7 @@
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
 #include "rcc.hpp"
+#include "tft.hpp"
 
 char str[80];
 
@@ -850,6 +851,91 @@ result[21]=0x77;
 count++;
 }
 
+void check_ext_fridge(uint8_t num,uint8_t num_cable)
+{
+   uint8_t count=0,k;
+////////////////////////////////Обнулим буффер
+for(int i=0;i<num;i++)
+{
+k3[i]=0;
+ob[i]=0;
+result[i]=0x77;
+}////////////////////////////////Опросим каждый пин
+
+for(int i=0;i<num;i++)
+{
+    if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+}
+}
+  for(int x=0;x<num;x++)
+   {
+     count=0;
+  for(int z=0;z<num;z++)
+   {
+        kz[z]=k3[z] & 1<<x;
+        if(kz[z]>0)
+        count++;
+   }
+  if(count==0)
+  {
+    state_pin[x]=0x02; //OBR
+   // k3[x]=k3[x] & 1<<x;
+  }
+  if(count==num-1)
+  {
+      if(kz[x]==0)
+      state_pin[x]=0x00; //OK
+      else
+      state_pin[x]=0x03; //OK
+  }
+  if(count<num-1 && count!=0)
+   state_pin[x]=0x01; //K3
+   }
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+ state_pin[0]=0x00; //OK
+ state_pin[1]=0x00; //OK
+ state_pin[12]=0x00; //OK
+ state_pin[13]=0x00; //OK
+ state_pin[14]=0x00; //OK
+ state_pin[15]=0x00; //OK
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+
+result[21]=0x77;
+}
+
 void check_SD_SC2(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
@@ -942,8 +1028,9 @@ SettingsSPI(SPI2,
 
 int k=ClockInit();
 
-
-
+  begin();
+fillScreen(GREEN);
+LCD_DrawPixel(10,15, GREEN);
 //check_PKU_NKK(20,0x09);
 //check_DOF(20,0x12);
 

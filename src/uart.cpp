@@ -10,7 +10,7 @@ void check_eth(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable);
-
+void check_ext_fridge(uint8_t num,uint8_t num_cable);
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
@@ -163,11 +163,11 @@ case 0x13:
     counter=0;
     break;
 case 0x14:
-
+    
     counter=0;
     break;
 case 0x15:
-
+     check_ext_fridge(16,0x15);
     counter=0;
     break;
 case 0x16:
