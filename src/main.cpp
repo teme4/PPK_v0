@@ -1028,9 +1028,10 @@ SettingsSPI(SPI2,
 
 int k=ClockInit();
 
-  begin();
+begin();
+fillScreen(RED);
 fillScreen(GREEN);
-LCD_DrawPixel(10,15, GREEN);
+//LCD_DrawPixel(10,15, GREEN);
 //check_PKU_NKK(20,0x09);
 //check_DOF(20,0x12);
 
