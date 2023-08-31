@@ -13,7 +13,9 @@
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
 #include "rcc.hpp"
-#include "tft.hpp"
+#include "tft2.hpp"
+
+
 
 char str[80];
 
@@ -22,8 +24,6 @@ uint8_t res[32]={0,};
 usart usart1;
 dma_usart dma_usart1;
 gpio stm32f103;
-extern gpio gpio_stm32f103RC;
-
 
 uint16_t data_state[32];
 //volatile char rx_str[32];
@@ -1028,9 +1028,15 @@ SettingsSPI(SPI2,
 
 int k=ClockInit();
 
-begin();
-fillScreen(RED);
-fillScreen(GREEN);
+
+
+
+
+//fillScreen(RED);
+
+  //  writeRegister8(ILI9341_DISPLAYON, 0);
+//fillScreen(RED);
+//fillScreen(GREEN);
 //LCD_DrawPixel(10,15, GREEN);
 //check_PKU_NKK(20,0x09);
 //check_DOF(20,0x12);
@@ -1038,6 +1044,9 @@ fillScreen(GREEN);
 //check_km(30,0x04);
 
 //check_eth(8,0x17);
+
+
+
 
 /*
 check_PKU_NKK_3(20,0x08);

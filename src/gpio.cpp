@@ -8,7 +8,7 @@ void gpio::  Set_pin_H(GPIO_TypeDef *port,uint8_t pin)
 
 void  gpio:: Set_pin_L(GPIO_TypeDef *port,uint8_t pin)
 {
-  port->BRR = (1<<pin);
+  port->BSRR = (1<<pin+16);
 }
  
 void gpio::gpio_conf(GPIO_TypeDef * port, uint32_t pin, uint8_t mode)
