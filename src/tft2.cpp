@@ -15,12 +15,11 @@ extern gpio stm32f103;
 
 void Pulse_CS()
 {
-    stm32f103.set_pin_state(GPIOA,CS,0);
+    GPIOA->BSRR=(1<<CS+16);//0
     delay_us(1);
-    stm32f103.set_pin_state(GPIOA,CS,1);
+    GPIOA->BSRR=(1<<CS);//1
     delay_us(1);
-    stm32f103.set_pin_state(GPIOA,CS,0);
-    delay_us(1);
+    GPIOA->BSRR=(1<<CS+16);//0
 }
 
 
@@ -398,7 +397,7 @@ stm32f103.gpio_conf(GPIOA,D0,stm32f103.gpio_mode_pp_50);
 void TFT1520_InvertDisplay(uint8_t i) 
 {
  TFT_Send_Cmd(i ? 0x21 : 0x20);
-} 
+}
 
 // Формирование команды на порту
 void pushData(unsigned char data)
@@ -476,8 +475,9 @@ void TFT1520_init()
  TFT1520_SendData(0x55); 
  TFT1520_SetRotation(0); 
  TFT1520_InvertDisplay(0);  
-
 }
+
+
 
 void TFT1520_SetAddrWindow(uint16_t x, uint16_t y, uint16_t x1, uint16_t y1) 
 {

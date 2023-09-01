@@ -1046,6 +1046,10 @@ int k=ClockInit();
 //check_eth(8,0x17);
 
 
+ uint16_t x = 0; 
+ uint16_t y = 0;
+ TFT1520_init(); 
+TFT9341_FillScreen(GREEN);
 
 
 /*
@@ -1053,9 +1057,6 @@ check_PKU_NKK_3(20,0x08);
 check_PKU_NKK_2_1(20,0x09);*/
 while(1)
 {
-
-
-
 
 }
 }
