@@ -5,110 +5,36 @@
 #include "string.h"
 #include "hardware_config.hpp"
 #include "math.h"
+#include "delay.hpp"
 
 #include "registers.hpp"
 #include "arial.hpp"
 #include "stdio.h"
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
+#include "rcc.hpp"
+#include "tft2.hpp"
+
+
 
 char str[80];
 
 uint8_t res[32]={0,};
 
-usart uart1;
+usart usart1;
 dma_usart dma_usart1;
 gpio stm32f103;
-extern gpio gpio_stm32f103RC;
-
 
 uint16_t data_state[32];
 //volatile char rx_str[32];
 char temp[1];
 
-
-#define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
-#define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
-#define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
-
-volatile uint32_t *DWT_CONTROL2 = (uint32_t *)0xE0001000;
-volatile uint32_t *DWT_CYCCNT2 = (uint32_t *)0xE0001004;
-volatile uint32_t *DEMCR2 = (uint32_t *)0xE000EDFC;
-uint32_t Mcounter, count;
-
-void delay_us(uint32_t us)
-{
-   int32_t us_count_tick =  us * (SystemCoreClock/1000000);
-   //разрешаем использовать счётчик
-   SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-   //обнуляем значение счётного регистра
-   DWT_CYCCNT  = 0;
-   //запускаем счётчик
-   DWT_CONTROL |= DWT_CTRL_CYCCNTENA_Msk;
-   while(DWT_CYCCNT < us_count_tick);
-   //останавливаем счётчик
-   DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
-}
-
-void delay_ms(uint32_t ms)
-{
-   int32_t ms_count_tick =  ms * (SystemCoreClock/1000);
-   //разрешаем использовать счётчик
-   SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-   //обнуляем значение счётного регистра
-   DWT_CYCCNT  = 0;
-   //запускаем счётчик
-   DWT_CONTROL|= DWT_CTRL_CYCCNTENA_Msk;
-   while(DWT_CYCCNT < ms_count_tick);
-   //останавливаем счётчик
-   DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk;
-}
-
-
 void breakpoint(const char * data)
 {
-uart1.uart_tx_bytes(data);
-uart1.uart_enter();
+usart1.uart_tx_bytes(data);
+usart1.uart_enter();
 }
 
-
-uint8_t HC74_165()
-{
-for(int i=0;i<32;i++)
-{
-res[i]=0;
-}
-//flex
-
-stm32f103.set_pin_state(GPIOC,A0,1);
-stm32f103.set_pin_state(GPIOB,A1,0);
-stm32f103.set_pin_state(GPIOD,A2,1);
-
-// щелкнули защелкой
-stm32f103.set_pin_state(GPIOB,clk_165,0);
-stm32f103.set_pin_state(GPIOB,pl_165,0);
-delay_us(5);
-stm32f103.set_pin_state(GPIOB,pl_165,1);
-// щелкнули защелкой
-for(int i=0;i<32;i++)
-{
- if((stm32f103.get_state_pin(GPIOB,1))==1)
-    {
-    res[i]=i;
-    }
-    else
-    {
-    res[i]=0;
-    }
-//delay_us(5);
-stm32f103.set_pin_state(GPIOB,clk_165,1);
-delay_us(5);
-stm32f103.set_pin_state(GPIOB,clk_165,0);
-delay_us(5);
-}
-delay_us(500);
-return *res;
-}
 
 //----------------------------------------------------------
 extern "C" void DMA1_Channel4_IRQHandler(void)
@@ -117,7 +43,7 @@ extern "C" void DMA1_Channel4_IRQHandler(void)
   {
     DMA1->IFCR|= DMA_IFCR_CTCIF4;
    //dma_usart1::fl_tx = 1;
-   dma_usart1._fl_tx=1;    
+   dma_usart1._fl_tx=1;
   }
   else if((DMA1->ISR & DMA_ISR_TEIF4)== DMA_ISR_TEIF4)
   {
@@ -143,68 +69,11 @@ extern "C" void DMA1_Channel5_IRQHandler(void)
 }
 //----------------------------------------------------------
 
-void eth_config_out()
-{
-gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.gpio_mode_pp_50);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.gpio_mode_pp_50);
-}
-
-
-void eth_config_in()
-{
-gpio_stm32f103RC.gpio_conf(GPIOC,eth1_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth2_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth3_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth4_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOB,eth5_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth6_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth7_out,gpio_stm32f103RC.input_mode_floating);
-gpio_stm32f103RC.gpio_conf(GPIOC,eth8_out,gpio_stm32f103RC.input_mode_floating);
-}
-
-
-void eth_test()
-{
-GPIO_TypeDef *ports_eth[8]={GPIOC,GPIOC,GPIOC,GPIOC,GPIOB,GPIOC,GPIOC,GPIOC};
-uint8_t pins_eth[8]={eth1,eth2,eth3,eth4,eth5,eth6,eth7,eth8};
-uint8_t pins_eth_out[8]={eth1_out,eth2_out,eth3_out,eth4_out,eth5_out,eth6_out,eth7_out,eth8_out};
-uint8_t state[8]={0};
-  //visible
-  eth_config_out();
-  for(int i=0;i<8;i++)
-  {
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],0);
-  delay_ms(1000);
-  stm32f103.set_pin_state(ports_eth[i],pins_eth_out[i],1);
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
-  }
-  //otchet
-  eth_config_in();
-  for(int i=0;i<8;i++)
-  {
-  stm32f103.set_pin_state(GPIOA,pins_eth[i],1);
-  for(int k=0;k<8;k++)
-  {
- if(stm32f103.get_state_pin(ports_eth[k],pins_eth_out[k])==1)
-  {
-  state[k]=k;
-  }
-  }
-  }
- //  eth_config_out();
-}
-
 void RCC_init()
 {
    BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
    BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
-   BKP->CSR =0;                                             //ничего важного 
+   BKP->CSR =0;                                             //ничего важного
    PWR->CR |= PWR_CR_DBP;                                   //1: Включен доступ к RTC и резервным регистрам
    RCC->BDCR &=~ RCC_BDCR_BDRST;
    RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
@@ -212,7 +81,7 @@ void RCC_init()
    while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // ждем пока генератор выключится
 
    RCC->CR &=~ RCC_CR_HSEON;                                // выключаем HSE
-   RCC->CR |= RCC_CR_HSION;                                 // включаем HSI генератор 
+   RCC->CR |= RCC_CR_HSION;                                 // включаем HSI генератор
    while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // ждем пока генератор не включится
 
    RCC->CFGR |= RCC_CFGR_SW_HSI;                            // выбрали HSI в качестве системного тактирования
@@ -269,7 +138,7 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
                       RegCR1 WordSize,
                       RegCR1 LsbMsbFirst)
                       {
-   RCC->APB2ENR |= RCC_APB2ENR_SPI1EN  ; // ??? ???????????? SPI
+   RCC->APB1ENR |= RCC_APB1ENR_SPI2EN  ; // ??? ???????????? SPI
 
     SPIx->CR1    = 0;
     SPIx->CR2    = 0;
@@ -294,284 +163,997 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
 
 void spi_transmit(uint16_t data)
 {
-while (!(SPI1->SR & SPI_SR_TXE));
-SPI1->DR = data ;
-delay_ms(1);
+while (!(SPI2->SR & SPI_SR_TXE));
+SPI2->DR = data ;
 }
 
+uint32_t pku_nkk_21[20]=
+{
+1,
+0,
+2,
+3,
+0,
+4,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
 
-uint8_t dof_pins[21]={0,};
-uint8_t km_pins[21]={0,};
-uint8_t km_state[24]={1,};
-uint8_t dof_state[24]={'z',};
-uint8_t dof_state_[24]={'x',};
+uint32_t km_1[20]=
+{
+0,
+1,
+0,
+6,
+0,
+0,
+0,
+0,
+2,
+4,
+3,
+5,
+12,
+0,
+11,
+0,
+0,
+0,
+0,
+0,
+};
 
-uint8_t km_check()
+uint32_t km_2[20]=
 {
-for(int k=1;k<21;k++)
-{
-km_state[k]=1;
-km_pins[k]='z';
-}
-for(int k=0;k<21;k++)
-{
-  flex_cable(k,1);
-  if(res[5]==0x10 && res[8]==0x10)
-  {
-  km_pins[21]=1;
-  }
-  if(res[4]==km[k])
-  km_pins[k]=k;
-  if(res[5]==km[k])
-  km_pins[k]=k;
-  if(res[7]==km[k])
-  km_pins[k]=k;
-  if(res[8]==km[k])
-  km_pins[k]=k;
-  if(res[4]==0 && res[5]==0 && res[7]==0 && res[8]==0)
-  km_pins[k]='N';
-  delay_ms(1);
-}
-km_pins[1]=km_pins[21];
-if(km_pins[1]==0)
-km_pins[1]='N';
-delay_ms(1);
-//поменять местами четные и нечетные элементы//
-uint8_t temp=0;
-for(int i=1;i<21;i++)
-{
-temp=km_pins[i];
-km_pins[i]=km_pins[i+1];
-km_pins[i+1]=temp;
-i++;
-}
-delay_ms(1);
-//занулим не используемые пины//
-uint8_t no_pin_km[6]={0,5,6,7,8,20};
-for(int i=0;i<6;i++)
-{
-  km_pins[no_pin_km[i]]=0;
-}
-delay_ms(1);
-int index=0,flag=0,pin=0;
-//***********Выкинуть неиспользуемые элементы массива**********************************//
-while(1)
-{
-if(km_pins[index]==0)
-{
-for(int i=index;i<21;i++)
-{
-  km_pins[i]=km_pins[i+1];
-}
-}
-index++;
-if(index>20)
-{
-if(flag>2)
-break;
-index=0;
-flag++;
-}
-}
-//*********************************************//
-delay_ms(1);
-for(int i=0;i<15;i++)
-{
-if(km_pins[i]==km_[i])
-{
-km_state[i+3]=0x00;
-}
-if(km_pins[i]=='N')
-{
-km_state[i+3]=0x02;
-}
-delay_ms(1);
-if (km_pins[i]!=km_[i] && km_pins[i]!='N')
-{
-for(int j=1;j<20;j++)
-{
-  if(km_pins[i]==km_pins[j])
-  {
-  pin=km_pins[j];
-  if(pin==0)
-  {
-  km_state[i+2]=0x02;
-  }
-  else
-  km_state[i+2]=pin<<2|0x03;
-  }
-}
-}
-}
+0,
+1,
+0,
+6,
+0,
+0,
+0,
+0,
+2,
+4,
+3,
+5,
+12,
+0,
+11,
+0,
+0,
+0,
+0,
+0,
+};
 
-km_state[0]=0xAA;
-km_state[1]=0x55;
-km_state[2]=0x04;
-km_state[18]=gencrc(km_state,18);
-for(int k=0;k<19;k++)
+uint32_t pku_nkk_22[20]=
 {
-uart1.uart_tx_byte(km_state[k]);
-}
-return *km_state;
-}
+1,
+0,
+2,
+3,
+0,
+4,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+
+uint32_t pku_nkk_uart[20]=
+{
+7,
+0,
+6,
+0,
+0,
+0,
+0,
+0,
+0,
+5,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+uint32_t dof_pins_2[20]=
+{
+25,
+19,
+26,
+5,
+11,
+6,
+12,
+0,
+10,
+0,
+20,
+22,
+21,
+23,
+14,
+24,
+15,
+17,
+16,
+13,
+};
+uint32_t flex_14_[14]=
+{
+  1,//1
+  2,//2
+  4,//3
+  8,//4
+  16,//5
+  32,//6
+  64,//7
+  128,//8
+  256,//9
+  512,//10
+  1024,//11
+  2048,//12
+  4096,//13
+  8192,//14
+  /*16384,//15
+  32768,//16
+  65536,//17
+  131072,//18
+  524288,//19*/
+  };
 
 
-
-uint8_t dof_check()
+uint32_t resolve(uint32_t val)
 {
-for(int k=1;k<21;k++)
+for(int i=0;i<32;i++)
 {
-dof_state[k]='z';
-}
-for(int k=0;k<21;k++)
-{
-  flex_cable(k,1);
-  if(res[9]==dof[k])
-  dof_pins[k]=k;
-  if(res[10]==dof[k])
-  dof_pins[k]=k;
-  if(res[11]==dof[k])
-  dof_pins[k]=k;
-}
-  for(int q=1;q<21;q++)
-  {
-   if(q>8)
+    if((val & 1<<i)==val)
     {
-      dof_state[q]=dof_state[q+1]; //state
+      return i+1;
     }
-  }
-  for(int q=1;q<21;q++)
-  {
-   if(q>9)
-    {
-      dof_state[q]=dof_state[q+1]; //state
-    }
-  }
-   for(int q=1;q<19;q++)
-  {
-   if(dof_pins[q]=='z')
-    {
-      dof_state[2+q]=0x02; //state
-    }
-  }
- /*for(int q=3;q<19;q++)
-  {
-   if(dof_pins[q-3]==dof_[q-3])
-    {
-      dof_state[q]=0x0;  //state ok
-    }
-  }*/
-  for(int g=0;g<24;g++)
-  {
-   dof_state_[g+3]=dof_state[g];
-  }
- 
-dof_state_[0]=0xAA;
-dof_state_[1]=0x55;
-dof_state_[2]=0x11;
- 
+}
+}
 
+uint32_t find_K3(uint32_t *val)
+{
+for(int i=0;i<32;i++)
+{
+  for(int j=0;j<32;j++)
+  {
+     if(val[i]==val[j] && i!=j)
+     {
+
+     }
+  }
+}
+}
+
+
+
+uint16_t SD_CS[20]=
+{
+    0b000000000011111111111110,//1
+    0b000000000011111111111101,//2
+    0b000000000011111111111011,//3
+    0b000000000011111111110111,//4
+    0b000000000011111111101111,//5
+    0b000000000011111111011111,//6
+    0b000000000011111110111111,//7
+    0b000000000011111101111111,//8
+    0b000000000011111011111111,//9
+    0b000000000011110111111111,//10
+    0b000000000011101111111111,//11
+    0b000000000011011111111111,//12
+    0b000000000010111111111111,//13
+    0b000000000001111111111111,//14
+    0b000000000011111011111111,//15
+    0b000000000011110111111111,//16
+    0b000000000011101111111111,//17
+    0b000000000011011111111111,//18
+    0b000000000010111111111111,//19
+    0b000000000001111111111111,//20
+};
+
+void HC74_595_SPI(uint32_t data,uint8_t mode)
+{
+if(mode==0)
+data=~data;
+
+uint16_t data1,data2;
+data1=data&0xFF;
+data2=data>>8;
+stm32f103.set_pin_state(GPIOB,EN_595,1);
+stm32f103.set_pin_state(GPIOB,CS_595,0);
+
+spi_transmit(data2);
+spi_transmit(data1);
+delay_ms(5);
+stm32f103.set_pin_state(GPIOB,CS_595,1);
+stm32f103.set_pin_state(GPIOB,EN_595,0);
+}
+
+void HC74_595_SET(uint16_t data1,uint16_t data2,uint8_t mode)
+{
+SPI2->CR1 |= static_cast<uint32_t>(0b11);//mode3
+HC74_595_SPI(data2,mode);
+HC74_595_SPI(data1,mode);
+}
+
+uint8_t check_K3(uint8_t value)
+{
+  uint8_t count=0;
+for (int i{0}; i < 8; i ++)
+        count += static_cast<bool>(value & (1<<i));
+        return count;
+}
+
+uint8_t result[32]={0x77,},n=0,m=0;
+uint32_t k3[32]={0,};
+uint8_t pin_map[32][32]={{0},{0}};
+uint32_t ob[32]={0,};
+uint16_t kz[32]={0,};
+uint32_t obr[32]={0,};
+uint8_t error[32]={0x77,};
+uint8_t result_buff[32]={0x88,};
+uint8_t temp_=0;
+uint8_t state_pin[32]={0,};
+uint8_t ignore[32]={0,};
+
+uint8_t check_num_0(uint8_t value)
+{
+uint8_t count=0;
+for (uint8_t i=0; i<8; i++)
+{
+count += static_cast<bool>(value & (1<<i));
+}
+return count;
+}
+
+
+
+void check_km_1(uint8_t num,uint8_t num_cable)
+{
+   for(int i=0;i<20;i++) 
+ {
+  kz[i]=0;
+ }
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+{
+    /*HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[12]<<8)|res[13];*/
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[12]<<8)|res[13];
+}
+
+if(i>15)
+{
+    /*HC74_595_SET(0x0000,1<<i-16,0);
+    flex_cable();
+    k3[i]=(res[12]<<8)|res[13];*/
+
+    HC74_595_SET(0x0000,1<<i-16,1);
+    flex_cable();
+    ob[i]=(res[12]<<8)|res[13];
+}
+}
+for(int x=0;x<num;x++)
+   {
+    if(ob[x]!=0)
+    kz[x]=resolve(ob[x]);
+   }
+
+count++;
+}
+
+void check_km_2(uint8_t num,uint8_t num_cable)
+{
+ for(int i=0;i<20;i++)
+ {
+  kz[i]=0;
+ }
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+{
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[10]<<8)|res[11];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[10]<<8)|res[11];
+}
   
-
-
-
-dof_state_[21]=gencrc(dof_state_,20);
-for(int k=0;k<24;k++)
+if(i>15)
 {
-uart1.uart_tx_byte(dof_state_[k]);
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[10]<<8)|res[11];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[10]<<8)|res[11];
 }
-return *dof_state_;
 }
-
-
-uint8_t flex_check()
-{
-for(int k=0;k<21;k++)
-{
-km_state[k]=2;
-km_pins[k]=0;
-}
-for(int k=1;k<21;k++)
-{
-  flex_cable(k,0);
-  delay_ms(3);
-  if(res[0]==flex_16[k])
-  km_pins[k]=k;
-  if(res[1]==flex_16[k])
-  km_pins[k]=k;
-  if(res[2]==flex_16[k])
-  km_pins[k]=k;
+for(int x=0;x<num;x++)
+   {
+    if(ob[x]!=0)
+      kz[x]=resolve(ob[x]);
+   }
+count++;
 }
 
-delay_ms(1);
-//*********************************************//
-uint8_t pin=0;
-for(int i=0;i<21;i++)
+void check_DOF(uint8_t num,uint8_t num_cable)
 {
-if(km_pins[i]==flex_16_[i])
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
 {
-km_state[i+3]=0x00;
-}
-delay_ms(1);
-}
-km_state[0]=0xAA;
-km_state[1]=0x55;
-km_state[2]=0x06;
-km_state[19]=gencrc(km_state,19);
-for(int k=0;k<20;k++)
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+  }
+if(i>15)
 {
-uart1.uart_tx_byte(km_state[k]);
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
 }
-return *km_state;
+}
+  for(int x=0;x<num;x++)
+   {
+      kz[x]=resolve(ob[x]);
+    if(ob[x]==0)
+     {
+        state_pin[x]=0x02; //OB
+        kz[x]=100;
+        ignore[x]=0x88;
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+ 
+
+          if(kz[x]==dof_pins_2[x])
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //OB
+                ignore[x]=0x99;
+              }
+        }
+
+
+}
+for(int i=0;i<32;i++)
+{
+if(ob[i]==0)
+     state_pin[i]=0x02; //OB
 }
 
+ if(state_pin[7]==state_pin[9])
+{
+state_pin[7]=0;
+state_pin[9]=0;
+}
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+}
+
+void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[1];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
+}
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+         if(ob[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+         if(kz[x]==pku_nkk_21[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=pku_nkk_21[x] && ob[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+count++;
+}
+
+void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[1];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
+}
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+         if(ob[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+          if(kz[x]==pku_nkk_22[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=pku_nkk_22[x] && ob[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+count++;
+}
+
+void check_PKU_NKK_3(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[1];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
+}
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+        if(kz[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+          if(kz[x]==pku_nkk_uart[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=pku_nkk_uart[x] && kz[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+count++;
+}
+
+void check_eth(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0;
+for(int i=0;i<num;i++)
+{
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[6];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[6];
+}
+  for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+    if(ob[x]==0)
+     {
+        state_pin[x]=0x02; //OB
+        kz[x]=100;
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+ 
+
+          if(kz[x]==x+1)
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //OB
+                ignore[x]=0x99;
+              }
+        }
+
+
+}
+for(int i=0;i<32;i++)
+{
+if(ob[i]==0)
+  state_pin[i]=0x02; //OB
+}
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+count++;
+}
+
+void check_ext_fridge(uint8_t num,uint8_t num_cable)
+{
+   uint8_t count=0,k;
+////////////////////////////////Обнулим буффер
+for(int i=0;i<num;i++)
+{
+k3[i]=0;
+ob[i]=0;
+result[i]=0x77;
+}////////////////////////////////Опросим каждый пин
+
+for(int i=0;i<num;i++)
+{
+    if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+}
+}
+  for(int x=0;x<num;x++)
+   {
+     count=0;
+  for(int z=0;z<num;z++)
+   {
+        kz[z]=k3[z] & 1<<x;
+        if(kz[z]>0)
+        count++;
+   }
+  if(count==0)
+  {
+    state_pin[x]=0x02; //OBR
+   // k3[x]=k3[x] & 1<<x;
+  }
+  if(count==num-1)
+  {
+      if(kz[x]==0)
+      state_pin[x]=0x00; //OK
+      else
+      state_pin[x]=0x03; //OK
+  }
+  if(count<num-1 && count!=0)
+   state_pin[x]=0x01; //K3
+   }
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+ state_pin[0]=0x00; //OK
+ state_pin[1]=0x00; //OK
+ state_pin[12]=0x00; //OK
+ state_pin[13]=0x00; //OK
+ state_pin[14]=0x00; //OK
+ state_pin[15]=0x00; //OK
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+
+result[21]=0x77;
+}
+
+void check_SD_SC2(uint8_t num,uint8_t num_cable)
+{
+   uint8_t count=0,k;
+////////////////////////////////Обнулим буффер
+for(int i=0;i<num;i++)
+{
+k3[i]=0;
+ob[i]=0;
+result[i]=0x77;
+}////////////////////////////////Опросим каждый пин
+
+for(int i=0;i<num;i++)
+{
+    if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+}
+}
+  for(int x=0;x<num;x++)
+   {
+     count=0;
+  for(int z=0;z<num;z++)
+   {
+        kz[z]=k3[z] & 1<<x;
+        if(kz[z]>0)
+        count++;
+   }
+  if(count==0)
+  {
+    state_pin[x]=0x02; //OBR
+   // k3[x]=k3[x] & 1<<x;
+  }
+  if(count==num-1)
+  {
+      if(kz[x]==0)
+      state_pin[x]=0x00; //OK
+      else
+      state_pin[x]=0x03; //OK
+  }
+  if(count<num-1 && count!=0)
+   state_pin[x]=0x01; //K3
+   }
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+
+result[21]=0x77;
+}
 
 int main()
 {
 gpio_init();
-uart1.usart_init();
+usart1.usart_init();
+SettingsSPI(SPI2,
+            RegCR1::ACTIVE,
+            RegCR1::MASTER,
+            2,
+            RegCR1::SPI_MODE1,//1 => 595 3=>165D
+            RegCR1::DFF8bit,
+            RegCR1::MSBF);
 
-   SettingsSPI(SPI1,
-                RegCR1::ACTIVE,
-                  RegCR1::MASTER,
-                    1 /*Mbps*/,
-                      RegCR1::SPI_MODE3,
-                        RegCR1::DFF8bit,
-                          RegCR1::MSBF);
+int k=ClockInit();
 
-uint8_t data[32]={0,};
-uint8_t test_data[16]={0xAA,0x55,0x02,0x00,0x01,0x02,0x3B,0x00,0x01,0x02,0x53,0xF0};
-//AA 55 02 00 01 02 3B 00 01 02 53 F0
-//0x00 = OK
-//0x01 = K3
-//0x02 = OB
-//0x3x = HP
+
+
+
+
+//fillScreen(RED);
+
+  //  writeRegister8(ILI9341_DISPLAYON, 0);
+//fillScreen(RED);
+//fillScreen(GREEN);
+//LCD_DrawPixel(10,15, GREEN);
+//check_PKU_NKK(20,0x09);
+//check_DOF(20,0x12);
+
+//check_km(30,0x04);
+
+//check_eth(8,0x17);
+
+
+
+
+check_km_1(20,0x04);
+check_km_2(20,0x04);
+//check_km_2(20,0x05);
+
+
+
 /*
-delay_ms(500);
-test_data[12]=gencrc(test_data ,12);
-for(int k=0;k<12;k++)
-{
-uart1.uart_tx_byte(test_data[k]);
-}*/
-
-
-
+check_PKU_NKK_3(20,0x08);
+check_PKU_NKK_2_1(20,0x09);*/
 while(1)
 {
-//km_check();
-//for(int i=1;i<21;i++)
 
-flex_check();
-delay_ms(1000);
-
-
-//flex_cable(1);
 }
 }
-
-
-
-
 
 extern "C"
 {

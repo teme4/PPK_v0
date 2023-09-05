@@ -1,9 +1,9 @@
 #include "74hc595.hpp"
 #include "gpio.hpp"
 
-
 extern gpio stm32f103;
 extern uint16_t data_state[32];
+
 
 void HC74_595(uint16_t data)
 {
@@ -31,11 +31,10 @@ stm32f103.set_pin_state(GPIOC,latcg_pin,1);
 stm32f103.set_pin_state(GPIOD,EN_1,0);
 }
 
-
+/*
 void set_pin_HC74_595(uint8_t _val,uint8_t state)
 {
    uint8_t mask,val;
-  
 //uint8_t revers=0x00;
 //revers=~(pin_HC595[5]);
 if(state==1)
@@ -88,3 +87,4 @@ if((_val>=25)&&(_val<=32))
   HC74_595(mask);
 }
 }
+*/
