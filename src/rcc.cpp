@@ -96,5 +96,6 @@ int ClockInit(void)
   //на внешний кварцевый генератор
   //и PLL запершилось успехом.
   //Выходим
+  SystemCoreClockUpdate();
   return 0;
 }

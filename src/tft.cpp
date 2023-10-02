@@ -1,9 +1,16 @@
 #include <stm32f1xx.h>
-/*
+#include "tft.hpp"
+#include "registers.hpp"
+#include "gpio.hpp"
+#include "dma.hpp"
+#include "string.h"
+#include "hardware_config.hpp"
+#include "delay.hpp"
+
+extern gpio stm32f103;
   uint32_t t;
 void setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
  {
- //GPIOA->BRR= (1<<11);
     t = x1;
     t <<= 16;
     t |= x2;
@@ -14,7 +21,6 @@ void setAddrWindow(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
     t |= y2;
      writeRegister32(ILI9341_PAGEADDRSET, t); // HX8357D uses same registers!
 delay_us(5);
-//GPIOA->BRR= (1<<11);
 }
 
 void fillScreen(uint16_t color) 
@@ -37,9 +43,9 @@ return;
 
 void LCD_DrawPixel(uint32_t x, uint32_t y, uint32_t color) {
     setAddrWindow(x, y, x, y);
-    GPIOA->BSRR= (1<<28);
+    GPIOA->BSRR= (1<<RS+16);
     write8(ILI9341_MEMORYWRITE); 
-    GPIOA->BSRR= (1<<12); 
+    GPIOA->BSRR= (1<<RS); 
     write8(color >> 8);
     write8(color & 0xFF);
 }
@@ -48,16 +54,16 @@ void lcdFillRGB(uint16_t color)
 {
   setAddrWindow(0, 0, 240 - 1, 320 - 1);
   int dimensions = 320 * 240;
-  GPIOA->BSRR= (1<<28);
+  GPIOA->BSRR= (1<<RS+16);
   write8(0x2C);
-  GPIOA->BSRR= (1<<12);
+  GPIOA->BSRR= (1<<RS);
   while(dimensions--)
   {
     write8(color >> 8);
     write8(color & 0xFF);
   }
 }
-
+/*
 extern const font_type TimesNewRoman;
 
 uint32_t LCD_Putchar(uint32_t x, uint32_t y, char c) {
@@ -78,7 +84,7 @@ uint32_t LCD_Putchar(uint32_t x, uint32_t y, char c) {
             }
         }
         return x+width;
-}
+}*/
 
 void LCD_DrawString(uint32_t x, uint32_t y, char *str)
 {
@@ -88,21 +94,21 @@ void LCD_DrawString(uint32_t x, uint32_t y, char *str)
     }
 }
 
-void begin() 
+void begin()
 {
  reset();
- delay_ms(128);
+ delay_ms(1000);
  writeRegister8(ILI9341_SOFTRESET, 0);
- delay_us(100);
+ delay_us(1000);
  writeRegister8(ILI9341_DISPLAYOFF, 0);
  delay_us(100);
- writeRegister8(ILI9341_POWERCONTROL1, 0x23);
+ writeRegister8(ILI9341_POWERCONTROL1, 0x25);
  delay_us(100);
-    writeRegister8(ILI9341_POWERCONTROL2, 0x10);
+    writeRegister8(ILI9341_POWERCONTROL2, 0x11);
     delay_us(100);
     writeRegister16(ILI9341_VCOMCONTROL1, 0x2B2B);
     delay_us(100);
-    writeRegister8(ILI9341_VCOMCONTROL2, 0xC0);
+    writeRegister8(ILI9341_VCOMCONTROL2, 0x86);
     delay_us(100);
     writeRegister8(ILI9341_MEMCONTROL,0x38);//ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR
     delay_us(100);
@@ -110,14 +116,14 @@ void begin()
  writeRegister8(0x53,0x00);
       writeRegister8(ILI9341_GAMMASET,0x01);
  writeRegister8(0x51,0x0);
-    writeRegister8(ILI9341_PIXELFORMAT, 0x55);
+    writeRegister8(ILI9341_PIXELFORMAT, 0x05);
     delay_us(100);
-    writeRegister16(ILI9341_FRAMECONTROL, 0x001B);//0x001B
+    writeRegister16(ILI9341_FRAMECONTROL, 0x0018);//0x001B
     delay_us(100);
     writeRegister8(ILI9341_ENTRYMODE, 0x07);
    delay_us(100);
     writeRegister8(ILI9341_SLEEPOUT, 0);
-     delay_ms(500);
+     delay_ms(200);
     writeRegister8(ILI9341_DISPLAYON, 0);
     delay_ms(750);
     setAddrWindow(0, 0, 319, 239);    
@@ -129,12 +135,12 @@ void flood(uint16_t color, uint32_t len)
   uint16_t blocks;
   uint8_t  i, hi = color >> 8,
               lo = color;
-// GPIOA->BRR= (1<<11);
- GPIOA->BRR= (1<<12);
+// GPIOA->BRR= (1<<CS);
+ GPIOA->BRR= (1<<RS);
   write8(0x2C);
   
     // Write first pixel normally, decrement counter by 1
-GPIOA->BSRR= (1<<12);
+GPIOA->BSRR= (1<<RS);
   write8(hi);
   write8(lo);
   len--;
@@ -148,33 +154,33 @@ GPIOA->BSRR= (1<<12);
       i = 16; // 64 pixels/block / 4 pixels/pass
       do
        {
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15); 
-      GPIOA->BSRR= (1<<31);
-      GPIOA->BSRR= (1<<15);
-     } 
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+      GPIOA->BSRR= (1<<WR+16);
+      GPIOA->BSRR= (1<<WR);
+     }
      while(--i);
     }
     // Fill any remaining pixels (1 to 64)
     for(i = (uint8_t)len & 63; i--; ) {
-    GPIOA->BSRR= (1<<31);
-    GPIOA->BSRR= (1<<15); 
-    GPIOA->BSRR= (1<<31);
-    GPIOA->BSRR= (1<<15);     
+    GPIOA->BSRR= (1<<WR+16);
+    GPIOA->BSRR= (1<<WR);
+    GPIOA->BSRR= (1<<WR+16);
+    GPIOA->BSRR= (1<<WR);
     }
-  } 
+  }
   else
   {
     while(blocks--) {
@@ -183,7 +189,7 @@ GPIOA->BSRR= (1<<12);
       {
         write8(hi); write8(lo); write8(hi); write8(lo);
         write8(hi); write8(lo); write8(hi); write8(lo);
-      } 
+      }
       while(--i);
     }
     for(i = (uint8_t)len & 63; i--; ) {
@@ -191,69 +197,63 @@ GPIOA->BSRR= (1<<12);
       write8(lo);
     }
   }
-//GPIOA->BRR= (1<<11);
+//GPIOA->BRR= (1<<CS);
 }
 
 void reset()
 {
-//GPIOA->BRR= (1<<11);
 stm32f103.set_pin_state(GPIOC,RD,1);
-GPIOA->BSRR= (1<<10);
 delay_ms(50);
-GPIOA->BSRR= (1<<10);
-delay_ms(50);
-//GPIOA->BRR= (1<<11);
-GPIOA->BRR= (1<<12);
+GPIOA->BSRR= (1<<CS);
+GPIOA->BSRR= (1<<RS+16);
   write8(ILI9341_SOFTRESET);
-  GPIOA->BSRR= (1<<12);
-  write8(0x80);
-  write8(0x80);
+  GPIOA->BSRR= (1<<RS);
+  write8(0x00);
+  write8(0x00);
   for(uint8_t i=0; i<3; i++)
   {
-    GPIOA->BSRR= (1<<15);
-    GPIOA->BRR= (1<<15);
-  } 
-
-//GPIOA->BRR= (1<<11);
+    GPIOA->BSRR= (1<<WR);
+    GPIOA->BSRR= (1<<WR+16);
+  }
 }
 
 void writeRegister32(uint8_t r, uint32_t d)
  {
   uint8_t temp;
-  GPIOA->BSRR= (1<<27);
-  GPIOA->BSRR= (1<<28);
-  write8(r);  
+  GPIOA->BSRR= (1<<CS+16);
+  GPIOA->BSRR= (1<<RS+16);
+  write8(r);
   delay_us(1);
-  GPIOA->BSRR= (1<<12);
+  GPIOA->BSRR= (1<<RS);
   temp=d >> 24;
   write8(temp);
   delay_us(1);
   temp=d >> 16;
-  write8(temp); 
+  write8(temp);
   delay_us(1);
   temp=d >> 8;
-  write8(temp); 
+  write8(temp);
   delay_us(1);
   write8(d);
-  GPIOA->BSRR= (1<<27);
+  GPIOA->BSRR= (1<<CS+16);
   delay_us(1);
 }
 
 void write8(uint8_t data)
-{                          
+{
     port_data(data);
-    GPIOA->BSRR= (1<<31);
-    GPIOA->BSRR= (1<<15); 
-     //delay_us(10);
-     //asm ("NOP"); asm ("NOP");asm ("NOP"); //asm ("NOP");  //asm ("NOP");// asm ("NOP");     
+    GPIOA->BSRR= (1<<WR+16);
+    GPIOA->BSRR= (1<<WR);
+    // delay_us(100);
+    // asm ("NOP"); asm ("NOP");asm ("NOP"); //asm ("NOP");  //asm ("NOP");// asm ("NOP");     
 }
 
 void writeRegister8(uint8_t a,uint8_t d) 
 { 
-  GPIOA->BSRR= (1<<28);
+  GPIOA->BSRR= (1<<RS+16);
   write8(a); 
   delay_us(5);
-  GPIOA->BSRR= (1<<12); 
+  GPIOA->BSRR= (1<<RS); 
   write8(d); 
   delay_us(5);
 }
@@ -263,40 +263,27 @@ void writeRegister16(uint16_t a, uint16_t d)
   uint8_t hi, lo; 
   hi = (a) >> 8; 
   lo = (a); 
-  GPIOA->BRR= (1<<12);
+  GPIOA->BRR= (1<<RS);
   write8(hi); 
   write8(lo); 
   hi = (d) >> 8;
   lo = (d); 
   delay_us(5);
-  GPIOA->BSRR= (1<<12);
+  GPIOA->BSRR= (1<<RS);
   write8(hi);
   write8(lo);   
   delay_us(5);
   }
 
 
-uint8_t cmd_temp;
-const uint8_t mask[8]={1,2,4,8,16,32,64,128};  
-GPIO_TypeDef *ports[8]={GPIOB,GPIOB,GPIOB,GPIOB,GPIOC,GPIOC,GPIOA,GPIOA};
-uint8_t pins[8]={12,13,14,15,8,9,8,9};
-uint8_t pins2[8]={12,13,14,15,8,9,8,9};
+
+
+
+
 void port_data(uint8_t cmd)
 {
-  
-for(int i=0;i<8;i++)
-{
-  cmd_temp=cmd;
-  cmd_temp=cmd_temp&mask[i];
-  if(cmd_temp==0)
-  {
-     ports[i]->BSRR = (1<<(pins[i]+16));
-  }
-  else
-  { 
-  ports[i]->BSRR = (1<<pins[i]);
-  }
-}
+   GPIOA->BSRR|=0xFF0000;
+   GPIOA->BSRR|=cmd;
 }
 
 #define TFTWIDTH   320
@@ -310,6 +297,3 @@ for(int i=0;i<8;i++)
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
-
-
-  */

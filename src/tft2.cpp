@@ -26,8 +26,11 @@ void Pulse_CS()
 
 void parallel_cmd(uint8_t cmd)
 {
+/*
+ GPIOA->BSRR|=0xFF0000;
+ GPIOA->BSRR|=cmd;
+*/
 uint8_t cmd_temp=0,mask[8]={1,2,4,8,16,32,64,128},state=0;  
-GPIO_TypeDef *ports[8]={GPIOA,GPIOA,GPIOA,GPIOA,GPIOA,GPIOA,GPIOA,GPIOA};
 uint8_t gpio[8]={0,1,2,3,4,5,6,7};
 for(int i=0;i<8;i++)
 {
@@ -37,7 +40,7 @@ for(int i=0;i<8;i++)
   state=0;
   else
   state=1;
- stm32f103.set_pin_state(ports[i],gpio[i],state);
+ stm32f103.set_pin_state(GPIOA,gpio[i],state);
 }
 }
 
@@ -404,8 +407,9 @@ void pushData(unsigned char data)
  {
   parallel_cmd(data);
   stm32f103.set_pin_state(GPIOA,WR,0);
-  delay_ms(1);
+  delay_ms(5);
   stm32f103.set_pin_state(GPIOA,WR,1);
+  delay_ms(5);
  }
 
 
@@ -413,6 +417,7 @@ void TFT1520_SendCommand(uint8_t index)
  {
  stm32f103.set_pin_state(GPIOA,CS,0);
  stm32f103.set_pin_state(GPIOA,RS,0);
+ stm32f103.set_pin_state(GPIOA,RD,1);
  pushData(index);
  stm32f103.set_pin_state(GPIOA,CS,1);
  }
@@ -421,6 +426,7 @@ void TFT1520_SendData(uint8_t data)
  {
  stm32f103.set_pin_state(GPIOA,CS,0);
  stm32f103.set_pin_state(GPIOA,RS,1);
+ stm32f103.set_pin_state(GPIOA,RD,1);
  pushData(data);
  stm32f103.set_pin_state(GPIOA,CS,1);
  } 
@@ -430,7 +436,7 @@ void TFT1520_Reset(void)
   stm32f103.set_pin_state(GPIOA,CS,1); 
   stm32f103.set_pin_state(GPIOA,RD,1);
   stm32f103.set_pin_state(GPIOA,WR,1);
-  delay_us(15);
+  delay_us(150);
 } 
 
 
@@ -446,7 +452,7 @@ void TFT1520_SetRotation(uint8_t r)
  TFT1520_SendData(0x28);
  X_SIZE = 320; Y_SIZE = 240;
  break;
- case 2: 
+ case 2:
 TFT1520_SendData(0x88);
  X_SIZE = 240; Y_SIZE = 320;
  break;
@@ -460,21 +466,25 @@ TFT1520_SendData(0x88);
 
 void TFT1520_init()
 {
- TFT1520_Reset();
- TFT1520_SendCommand(0x01); 
- delay_us(3000);
+  /*
+stm32f103.set_pin_state(GPIOA,CS,0);
+delay_ms(5);
+stm32f103.set_pin_state(GPIOA,CS,1);
+*/
+ TFT1520_SendCommand(0x01);
+ delay_us(1000);
  TFT1520_SendCommand(0x28);
  TFT1520_SendCommand(0xB0);
  TFT1520_SendData(0x00);
  TFT1520_SendCommand(0xC0);
  TFT1520_SendData(0x0A);
- TFT1520_SendCommand(0x11); 
- delay_us(2000);
+ TFT1520_SendCommand(0x11);
+ delay_us(200);
  TFT1520_SendCommand(0x29);
  TFT1520_SendCommand(0x3A);
- TFT1520_SendData(0x55); 
- TFT1520_SetRotation(0); 
- TFT1520_InvertDisplay(0);  
+ TFT1520_SendData(0x55);
+ TFT1520_SetRotation(0);
+ TFT1520_InvertDisplay(0);
 }
 
 

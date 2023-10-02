@@ -13,10 +13,8 @@ extern gpio stm32f103;
 //std::vector<uint16_t> flex_cable()
 uint16_t flex_cable()
 {
-   SPI2->CR1 |= static_cast<uint32_t>(0b11);//mode3
   uint8_t chip=14;
-  vector_pins.reserve(16);  // указали число ячеек
- // set_pin_HC74_595(val,state);
+  SPI2->CR1 |= static_cast<uint32_t>(0b11);//mode3
   stm32f103.set_pin_state(GPIOB,EN_165,0);
   stm32f103.set_pin_state(GPIOB,pl_165,1);
   stm32f103.set_pin_state(GPIOB,pl_165,0);
@@ -26,7 +24,6 @@ uint16_t flex_cable()
     while(!(SPI2->SR & SPI_SR_TXE));
     SPI2->DR=0x00;
     while(!(SPI2->SR & SPI_SR_RXNE));
-    vector_pins[i]= SPI2->DR;
     res[i]=SPI2->DR;
   }
   stm32f103.set_pin_state(GPIOB,EN_165,1);

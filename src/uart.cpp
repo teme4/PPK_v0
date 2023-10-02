@@ -11,9 +11,11 @@ void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable);
 void check_ext_fridge(uint8_t num,uint8_t num_cable);
+void check_km_1(uint8_t num,uint8_t num_cable);
+void check_km_2(uint8_t num,uint8_t num_cable);
 
 /*Trancmited 1 byte*/
-void usart::uart_tx_byte(uint8_t data)
+void usart::uart_tx_byte(uint16_t data)
 {
 while (!(USART1->SR & USART_SR_TXE))  {}
 USART1->DR = data;
@@ -73,120 +75,6 @@ uint8_t flag_pream1=0,flag_pream2=0,counter=0,data=0,crc=0;
 
 extern "C" void USART1_IRQHandler()
 {
-    USART1->SR |= USART_SR_RXNE;
-    data = (uint8_t)(USART1->DR);
-    RX_data[counter]=data;
-    if(RX_data[1]==0x55 && (flag_pream1==1))
-    {
-        flag_pream2=1;
-    }
-    else
-    {
-        if(flag_pream1==1)
-        {
-        flag_pream1=0;
-        flag_pream2=0;
-        counter=0;
-        RX_data[1]=0;
-        }
-    }
 
-    if(RX_data[0]==0xAA)
-    {
-        flag_pream1=1;
-    }
-   else
-    {
-        flag_pream1=0;
-        counter=0;
-        RX_data[0]=0;
-    }
-
-    if((flag_pream1==1)&&(flag_pream2==1)&&(counter>=3))
-    {
-      crc = gencrc(RX_data,3);
-     counter++;
-if(RX_data[3]==crc)
-{
-switch (RX_data[2])
-{
-case 0x01:
-    check_SD_SC2(16,0x01);
-    counter=0;
-    break;
-case 0x02:
-    check_SD_SC2(20,0x02);
-    counter=0;
-    break;
-case 0x03:
-    check_SD_SC2(8,0x03);
-    counter=0;
-    break;
-case 0x04:
-
-    counter=0;
-    break;
-case 0x05:
-
-    counter=0;
-    break;
-case 0x06:
-   check_SD_SC2(14,0x06);
-    counter=0;
-    break;
-case 0x07:
-    check_SD_SC2(10,0x07);
-    counter=0;
-    break;
-case 0x08:
-    check_PKU_NKK_3(20,0x08);
-    counter=0;
-    break;
-case 0x09:
-    check_PKU_NKK_2_1(20,0x09);
-    counter=0;
-    break;
-case 0x10:
-    check_PKU_NKK_2_2(20,0x10);
-    counter=0;
-    break;
-case 0x11:
-
-    counter=0;
-    break;
-case 0x12:
-    check_DOF(20,0x12);
-    counter=0;
-    break;
-case 0x13:
-
-    counter=0;
-    break;
-case 0x14:
     
-    counter=0;
-    break;
-case 0x15:
-     check_ext_fridge(16,0x15);
-    counter=0;
-    break;
-case 0x16:
-
-    counter=0;
-    break;
-
-
-case 0x17:
-    check_eth(8,0x17);
-    counter=0;
-    break;
-
-default:
-break;
 }
-}
-
-}
- counter++;
-}
-

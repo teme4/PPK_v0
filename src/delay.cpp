@@ -1,7 +1,8 @@
 #include <delay.hpp>
-
+ uint32_t SystemCoreClock_2=72000000;  
 void delay_us(uint32_t us)
 {
+   
    int32_t us_count_tick =  us * (SystemCoreClock/1000000);
    //разрешаем использовать счётчик
    SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
