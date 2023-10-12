@@ -309,6 +309,32 @@ uint32_t dof_pins_2[20]=
 16,
 13,
 };
+
+uint32_t nkk_op[20]=
+{
+2,
+3,
+1,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+
+
 uint32_t flex_14_[14]=
 {
   1,//1
@@ -699,6 +725,92 @@ usart1.uart_tx_byte(result_buff[k]);
 result[21]=0x77;
 count++;
 }
+/****************************************************************************************/
+void check_NKK_OP(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+
+for(int i=0;i<num;i++)
+{
+   state_pin[i]=0x55;
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=res[1];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=res[1];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=res[1];
+}
+}
+ for(int x=0;x<num;x++)
+   {
+     if(ob[x]!=0)
+     {
+      kz[x]=resolve(ob[x]);
+     }
+  for(int z=0;z<num;z++)
+   {
+        if(kz[z]!=0 && kz[z]<32)
+        {
+        for(int i=0;i<32;i++) //K3
+        {
+          for(int j=0;j<32;j++)
+              {
+               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
+                  {
+                     state_pin[i]=0x01; //K3
+                  }
+              }
+        }
+        }
+   }
+         if(ob[x]==0)
+        {
+              state_pin[x]=0x02; //OB
+        }
+         if(kz[x]==nkk_op[x])
+         {
+              state_pin[x]=0x00; //OK
+         }
+         if(kz[x]!=nkk_op[x] && ob[x]!=0)
+         {
+              state_pin[x]=0x03; //HP
+         }
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+//result_buff[4]=0x02;
+result_buff[num+3]=gencrc(result_buff, num+3);
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+state_pin[k]=0x55;
+ob[k]=0;
+kz[k]=0;
+}
+count++;
+}
+/****************************************************************************************/
 
 void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable)
 {
@@ -1138,10 +1250,25 @@ int k=ClockInit();
 //check_eth(8,0x17);
 
 
+/*
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=0x18;
+result_buff[3]=0x03;
+result_buff[4]=0x00;
+result_buff[5]=0x03;
+result_buff[6]=0xBE;
+
+for(int k=0;k<7;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
 
 
-check_km_1(20,0x04);
-check_km_2(20,0x04);
+
+*/
+//result[21]=0x77;
 //check_km_2(20,0x05);
 
 

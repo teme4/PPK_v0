@@ -13,6 +13,7 @@ void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable);
 void check_ext_fridge(uint8_t num,uint8_t num_cable);
 void check_km_1(uint8_t num,uint8_t num_cable);
 void check_km_2(uint8_t num,uint8_t num_cable);
+void check_NKK_OP(uint8_t num,uint8_t num_cable);
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint16_t data)
@@ -180,6 +181,11 @@ case 0x16:
 
 case 0x17:
     check_eth(8,0x17);
+    counter=0;
+    break;
+
+    case 0x18:
+    check_NKK_OP(3,0x18);
     counter=0;
     break;
 
