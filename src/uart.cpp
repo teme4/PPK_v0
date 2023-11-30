@@ -11,11 +11,12 @@ void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable);
 void check_ext_fridge(uint8_t num,uint8_t num_cable);
+void check_km(uint8_t num,uint8_t num_cable);
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
 {
-while (!(USART1->SR & USART_SR_TXE))  {}
+while (!(USART1->SR & USART_SR_TXE)){}
 USART1->DR = data;
 while ((USART1->SR & USART_SR_TC)){}
 }
@@ -123,11 +124,11 @@ case 0x03:
     counter=0;
     break;
 case 0x04:
-
+check_km(20,0x04);
     counter=0;
     break;
 case 0x05:
-
+check_km(20,0x05);
     counter=0;
     break;
 case 0x06:
@@ -163,7 +164,7 @@ case 0x13:
     counter=0;
     break;
 case 0x14:
-    
+
     counter=0;
     break;
 case 0x15:
@@ -174,7 +175,6 @@ case 0x16:
 
     counter=0;
     break;
-
 
 case 0x17:
     check_eth(8,0x17);

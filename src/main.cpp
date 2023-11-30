@@ -7,13 +7,13 @@
 #include "math.h"
 #include "delay.hpp"
 
-#include "registers.hpp"
+//#include "registers.hpp"
 #include "arial.hpp"
 #include "stdio.h"
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
 #include "rcc.hpp"
-#include "tft2.hpp"
+//#include "tft2.hpp"
 
 
 
@@ -261,6 +261,31 @@ uint32_t dof_pins_2[20]=
 16,
 13,
 };
+
+uint32_t km1_2[20]=
+{
+12,
+16,
+11,
+6,
+0,
+0,
+0,
+0,
+2,
+4,
+3,
+5,
+12,
+6,
+11,
+2,
+5,
+3,
+4,
+0,
+};
+
 uint32_t flex_14_[14]=
 {
   1,//1
@@ -292,6 +317,11 @@ for(int i=0;i<32;i++)
     if((val & 1<<i)==val)
     {
       return i+1;
+    }
+    else
+    {
+      i++;
+      i--;
     }
 }
 }
@@ -402,30 +432,73 @@ for(int i=0;i<num;i++)
   {
     HC74_595_SET(1<<i,0x0000,0);
     flex_cable();
-    k3[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
 
     HC74_595_SET(1<<i,0x0000,1);
     flex_cable();
-    ob[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
   }
 if(i>15)
 {
     k=i-16;
     HC74_595_SET(0x0000,1<<k,0);
     flex_cable();
-    k3[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
 
     HC74_595_SET(0x0000,1<<k,1);
     flex_cable();
-    ob[i]=(res[11]<<24)|(res[12]<<16)|(res[13]<<8)|res[14];
+    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
 }
 }
 for(int x=0;x<num;x++)
    {
-    if(ob[x]!=0)
+      if(ob[x]!=0)
       kz[x]=resolve(ob[x]);
-   }
+      if(kz[x]>15)
+      kz[x]=kz[x]-16;
+    }
 count++;
+/****************************************************/
+
+for(int x=0;x<num;x++)
+   {
+          if(kz[x]==km1_2[x])
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //OB
+                ignore[x]=0x99;
+              }
+        }
+
+
+}
+for(int i=0;i<20;i++)
+{
+if(ob[i]==0)
+     state_pin[i]=0x02; //OB
+}
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+result[21]=0x77;
+
 }
 
 
@@ -1041,15 +1114,9 @@ int k=ClockInit();
 //check_PKU_NKK(20,0x09);
 //check_DOF(20,0x12);
 
-//check_km(30,0x04);
 
 //check_eth(8,0x17);
 
-
- uint16_t x = 0; 
- uint16_t y = 0;
- TFT1520_init(); 
-TFT9341_FillScreen(GREEN);
 
 
 /*
