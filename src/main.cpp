@@ -469,9 +469,14 @@ for(int x=0;x<num;x++)
          }
          else
          {
+              if(kz[1]==1)
+              {
+              ignore[x]=0x77;
+              state_pin[x]=0x00; 
+              }
               if(ignore[x]!=0x77)
               {
-                state_pin[x]=0x03; //OB
+                state_pin[x]=0x03; //HP
                 ignore[x]=0x99;
               }
         }
@@ -487,6 +492,7 @@ result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
 
+//result_buff[4]=0x00;
 for(int g=0;g<num+4;g++)
 {
   result_buff[3+g]=state_pin[g];
