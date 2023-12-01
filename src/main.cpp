@@ -7,15 +7,12 @@
 #include "math.h"
 #include "delay.hpp"
 
-//#include "registers.hpp"
 #include "arial.hpp"
 #include "stdio.h"
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
 #include "rcc.hpp"
-//#include "tft2.hpp"
-
-
+#include "lcd.hpp"
 
 char str[80];
 
@@ -26,7 +23,6 @@ dma_usart dma_usart1;
 gpio stm32f103;
 
 uint16_t data_state[32];
-//volatile char rx_str[32];
 char temp[1];
 
 void breakpoint(const char * data)
@@ -262,7 +258,7 @@ uint32_t dof_pins_2[20]=
 13,
 };
 
-uint32_t km1_2[20]=
+uint32_t km2[20]=
 {
 12,
 16,
@@ -286,6 +282,30 @@ uint32_t km1_2[20]=
 0,
 };
 
+uint32_t km1[20]=
+{
+12,
+16,
+11,
+6,
+0,
+0,
+0,
+0,
+2,
+4,
+3,
+5,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+
 uint32_t flex_14_[14]=
 {
   1,//1
@@ -302,11 +322,6 @@ uint32_t flex_14_[14]=
   2048,//12
   4096,//13
   8192,//14
-  /*16384,//15
-  32768,//16
-  65536,//17
-  131072,//18
-  524288,//19*/
   };
 
 
@@ -318,11 +333,11 @@ for(int i=0;i<32;i++)
     {
       return i+1;
     }
-    else
+   /* else
     {
       i++;
       i--;
-    }
+    }*/
 }
 }
 
@@ -339,8 +354,6 @@ for(int i=0;i<32;i++)
   }
 }
 }
-
-
 
 uint16_t SD_CS[20]=
 {
@@ -365,31 +378,6 @@ uint16_t SD_CS[20]=
     0b000000000010111111111111,//19
     0b000000000001111111111111,//20
 };
-
-void HC74_595_SPI(uint32_t data,uint8_t mode)
-{
-if(mode==0)
-data=~data;
-
-uint16_t data1,data2;
-data1=data&0xFF;
-data2=data>>8;
-stm32f103.set_pin_state(GPIOB,EN_595,1);
-stm32f103.set_pin_state(GPIOB,CS_595,0);
-
-spi_transmit(data2);
-spi_transmit(data1);
-delay_ms(5);
-stm32f103.set_pin_state(GPIOB,CS_595,1);
-stm32f103.set_pin_state(GPIOB,EN_595,0);
-}
-
-void HC74_595_SET(uint16_t data1,uint16_t data2,uint8_t mode)
-{
-SPI2->CR1 |= static_cast<uint32_t>(0b11);//mode3
-HC74_595_SPI(data2,mode);
-HC74_595_SPI(data1,mode);
-}
 
 uint8_t check_K3(uint8_t value)
 {
@@ -423,7 +411,7 @@ return count;
 
 
 
-void check_km(uint8_t num,uint8_t num_cable)
+void check_km_1(uint8_t num,uint8_t num_cable)
 {
 uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
@@ -462,17 +450,17 @@ count++;
 
 for(int x=0;x<num;x++)
    {
-          if(kz[x]==km1_2[x])
+          if(kz[x]==km1[x])
          {
               state_pin[x]=0x00; //OK
               ignore[x]=0x77;
          }
          else
          {
-              if(kz[1]==1)
+              if(kz[1]==1 || kz[1]==16)
               {
               ignore[x]=0x77;
-              state_pin[x]=0x00; 
+              state_pin[x]=0x00;
               }
               if(ignore[x]!=0x77)
               {
@@ -480,14 +468,19 @@ for(int x=0;x<num;x++)
                 ignore[x]=0x99;
               }
         }
-
-
-}
+   }
 for(int i=0;i<20;i++)
 {
 if(ob[i]==0)
-     state_pin[i]=0x02; //OB
+{
+  state_pin[i]=0x02; //OB
 }
+if(km1[i]==0)
+{
+  state_pin[i]=0x04;//NC
+}
+}
+
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
@@ -503,11 +496,181 @@ for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-result[21]=0x77;
-
 }
 
+void check_km_2(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
 
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+}
+}
+for(int x=0;x<num;x++)
+   {
+      if(ob[x]!=0)
+      kz[x]=resolve(ob[x]);
+      if(kz[x]>15)
+      kz[x]=kz[x]-16;
+    }
+count++;
+/****************************************************/
+
+for(int x=0;x<num;x++)
+   {
+          if(kz[x]==km2[x])
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(kz[1]==1 || kz[1]==16)
+              {
+              ignore[x]=0x77;
+              state_pin[x]=0x00;
+              }
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //HP
+                ignore[x]=0x99;
+              }
+        }
+   }
+for(int i=0;i<20;i++)
+{
+if(ob[i]==0)
+{
+  state_pin[i]=0x02; //OB
+}
+if(km2[i]==0)
+{
+  state_pin[i]=0x04;//NC
+}
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+//result_buff[4]=0x00;
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+}
+
+void check_km1(uint8_t num,uint8_t num_cable)
+{
+uint8_t count=0,k,q=0;
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    HC74_595_SET(1<<i,0x0000,0);
+    flex_cable();
+    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+
+    HC74_595_SET(1<<i,0x0000,1);
+    flex_cable();
+    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+  }
+if(i>15)
+{
+    k=i-16;
+    HC74_595_SET(0x0000,1<<k,0);
+    flex_cable();
+    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+
+    HC74_595_SET(0x0000,1<<k,1);
+    flex_cable();
+    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+}
+}
+for(int x=0;x<num;x++)
+   {
+      if(ob[x]!=0)
+      kz[x]=resolve(ob[x]);
+      if(kz[x]>15)
+      kz[x]=kz[x]-16;
+    }
+count++;
+/****************************************************/
+
+for(int x=0;x<num;x++)
+   {
+          if(kz[x]==km1[x])
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(kz[1]==1 || kz[1]==16)
+              {
+              ignore[x]=0x77;
+              state_pin[x]=0x00;
+              }
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //HP
+                ignore[x]=0x99;
+              }
+        }
+   }
+for(int i=0;i<20;i++)
+{
+if(ob[i]==0)
+{
+  state_pin[i]=0x02; //OB
+}
+if(km1[i]==0)
+{
+  state_pin[i]=0x04;//NC
+}
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+
+//result_buff[4]=0x00;
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+}
 void check_DOF(uint8_t num,uint8_t num_cable)
 {
 uint8_t count=0,k,q=0;
@@ -1061,8 +1224,9 @@ if(i>15)
    }
   if(count==0)
   {
+    if(x<num)
     state_pin[x]=0x02; //OBR
-   // k3[x]=k3[x] & 1<<x;
+      // k3[x]=k3[x] & 1<<x;
   }
   if(count==num-1)
   {
@@ -1107,9 +1271,20 @@ SettingsSPI(SPI2,
 
 int k=ClockInit();
 
+lcd oled;
+oled.InitializeLCD();
+oled.InitializeLCD();
+oled.InitializeLCD();
+oled.InitializeLCD(); //Инициализация дисплея
+oled.ClearLCDScreen();
+oled.PrintStr("Start");
 
-
-
+/*
+oled.InitializeLCD();
+oled.InitializeLCD();
+oled.ClearLCDScreen();
+oled.Cursor(0,0);
+oled.PrintStr("Hello");**/
 
 //fillScreen(RED);
 
