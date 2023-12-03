@@ -31,6 +31,14 @@ struct gpio_lcd_oled
     uint8_t RS=11;
 };
 
+
+//LEDS
+struct Led
+{
+    uint8_t green=6;
+    uint8_t red=7;   
+};
+
 //595
 #define data_pin						     8
 #define clock_pin				             11

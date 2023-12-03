@@ -1270,22 +1270,38 @@ SettingsSPI(SPI2,
             RegCR1::MSBF);
 
 int k=ClockInit();
-
 lcd oled;
-oled.InitializeLCD();
-oled.InitializeLCD();
-oled.InitializeLCD();
+/*
+lcd oled;
 oled.InitializeLCD(); //Инициализация дисплея
-oled.ClearLCDScreen();
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+//oled.ClearLCDScreen();
 oled.PrintStr("Start");
 
-/*
-oled.InitializeLCD();
+*/
+extern gpio gpio_stm32f103RC;
+Led mcu_led;
+
+
+
+
 oled.InitializeLCD();
 oled.ClearLCDScreen();
 oled.Cursor(0,0);
-oled.PrintStr("Hello");**/
+oled.PrintStr("Hello");
 
+
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);  
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);  
+oled.PrintStr("Start");
 //fillScreen(RED);
 
   //  writeRegister8(ILI9341_DISPLAYON, 0);
@@ -1305,7 +1321,10 @@ check_PKU_NKK_3(20,0x08);
 check_PKU_NKK_2_1(20,0x09);*/
 while(1)
 {
-
+  delay_ms(1000);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);  
+delay_ms(1000);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);  
 }
 }
 

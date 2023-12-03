@@ -12,7 +12,7 @@ void delay(int a);
 void PulseLCD(void);
 void SendByte(char ByteToSend, int IsData);
 void ClearLCDScreen(void);
-//void busy_flag(void);
+void busy_flag(void);
 void InitializeLCD(void);
 void Cursor(char Row, char Col);
 void PrintStr(char *Text);

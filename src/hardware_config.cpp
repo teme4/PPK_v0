@@ -39,4 +39,9 @@ gpio_stm32f103RC.gpio_conf(GPIOB,pl_165,gpio_stm32f103RC.gpio_mode_pp_50);
 
 stm32f103.set_pin_state(GPIOB,EN_595,1);
 stm32f103.set_pin_state(GPIOB,CS_595,1);
+
+//leds
+Led mcu_led;
+gpio_stm32f103RC.gpio_conf(GPIOC,mcu_led.green,gpio_stm32f103RC.gpio_mode_pp_50);
+gpio_stm32f103RC.gpio_conf(GPIOC,mcu_led.red,gpio_stm32f103RC.gpio_mode_pp_50);
 }
