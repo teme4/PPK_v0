@@ -26,31 +26,30 @@ void lcd:: delay(int a)
 
 //---Нужная функция для работы с дисплеем, по сути "дергаем ножкой" EN---//
 void lcd:: PulseLCD()
-{  
+{
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
-    delay_us(1);
+    delay_ms(1);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,1);
-    delay_us(1);
+       delay_ms(1);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
-    delay_us(1);
-} 
+       delay_ms(1);
+}
 
 //uint32_t temp;
 void lcd::SendByte(char ByteToSend, int IsData)
 {
-    GPIOA->ODR &=~0xFF;
-    GPIOA->ODR  |= ByteToSend;
-     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RW,0);
     if (IsData == 1)
     {
         gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,1);
-    }      
-    else
+    }
+    if (IsData == 0)
     {
         gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,0);
     }
-    
+    GPIOA->ODR &=~0xFF;
+    GPIOA->ODR  |= ByteToSend;
      PulseLCD();
+     delay_us(40);
 }
 
 void lcd:: ClearLCDScreen()
@@ -75,41 +74,28 @@ void lcd:: busy_flag()
     gpio_stm32f103RC.gpio_conf(GPIOA,gpio_lcds.D7,gpio_stm32f103RC.gpio_mode_pp_50);
    if(_temp==0)
    break;
-    }    
+    }
   }
 
 void lcd:: InitializeLCD(void)
 {
         GPIOA->ODR &=~0xFF;
-        gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RW,0);   
-        gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,0);    
+        gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RW,0);
+        gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,0);
         gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
 
-        delay_ms(50); // не менее 500 мс и 0х0 5 раз в подряд
-       /* SendByte(0, 0);//1
-        delay_ms(100);
-        SendByte(0, 0);//2
-        delay_ms(10);
-        SendByte(0x0, 0);//3
-        delay_ms(10);
-        SendByte(0x0, 0);//4
-        delay_ms(10);
-        SendByte(0x0, 0);//5
-        delay_ms(10);*/
-
-        SendByte(0x3F, 0);//функциональные установки28  
-        delay_ms(39);
-        SendByte(0x3F, 0);//функциональные установки28  
-        delay_ms(39);
+        delay_ms(500); // не менее 500 мс и 0х0 5 раз в подряд
+        SendByte(0x3F, 0);//функциональные установки
+        delay_ms(20);
         SendByte(0x08, 0);//включить дисплей
-        delay_ms(39);
-        SendByte(0x01, 0);//отчистка экрана 
-        delay_ms(39);  
-        SendByte(0x06, 0);//mode set   
-        delay_ms(39);
-        //SendByte(0x0C, 0);//9        
- }
-
+        delay_ms(20);
+        SendByte(0x01, 0);//отчистка экрана
+        delay_ms(20);
+        SendByte(0x06, 0);//9
+        delay_ms(20);
+        SendByte(0x0C, 0);//9
+        delay_ms(20);
+}
   //---Установка позиции курсора---//
 void lcd:: Cursor(char Row, char Col)
 {
