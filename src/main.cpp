@@ -1,4 +1,4 @@
-п»ї#include <stm32f1xx.h>
+#include <stm32f1xx.h>
 #include "uart.hpp"
 #include "gpio.hpp"
 #include "dma.hpp"
@@ -69,51 +69,51 @@ void RCC_init()
 {
    BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
    BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
-   BKP->CSR =0;                                             //РЅРёС‡РµРіРѕ РІР°Р¶РЅРѕРіРѕ
-   PWR->CR |= PWR_CR_DBP;                                   //1: Р’РєР»СЋС‡РµРЅ РґРѕСЃС‚СѓРї Рє RTC Рё СЂРµР·РµСЂРІРЅС‹Рј СЂРµРіРёСЃС‚СЂР°Рј
+   BKP->CSR =0;                                             //ничего важного
+   PWR->CR |= PWR_CR_DBP;                                   //1: Включен доступ к RTC и резервным регистрам
    RCC->BDCR &=~ RCC_BDCR_BDRST;
    RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
-   RCC->BDCR &=~ RCC_BDCR_LSEON;                            // РІС‹РєР»СЋС‡Р°РµРј LSE
-   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // Р¶РґРµРј РїРѕРєР° РіРµРЅРµСЂР°С‚РѕСЂ РІС‹РєР»СЋС‡РёС‚СЃСЏ
+   RCC->BDCR &=~ RCC_BDCR_LSEON;                            // выключаем LSE
+   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // ждем пока генератор выключится
 
-   RCC->CR &=~ RCC_CR_HSEON;                                // РІС‹РєР»СЋС‡Р°РµРј HSE
-   RCC->CR |= RCC_CR_HSION;                                 // РІРєР»СЋС‡Р°РµРј HSI РіРµРЅРµСЂР°С‚РѕСЂ
-   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // Р¶РґРµРј РїРѕРєР° РіРµРЅРµСЂР°С‚РѕСЂ РЅРµ РІРєР»СЋС‡РёС‚СЃСЏ
+   RCC->CR &=~ RCC_CR_HSEON;                                // выключаем HSE
+   RCC->CR |= RCC_CR_HSION;                                 // включаем HSI генератор
+   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // ждем пока генератор не включится
 
-   RCC->CFGR |= RCC_CFGR_SW_HSI;                            // РІС‹Р±СЂР°Р»Рё HSI РІ РєР°С‡РµСЃС‚РІРµ СЃРёСЃС‚РµРјРЅРѕРіРѕ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ
+   RCC->CFGR |= RCC_CFGR_SW_HSI;                            // выбрали HSI в качестве системного тактирования
    RCC->CFGR &=~ RCC_CFGR_PLLSRC;
-   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        // РІС‹Р±РёСЂР°РµРј РїСЂРё РІС‹РєР»СЋС‡РµРЅРЅРѕРј PLL !! PLL=x8 (4РњРіС† *8 =32 РњРіС†)
+   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        // выбираем при выключенном PLL !! PLL=x8 (4Мгц *8 =32 Мгц)
    RCC->CFGR|= RCC_CFGR_PLLMULL_1 |RCC_CFGR_PLLMULL_2;
 
-   RCC->CR |= RCC_CR_PLLON;                                 // РІРєР»СЋС‡Р°РµРј PLL
-   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     // Р¶РґРµРј РїРѕРєР° СѓРјРЅРѕР¶РёС‚РµР»СЊ РЅРµ РІРєР»СЋС‡РёС‚СЃСЏ
+   RCC->CR |= RCC_CR_PLLON;                                 // включаем PLL
+   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     // ждем пока умножитель не включится
 
-   RCC->CFGR |= RCC_CFGR_SW_PLL;                            // РІС‹Р±СЂР°Р»Рё PLL РІ РєР°С‡РµСЃС‚РІРµ СЃРёСЃС‚РµРјРЅРѕРіРѕ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ
-   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ РґРµР»РµРЅРёРµ РЅР° 1
-   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ РґРµР»РµРЅРёРµ РЅР° 1
-   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ РґРµР»РµРЅРёРµ РЅР° 1
+   RCC->CFGR |= RCC_CFGR_SW_PLL;                            // выбрали PLL в качестве системного тактирования
+   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler установлен в деление на 1
+   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler установлен в деление на 1
+   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler установлен в деление на 1
 }
 
 extern uint32_t SystemCoreClock;
 // clang-format off
 enum class IRQnSPI
 {
-    TXEIE                                       = (1<<7),///<РїСЂРµСЂС‹РІР°РЅРёe РїРѕ РїРµСЂРµРїРѕР»РЅРµРЅРё. РїСЂРёРµРјРЅРѕРіРѕ Р±СѓС„РµСЂР° FIFO
-    RXNEIE                                      = (1<<6),///<РїСЂРµСЂС‹РІР°РЅРёe РїРѕ С‚Р°Р№РјР°СѓС‚Сѓ РїСЂРёРµРјРЅРёРєР° (Р±СѓС„РµСЂ FIFO РїСЂРёРµРјРЅРёРєР° РЅРµ РїСѓСЃС‚ Рё РЅРµ Р±С‹Р»Рѕ РїРѕРїС‹С‚РѕРє РµРіРѕ С‡С‚РµРЅРёСЏ РІ С‚РµС‡РµРЅРёРµ РІСЂРµРјРµРЅРё С‚Р°Р№РјР°СѓС‚Р°)
-    ERRIE                                       = (1<<5),///<РїСЂРµСЂС‹РІР°РЅРёe РїРѕ Р·Р°РїРѕР»РЅРµРЅРёСЋ РЅР° 50 % Рё Р±РѕР»РµРµ Р±СѓС„РµСЂР° FIFO РїСЂРёРµРјРЅРёРєР°
+    TXEIE                                       = (1<<7),///<прерываниe по переполнени. приемного буфера FIFO
+    RXNEIE                                      = (1<<6),///<прерываниe по таймауту приемника (буфер FIFO приемника не пуст и не было попыток его чтения в течение времени таймаута)
+    ERRIE                                       = (1<<5),///<прерываниe по заполнению на 50 % и более буфера FIFO приемника
     NONE                                        = (0<<0)
 };
 
 enum class RegCR1
 {
-    SPI_MODE0                                   = (0b00 ),///<SPI С„РёСЂРјС‹ Motorola(CPOL = 0, CPHA = 0);
-    SPI_MODE1                                   = (0b01 ),///<SPI С„РёСЂРјС‹ Motorola(CPOL = 0, CPHA = 1);
-    SPI_MODE2                                   = (0b10 ),///<SPI С„РёСЂРјС‹ Motorola(CPOL = 1, CPHA = 0);
-    SPI_MODE3                                   = (0b11 ),///<SPI С„РёСЂРјС‹ Motorola(CPOL = 1, CPHA = 1);
-    MASTER                                      = (1<<2 ),///<РІРµРґСѓС‰РёР№ РјРѕРґСѓР»СЊ
-    SLAVE                                       = (0<<0 ),///<РІРµРґРѕРјС‹Р№ РјРѕРґСѓР»СЊ
-    ACTIVE                                      = (1<<6 ),///<СЂР°Р±РѕС‚Р° СЂР°Р·СЂРµС€РµРЅР°
-    INACTIVE                                    = (0<<0 ),///<СЂР°Р±РѕС‚Р° Р·Р°РїСЂРµС‰РµРЅР°;
+    SPI_MODE0                                   = (0b00 ),///<SPI фирмы Motorola(CPOL = 0, CPHA = 0);
+    SPI_MODE1                                   = (0b01 ),///<SPI фирмы Motorola(CPOL = 0, CPHA = 1);
+    SPI_MODE2                                   = (0b10 ),///<SPI фирмы Motorola(CPOL = 1, CPHA = 0);
+    SPI_MODE3                                   = (0b11 ),///<SPI фирмы Motorola(CPOL = 1, CPHA = 1);
+    MASTER                                      = (1<<2 ),///<ведущий модуль
+    SLAVE                                       = (0<<0 ),///<ведомый модуль
+    ACTIVE                                      = (1<<6 ),///<работа разрешена
+    INACTIVE                                    = (0<<0 ),///<работа запрещена;
     DFF8bit                                     = (0<<0 ),///<data frame format: 8bit;
     DFF16bit                                    = (1<<11),///<data frame format: 16bit;
     LSBF                                        = (1<<7 ),///<LSB  transmitted first
@@ -121,10 +121,10 @@ enum class RegCR1
 };
 enum class RegDMACR
 {
-    RXDMA_DIS                                   = 0x00,///<Р—Р°РїСЂРµС‰РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РїСЂРѕСЃРѕРІ DMA Р±СѓС„РµСЂР° FIFO РїСЂРёРµРјРЅРёРєР°
-    RXDMA_EN                                    = 0x01,///<Р Р°Р·СЂРµС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РїСЂРѕСЃРѕРІ DMA Р±СѓС„РµСЂР° FIFO РїСЂРёРµРјРЅРёРєР°
-    TXDMA_DIS                                   = 0x00,///<Р—Р°РїСЂРµС‰РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РїСЂРѕСЃРѕРІ DMA Р±СѓС„РµСЂР° FIFO РїРµСЂРµРґР°С‚С‡РёРєР°
-    TXDMA_EN                                    = 0x02,///<Р Р°Р·СЂРµС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РїСЂРѕСЃРѕРІ DMA Р±СѓС„РµСЂР° FIFO РїРµСЂРµРґР°С‚С‡РёРєР°
+    RXDMA_DIS                                   = 0x00,///<Запрещено формирование запросов DMA буфера FIFO приемника
+    RXDMA_EN                                    = 0x01,///<Разрешено формирование запросов DMA буфера FIFO приемника
+    TXDMA_DIS                                   = 0x00,///<Запрещено формирование запросов DMA буфера FIFO передатчика
+    TXDMA_EN                                    = 0x02,///<Разрешено формирование запросов DMA буфера FIFO передатчика
     NONE                                        = 0x00
 };
 void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
@@ -1096,13 +1096,13 @@ count++;
 void check_ext_fridge(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
-////////////////////////////////РћР±РЅСѓР»РёРј Р±СѓС„С„РµСЂ
+////////////////////////////////Обнулим буффер
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
-}////////////////////////////////РћРїСЂРѕСЃРёРј РєР°Р¶РґС‹Р№ РїРёРЅ
+}////////////////////////////////Опросим каждый пин
 
 for(int i=0;i<num;i++)
 {
@@ -1181,13 +1181,13 @@ result[21]=0x77;
 void check_SD_SC2(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
-////////////////////////////////РћР±РЅСѓР»РёРј Р±СѓС„С„РµСЂ
+////////////////////////////////Обнулим буффер
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
-}////////////////////////////////РћРїСЂРѕСЃРёРј РєР°Р¶РґС‹Р№ РїРёРЅ
+}////////////////////////////////Опросим каждый пин
 
 for(int i=0;i<num;i++)
 {
@@ -1273,16 +1273,16 @@ int k=ClockInit();
 lcd oled;
 /*
 lcd oled;
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
-oled.InitializeLCD(); //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРёСЃРїР»РµСЏ
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
+oled.InitializeLCD(); //Инициализация дисплея
 //oled.ClearLCDScreen();
 oled.PrintStr("Start");
 
@@ -1292,8 +1292,8 @@ Led mcu_led;
 
 char *menu[10];
 menu[1]="Select the cable";
-menu[0]="РђР‘Р’Р“Р”Р•РЃР–Р—РР™РљР›РњРќРћРџР РЎРўРЈР¤РҐР¦Р§РЁР©РЄР«Р¬Р­Р®РЇ";
-
+menu[0]="АБВГ";//ГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+printf(str,"ABC");
 
 oled.InitializeLCD();
 
@@ -1317,8 +1317,8 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 oled.ClearLCDScreen();
 oled.busy_flag();
 //oled.LCD_String(menu[0]);
-oled.LCD_String_Cirilic(menu[0]);
-//oled.SendByte(224, 1);//С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅС‹Рµ СѓСЃС‚Р°РЅРѕРІРєРё
+oled.LCD_String_Cirilic(std::string("ПСОСИ"));
+//oled.SendByte(224, 1);//функциональные установки
 while(1)
 {
 

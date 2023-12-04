@@ -1,5 +1,6 @@
 #include <stm32f1xx.h>
 #include <map>
+#include <string>
 /*void delay_ns(uint32_t ns);
 void delay_us(uint32_t us);
 void delay_ms(uint32_t ms);*/
@@ -7,7 +8,7 @@ void delay_ms(uint32_t ms);*/
 class lcd
 {
 private:
-static const std::map<uint32_t,uint8_t> _cyrillic;
+static const std::map<char,uint8_t> _cyrillic;
 uint16_t _temp;
 public:
 void delay(int a);
@@ -20,5 +21,5 @@ void Cursor(char Row, char Col);
 void PrintStr(char *Text);
 void LCD_String(char* st);
 void fake_ClearLCD(void);
-void LCD_String_Cirilic(char* st);
+void LCD_String_Cirilic(std::string st);
 };
