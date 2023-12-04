@@ -1259,7 +1259,7 @@ result[21]=0x77;
 
 int main()
 {
-gpio_init();
+ gpio_init();
 usart1.usart_init();
 SettingsSPI(SPI2,
             RegCR1::ACTIVE,
@@ -1290,7 +1290,9 @@ oled.PrintStr("Start");
 extern gpio gpio_stm32f103RC;
 Led mcu_led;
 
-
+char *menu[10];
+menu[1]="Select the cable";
+menu[0]="АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
 
 
 oled.InitializeLCD();
@@ -1313,18 +1315,12 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 
 
 oled.ClearLCDScreen();
-delay_ms(200);
-oled.LCD_String("Start");
-
-/*
-check_PKU_NKK_3(20,0x08);
-check_PKU_NKK_2_1(20,0x09);*/
+oled.busy_flag();
+//oled.LCD_String(menu[0]);
+oled.LCD_String_Cirilic(menu[0]);
+//oled.SendByte(224, 1);//функциональные установки
 while(1)
 {
-  delay_ms(250);
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
-delay_ms(250);
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);
 
 }
 }

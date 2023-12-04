@@ -7,32 +7,52 @@
 
 extern gpio_lcd_oled gpio_lcds;
 extern gpio gpio_stm32f103RC;
-
-
-
-/*
-//---Функция задержки---//
-void lcd:: delay(int a)
+const std::map<uint32_t,uint8_t> lcd::_cyrillic
 {
-    int i = 0;
-    int f = 0;
-    while(f < a)
-    {
-        while(i<60)
-            {i++;}
-        f++;
-    }
-}*/
+{208144,65},
+{208145,160},
+{208146,66}
+/*{'?',161},
+{'?',224},
+{'?',69},
+{'?',162},
+{'?',163},
+{'?',164},
+{'?',165},
+{'?',166},
+{'?',75},
+{'?',167},
+{'?',77},
+{'?',72},
+{'?',79},
+{'?',168},
+{'?',80},
+{'?',67},
+{'?',84},
+{'?',169},
+{'?',170},
+{'?',192},
+{'?',225},
+{'?',171},
+{'?',172},
+{'?',226},
+{'?',173},
+{'?',174},
+{'?',196},
+{'?',175},
+{'?',176},
+{'?',177}*/
+};
 
-//---Нужная функция для работы с дисплеем, по сути "дергаем ножкой" EN---//
+//---?????? ??????? ??? ?????? ? ????????, ?? ???? "??????? ??????" EN---//
 void lcd:: PulseLCD()
 {
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
     delay_ms(1);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,1);
-       delay_ms(1);
+    delay_ms(1);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
-       delay_ms(1);
+    delay_ms(1);
 }
 
 //uint32_t temp;
@@ -64,13 +84,13 @@ void lcd:: busy_flag()
     _temp=1;
     gpio_stm32f103RC.gpio_conf(GPIOA,gpio_lcds.D7,gpio_stm32f103RC.input_mode_pull_down);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,0);
-    gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RW,1); 
-    gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,1); 
+    gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RW,1);
+    gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,1);
     delay_ms(100);
     _temp=gpio_stm32f103RC.get_state_pin(GPIOA,gpio_lcds.D7);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,0);
     gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RW,0);
-    gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0); 
+    gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
     gpio_stm32f103RC.gpio_conf(GPIOA,gpio_lcds.D7,gpio_stm32f103RC.gpio_mode_pp_50);
    if(_temp==0)
    break;
@@ -84,19 +104,19 @@ void lcd:: InitializeLCD(void)
         gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.RS,0);
         gpio_stm32f103RC.set_pin_state(GPIOA,gpio_lcds.EN,0);
 
-        delay_ms(500); // не менее 500 мс и 0х0 5 раз в подряд
-        SendByte(0x3F, 0);//функциональные установки
-        delay_ms(20);
-        SendByte(0x08, 0);//включить дисплей
-        delay_ms(20);
-        SendByte(0x01, 0);//отчистка экрана
-        delay_ms(20);
+        delay_ms(500); // ?? ????? 500 ?? ? 0?0 5 ??? ? ??????
+        SendByte(0x3E, 0);//?????????????? ?????????
+        busy_flag();
+        SendByte(0x08, 0);//???????? ???????
+        busy_flag();
+        SendByte(0x01, 0);//???????? ??????
+        busy_flag();
         SendByte(0x06, 0);//9
-        delay_ms(20);
+        busy_flag();
         SendByte(0x0C, 0);//9
-        delay_ms(20);
+        busy_flag();
 }
-  //---Установка позиции курсора---//
+  //---????????? ??????? ???????---//
 void lcd:: Cursor(char Row, char Col)
 {
    char address;
@@ -108,7 +128,7 @@ void lcd:: Cursor(char Row, char Col)
    SendByte(0x80 | address, 0);
 }
 
-//---Печать строки---//
+//---?????? ??????---//
 void lcd:: PrintStr(char *Text)
 {
     char *c;
@@ -127,6 +147,16 @@ void lcd:: LCD_String(char* st)
   {
     SendByte(st[i],1);
     i++;
+  }
+}
+
+void lcd:: LCD_String_Cirilic(char* st)
+{
+  uint8_t i=0;
+  while(st[i]!=0)
+  {
+    SendByte(_cyrillic.at(st[i]),1);
+   i++;
   }
 }
 

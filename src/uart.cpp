@@ -1,9 +1,14 @@
 #include <stm32f1xx.h>
 #include "uart.hpp"
 #include <string.h>
+#include "lcd.hpp"
 
 uint8_t len=0;
 uint8_t RX_data[32];
+
+extern lcd oled;
+
+
 void check_SD_SC2(uint8_t num,uint8_t num_cable);
 void check_DOF(uint8_t num,uint8_t num_cable);
 void check_eth(uint8_t num,uint8_t num_cable);
@@ -114,6 +119,7 @@ switch (RX_data[2])
 case 0x01:
     check_SD_SC2(16,0x01);
     counter=0;
+    //oled.LCD_String("Start");
     break;
 case 0x02:
     check_SD_SC2(20,0x02);
