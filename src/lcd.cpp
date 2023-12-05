@@ -41,7 +41,41 @@ const std::map<char,uint8_t> lcd::_cyrillic
 {'Ь',196},
 {'Э',175},
 {'Ю',176},
-{'Я',177}
+{'Я',177},
+
+{'а',97},
+{'б',178},
+{'в',179},
+{'г',180},
+{'д',227},
+{'е',101},
+{'ё',181},
+{'ж',182},
+{'з',183},
+{'и',184},
+{'й',185},
+{'к',186},
+{'л',187},
+{'м',188},
+{'н',189},
+{'о',111},
+{'п',190},
+{'р',112},
+{'с',101},
+{'т',191},
+{'у',121},
+{'ф',228},
+{'х',192},
+{'ц',229},
+{'ч',192},
+{'ш',193},
+{'щ',230},
+{'ъ',194},
+{'ы',195},
+{'ь',196},
+{'э',197},
+{'ю',198},
+{'я',199}
 };
 
 //---Нужная функция для работы с дисплеем, по сути "дергаем ножкой" EN---//
@@ -119,13 +153,22 @@ void lcd:: InitializeLCD(void)
   //---Установка позиции курсора---//
 void lcd:: Cursor(char Row, char Col)
 {
-   char address;
-   if (Row == 0)
-   address = 0;
-   else
-   address = 0x40;
-   address |= Col;
-   SendByte(0x80 | address, 0);
+    switch (Row)
+    {
+    case 1:
+        SendByte(0x80 | (0x00 + Col), 0);      //0-16
+        break;
+    case 2:
+        SendByte(0x80 | (0x40 + Col), 0); //17-32
+        break;
+    
+      case 3:
+        SendByte(0x80 | (0x14 + Col), 0); //20-39
+        break;
+    case 4:
+        SendByte(0x80 | (0x54 + Col), 0);
+        break;
+}
 }
 
 //---Печать строки---//
@@ -153,16 +196,29 @@ void lcd:: LCD_String(char* st)
 void lcd:: LCD_String_Cirilic(std::string st)
 {
   uint8_t i=0;
-  for(char &simbol : st)
+  for(char &symbol : st)
   {
-    SendByte(_cyrillic.at(simbol),1);
+    if(!_cyrillic.count(symbol))
+   {
+    SendByte(symbol,1);
+   }
+   else{
+   SendByte(_cyrillic.at(symbol),1);
+   }
+  
   }
 }
+
+
+
+
+
+
 /**/
 void lcd:: fake_ClearLCD()
 {
-Cursor(0,5);
+Cursor(0,0);
 PrintStr("                ");
-Cursor(1,5);
+Cursor(1,0);
 PrintStr("                ");
 }

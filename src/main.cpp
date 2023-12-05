@@ -1290,17 +1290,16 @@ oled.PrintStr("Start");
 extern gpio gpio_stm32f103RC;
 Led mcu_led;
 
-char *menu[10];
-menu[1]="Select the cable";
-menu[0]="АБВГ";//ГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
-printf(str,"ABC");
-
+std::string menu[10];
+menu[0]="Выбор кабеля";
+menu[1]="абвгдеёжзийклмно";
+menu[2]="прстуфхцчшщъыбэюя";
 oled.InitializeLCD();
 
 
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);  
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);  
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);  
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 //fillScreen(RED);
 
   //  writeRegister8(ILI9341_DISPLAYON, 0);
@@ -1316,11 +1315,26 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 
 oled.ClearLCDScreen();
 oled.busy_flag();
-//oled.LCD_String(menu[0]);
-oled.LCD_String_Cirilic(std::string("ПСОСИ"));
-//oled.SendByte(224, 1);//функциональные установки
+/*
+oled.Cursor(1,0);
+oled.LCD_String_Cirilic(menu[1]);
+oled.busy_flag();
+oled.Cursor(2,0);
+oled.busy_flag();
+oled.LCD_String_Cirilic(menu[2]);
+oled.busy_flag();
+oled.Cursor(3,0);
+oled.busy_flag();
+v
+oled.busy_flag();
+oled.Cursor(4,0);
+oled.busy_flag();
+oled.LCD_String_Cirilic(menu[2]);
+oled.busy_flag();*/
+oled.Cursor(1,0);
 while(1)
 {
+oled.LCD_String_Cirilic("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
 }
 }
