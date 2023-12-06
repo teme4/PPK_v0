@@ -37,6 +37,10 @@ gpio_stm32f103RC.gpio_conf(GPIOB,EN_165,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOB,CS_595,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOB,pl_165,gpio_stm32f103RC.gpio_mode_pp_50);
 
+//
+gpio_stm32f103RC.gpio_conf(GPIOC,0,gpio_stm32f103RC.input_mode_analog);
+
+
 stm32f103.set_pin_state(GPIOB,EN_595,1);
 stm32f103.set_pin_state(GPIOB,CS_595,1);
 

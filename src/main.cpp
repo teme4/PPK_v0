@@ -69,51 +69,51 @@ void RCC_init()
 {
    BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
    BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
-   BKP->CSR =0;                                             // 
-   PWR->CR |= PWR_CR_DBP;                                   //1:    RTC   
+   BKP->CSR =0;                                             // 
+   PWR->CR |= PWR_CR_DBP;                                   //1:    RTC   
    RCC->BDCR &=~ RCC_BDCR_BDRST;
    RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
-   RCC->BDCR &=~ RCC_BDCR_LSEON;                            //  LSE
-   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    //    
+   RCC->BDCR &=~ RCC_BDCR_LSEON;                            //  LSE
+   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    //    
 
-   RCC->CR &=~ RCC_CR_HSEON;                                //  HSE
-   RCC->CR |= RCC_CR_HSION;                                 //  HSI 
-   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     //     
+   RCC->CR &=~ RCC_CR_HSEON;                                //  HSE
+   RCC->CR |= RCC_CR_HSION;                                 //  HSI 
+   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     //     
 
-   RCC->CFGR |= RCC_CFGR_SW_HSI;                            //  HSI    
+   RCC->CFGR |= RCC_CFGR_SW_HSI;                            //  HSI    
    RCC->CFGR &=~ RCC_CFGR_PLLSRC;
-   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        //    PLL !! PLL=x8 (4 *8 =32 )
+   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        //    PLL !! PLL=x8 (4 *8 =32 )
    RCC->CFGR|= RCC_CFGR_PLLMULL_1 |RCC_CFGR_PLLMULL_2;
 
-   RCC->CR |= RCC_CR_PLLON;                                 //  PLL
-   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     //     
+   RCC->CR |= RCC_CR_PLLON;                                 //  PLL
+   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     //     
 
-   RCC->CFGR |= RCC_CFGR_SW_PLL;                            //  PLL    
-   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler     1
-   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler     1
-   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler     1
+   RCC->CFGR |= RCC_CFGR_SW_PLL;                            //  PLL    
+   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler     1
+   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler     1
+   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler     1
 }
 
 extern uint32_t SystemCoreClock;
 // clang-format off
 enum class IRQnSPI
 {
-    TXEIE                                       = (1<<7),///<e  .   FIFO
-    RXNEIE                                      = (1<<6),///<e    ( FIFO             )
-    ERRIE                                       = (1<<5),///<e    50 %    FIFO 
+    TXEIE                                       = (1<<7),///<e  .   FIFO
+    RXNEIE                                      = (1<<6),///<e    ( FIFO             )
+    ERRIE                                       = (1<<5),///<e    50 %    FIFO 
     NONE                                        = (0<<0)
 };
 
 enum class RegCR1
 {
-    SPI_MODE0                                   = (0b00 ),///<SPI  Motorola(CPOL = 0, CPHA = 0);
-    SPI_MODE1                                   = (0b01 ),///<SPI  Motorola(CPOL = 0, CPHA = 1);
-    SPI_MODE2                                   = (0b10 ),///<SPI  Motorola(CPOL = 1, CPHA = 0);
-    SPI_MODE3                                   = (0b11 ),///<SPI  Motorola(CPOL = 1, CPHA = 1);
-    MASTER                                      = (1<<2 ),///< 
-    SLAVE                                       = (0<<0 ),///< 
-    ACTIVE                                      = (1<<6 ),///< 
-    INACTIVE                                    = (0<<0 ),///< ;
+    SPI_MODE0                                   = (0b00 ),///<SPI  Motorola(CPOL = 0, CPHA = 0);
+    SPI_MODE1                                   = (0b01 ),///<SPI  Motorola(CPOL = 0, CPHA = 1);
+    SPI_MODE2                                   = (0b10 ),///<SPI  Motorola(CPOL = 1, CPHA = 0);
+    SPI_MODE3                                   = (0b11 ),///<SPI  Motorola(CPOL = 1, CPHA = 1);
+    MASTER                                      = (1<<2 ),///< 
+    SLAVE                                       = (0<<0 ),///< 
+    ACTIVE                                      = (1<<6 ),///< 
+    INACTIVE                                    = (0<<0 ),///< ;
     DFF8bit                                     = (0<<0 ),///<data frame format: 8bit;
     DFF16bit                                    = (1<<11),///<data frame format: 16bit;
     LSBF                                        = (1<<7 ),///<LSB  transmitted first
@@ -121,10 +121,10 @@ enum class RegCR1
 };
 enum class RegDMACR
 {
-    RXDMA_DIS                                   = 0x00,///<   DMA  FIFO 
-    RXDMA_EN                                    = 0x01,///<   DMA  FIFO 
-    TXDMA_DIS                                   = 0x00,///<   DMA  FIFO 
-    TXDMA_EN                                    = 0x02,///<   DMA  FIFO 
+    RXDMA_DIS                                   = 0x00,///<   DMA  FIFO 
+    RXDMA_EN                                    = 0x01,///<   DMA  FIFO 
+    TXDMA_DIS                                   = 0x00,///<   DMA  FIFO 
+    TXDMA_EN                                    = 0x02,///<   DMA  FIFO 
     NONE                                        = 0x00
 };
 void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
@@ -1096,13 +1096,13 @@ count++;
 void check_ext_fridge(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
-//////////////////////////////// 
+//////////////////////////////// 
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
-}////////////////////////////////  
+}////////////////////////////////  
 
 for(int i=0;i<num;i++)
 {
@@ -1181,13 +1181,13 @@ result[21]=0x77;
 void check_SD_SC2(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
-//////////////////////////////// 
+//////////////////////////////// 
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
-}////////////////////////////////  
+}////////////////////////////////  
 
 for(int i=0;i<num;i++)
 {
@@ -1257,6 +1257,8 @@ usart1.uart_tx_byte(result_buff[k]);
 result[21]=0x77;
 }
 
+
+
 int main()
 {
  gpio_init();
@@ -1271,75 +1273,143 @@ SettingsSPI(SPI2,
 
 int k=ClockInit();
 lcd oled;
-/*
-lcd oled;
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-//oled.ClearLCDScreen();
-oled.PrintStr("Start");
-
-*/
 extern gpio gpio_stm32f103RC;
 Led mcu_led;
 
 std::string menu[10];
-menu[0]=" ";
-menu[1]="";
-menu[2]="";
+menu[0]="Βϋαεπθςε κΰαελό:";
+menu[1]="";
+menu[2]="";
+
+std::string cables[20];
+cables[0]="ΝΚΚ-ΜΛΘ";
+cables[1]="ΝΚΚ-Ολΰςΰ οεπεκλ";
+cables[2]="ΟΟ1-ΟΟ2";
+cables[3]="ΟΚΣ-ΚΜ(ΐλθρΰ)";
+cables[4]="ΟΚΣ-ΚΜ(Αξα)";
+cables[5]="ΟΚΣ-SD/CS";
+cables[6]="ΝΚΚ-κξμοενρ.δθρο.";
+cables[7]="ΟΚΣ-ΝΚΚ(UART)";
+cables[8]="ΟΚΣ-ΝΚΚ(ΐΞΜ)";
+cables[9]="ΟΚΣ-ΝΚΚ-ΔΞΤ-ΝΚΚ";
+cables[10]="ΟΚΣ-ΝΚΚ-ΔΞΤ-ΔΞΤ";
+cables[11]="ΟΚΣ-ΝΚΚ-ΐΞΜ";
+cables[12]="internal frdge";
+cables[13]="ΟΚΣ-ΝΚΚ-ΐΞΜ_v4";
+cables[14]="Ehernet";
+cables[15]="ΝΚΚ-ΞΟ";
+
 oled.InitializeLCD();
 
 
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
-//fillScreen(RED);
-
-  //  writeRegister8(ILI9341_DISPLAYON, 0);
-//fillScreen(RED);
-//fillScreen(GREEN);
-//LCD_DrawPixel(10,15, GREEN);
-//check_PKU_NKK(20,0x09);
-//check_DOF(20,0x12);
-
-
-//check_eth(8,0x17);
 
 
 oled.ClearLCDScreen();
 oled.busy_flag();
-/*
-oled.Cursor(1,0);
-oled.LCD_String_Cirilic(menu[1]);
-oled.busy_flag();
-oled.Cursor(2,0);
-oled.busy_flag();
-oled.LCD_String_Cirilic(menu[2]);
-oled.busy_flag();
-oled.Cursor(3,0);
-oled.busy_flag();
-v
-oled.busy_flag();
-oled.Cursor(4,0);
-oled.busy_flag();
-oled.LCD_String_Cirilic(menu[2]);
-oled.busy_flag();*/
 
-oled.Cursor(0,0);
-oled.LCD_String_Cirilic("AAAAAAA");
-oled.Cursor(1,2);
-oled.LCD_String_Cirilic("BBBBBB");
+/*
+
+*/
+
+
+  RCC->APB2ENR|=RCC_APB2ENR_ADC1EN; //Βκλώχΰεμ ςΰκςθπξβΰνθε ΐΦΟ
+  ADC1->CR2 |= ADC_CR2_CAL; //Ηΰοσρκ κΰλθαπξβκθ ΐΦΟ
+  while (!(ADC1->CR2 & ADC_CR2_CAL))
+    ; //Ξζθδΰεμ ξκξνχΰνθÿ κΰλθαπξβκθ
+  ADC1->SMPR2 |= (ADC_SMPR2_SMP1_2 | ADC_SMPR2_SMP1_1 | ADC_SMPR2_SMP1_0); //Ηΰδΰεμ
+                                                                                            // δλθςελόνξρςό βϋαξπκθ
+  ADC1->CR2 |= ADC_CR2_JEXTSEL; //Οπεξαπΰηξβΰνθε θνζεκςθπξβΰννξι γπσοοϋ
+                                                       //ηΰοσρςθςρÿ σρςΰνξβκξι αθςΰ JSWSTART
+  ADC1->CR2 |= ADC_CR2_JEXTTRIG; //Πΰηπεψΰεμ βνεψνθι ηΰοσρκ θνζεκςθπξβΰννξι γπσοοϋ
+  ADC1->CR2 |= ADC_CR2_CONT; //Οπεξαπΰηξβΰνθÿ ηΰοσρκΰώςρÿ ξδνξ ηΰ δπσγθμ
+  ADC1->CR1 |= ADC_CR1_JAUTO; //Πΰηπεψθςό οπεξαπΰηξβΰνθε θνζεκςθπξβΰννξι γπσοοϋ
+                                     //οξρλε πεγσλÿπνξι. Νε οξνÿςνξ ηΰχεμ, νξ αεη ύςξγξ νε πΰαξςΰες
+  ADC1->JSQR |= (10<<15); //Ηΰδΰεμ νξμεπ κΰνΰλΰ (βϋαπΰν ADC1)
+  ADC1->CR2 |= ADC_CR2_ADON;//Òεοεπό βκλώχΰεμ ΐΦΟ
+  ADC1->CR2 |= ADC_CR2_JSWSTART; //Ηΰοσρκ οπεξαπΰηξβΰνθι
+  while (!(ADC1->SR & ADC_SR_JEOC)) //ζδεμ οξκΰ οεπβξε οπεξαπΰηξβΰνθε ηΰβεπψθςρÿ
+    ;
+  //Òεοεπό μξζνξ χθςΰςό πεησλόςΰς θη JDR1
+  uint32_t adc_res; //Θροξλόηξβΰλ οεπεμεννσώ δλÿ ξςλΰδκθ. Μξζνξ θ αεη νεΈ
+
+
 while(1)
 {
-//oled.LCD_String_Cirilic("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+oled.Cursor(0,0);
+oled.LCD_String_Cirilic(menu[0]);
+for (int i=0;i<16;i++)
+{
+adc_res=ADC1->JDR1;
+if(adc_res>1700 && adc_res<1800)
+{
+switch (i)
+{
+case 0:
+    check_SD_SC2(16,0x01);
+    break;
+case 1:
+    check_SD_SC2(20,0x02);
+    break;
+case 2:
+    check_SD_SC2(8,0x03);
+    break;
+case 3:
+check_km_1(20,0x04);
+    break;
+case 4:
+check_km_2(20,0x05);
+    break;
+case 5:
+   check_SD_SC2(14,0x06);
+    break;
+case 6:
+    check_SD_SC2(10,0x07);
+    break;
+case 7:
+    check_PKU_NKK_3(20,0x08);
+    break;
+case 8:
+    check_PKU_NKK_2_1(20,0x09);
+    break;
+case 9:
+    check_PKU_NKK_2_2(20,0x10);
+    break;
+case 10:
 
+   break;
+case 11:
+    check_DOF(20,0x12);
+    break;
+case 12:
+
+   break;
+case 13:
+
+    break;
+case 14:
+     check_ext_fridge(16,0x15);
+    break;
+case 15:
+
+    break;
+
+case 16:
+    check_eth(8,0x17);
+    break;
+default:
+break;
+}
+}
+
+oled.Cursor(1,0);
+oled.LCD_String_Cirilic(cables[i]);
+delay_ms(2000);
+oled.Cursor(1,0);
+oled.PrintStr("                ");
+}
 }
 }
 
