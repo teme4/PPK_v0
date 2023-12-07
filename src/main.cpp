@@ -749,8 +749,8 @@ if(ob[i]==0)
 
  if(state_pin[7]==state_pin[9])
 {
-state_pin[7]=0;
-state_pin[9]=0;
+state_pin[7]=0x04;
+state_pin[9]=0x04;
 }
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
@@ -1257,7 +1257,26 @@ usart1.uart_tx_byte(result_buff[k]);
 result[21]=0x77;
 }
 
+uint8_t adc1_scan()
+{
+uint32_t adc_res=ADC1->JDR1;
+uint8_t sw=0;
 
+if(adc_res>50 && adc_res<150)
+{
+sw=2;
+}
+if(adc_res>1900 && adc_res<2100)
+{
+sw=3;
+}
+if(adc_res>3690 && adc_res<4096)
+{
+sw=1;
+}
+
+return sw;
+}
 
 int main()
 {
@@ -1338,13 +1357,15 @@ oled.busy_flag();
 
 while(1)
 {
+  /*
 oled.Cursor(0,0);
 oled.LCD_String_Cirilic(menu[0]);
 for (int i=0;i<16;i++)
 {
-adc_res=ADC1->JDR1;
-if(adc_res>1700 && adc_res<1800)
+stm32f103.set_pin_state(GPIOC,mcu_led.green,1);
+if(adc1_scan()==3)
 {
+stm32f103.set_pin_state(GPIOC,mcu_led.green,0);
 switch (i)
 {
 case 0:
@@ -1406,11 +1427,13 @@ break;
 
 oled.Cursor(1,0);
 oled.LCD_String_Cirilic(cables[i]);
-delay_ms(2000);
+delay_ms(500);
 oled.Cursor(1,0);
 oled.PrintStr("                ");
+}*/
 }
-}
+
+
 }
 
 extern "C"
