@@ -572,7 +572,6 @@ result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
 
-//result_buff[4]=0x00;
 for(int g=0;g<num+4;g++)
 {
   result_buff[3+g]=state_pin[g];
@@ -1297,8 +1296,7 @@ Led mcu_led;
 
 std::string menu[10];
 menu[0]="Âûáåðèòå êàáåëü:";
-menu[1]="˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜";
-menu[2]="˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜";
+
 
 std::string cables[20];
 cables[0]="ÍÊÊ-ÌËÈ";
@@ -1431,6 +1429,9 @@ delay_ms(500);
 oled.Cursor(1,0);
 oled.PrintStr("                ");
 }*/
+
+
+
 }
 
 
