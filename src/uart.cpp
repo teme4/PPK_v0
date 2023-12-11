@@ -14,10 +14,15 @@ void check_DOF(uint8_t num,uint8_t num_cable);
 void check_eth(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
 void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
-void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable);
 void check_ext_fridge(uint8_t num,uint8_t num_cable);
 void check_km_1(uint8_t num,uint8_t num_cable);
 void check_km_2(uint8_t num,uint8_t num_cable);
+void check_UART();
+
+
+
+
+
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
 {
@@ -52,7 +57,7 @@ RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 USART1->CR3  = 0;
 USART1->CR2 =  0;
 USART1->CR1  = 0;
-USART1->BRR = 281;//625     256000 //281
+USART1->BRR = 24;//281//200000     256000 //281
 USART1->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE |USART_CR1_IDLEIE|USART_CR1_TE;
 NVIC_EnableIRQ(USART1_IRQn);
 __enable_irq();
@@ -154,36 +159,26 @@ case 0x09:
     counter=0;
     break;
 case 0x10:
-    check_PKU_NKK_2_2(20,0x10);
+
     counter=0;
     break;
 case 0x11:
-
+    check_DOF(20,0x11);
     counter=0;
     break;
 case 0x12:
-    check_DOF(20,0x12);
-    counter=0;
-    break;
+check_ext_fridge(16,0x12);
+   counter=0;
+   break;
 case 0x13:
-
+ check_eth(8,0x13);
     counter=0;
     break;
 case 0x14:
-
-    counter=0;
+    check_SD_SC2(20,0x14);    counter=0;
     break;
-case 0x15:
-     check_ext_fridge(16,0x15);
-    counter=0;
-    break;
-case 0x16:
-
-    counter=0;
-    break;
-
-case 0x17:
-    check_eth(8,0x17);
+case 0x95:
+    check_UART();
     counter=0;
     break;
 

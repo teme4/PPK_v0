@@ -13,6 +13,7 @@
 #include "74hc165d.hpp"
 #include "rcc.hpp"
 #include "lcd.hpp"
+#include "connectors_pins.hpp"
 
 char str[80];
 
@@ -163,166 +164,6 @@ while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
 
-uint32_t pku_nkk_21[20]=
-{
-1,
-0,
-2,
-3,
-0,
-4,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-};
-
-uint32_t pku_nkk_22[20]=
-{
-1,
-0,
-2,
-3,
-0,
-4,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-};
-
-uint32_t pku_nkk_uart[20]=
-{
-7,
-0,
-6,
-0,
-0,
-0,
-0,
-0,
-0,
-5,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-};
-uint32_t dof_pins_2[20]=
-{
-25,
-19,
-26,
-5,
-11,
-6,
-12,
-0,
-10,
-0,
-20,
-22,
-21,
-23,
-14,
-24,
-15,
-17,
-16,
-13,
-};
-
-uint32_t km2[20]=
-{
-12,
-16,
-11,
-6,
-0,
-0,
-0,
-0,
-2,
-4,
-3,
-5,
-12,
-6,
-11,
-2,
-5,
-3,
-4,
-0,
-};
-
-uint32_t km1[20]=
-{
-12,
-16,
-11,
-6,
-0,
-0,
-0,
-0,
-2,
-4,
-3,
-5,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-0,
-};
-
-uint32_t flex_14_[14]=
-{
-  1,//1
-  2,//2
-  4,//3
-  8,//4
-  16,//5
-  32,//6
-  64,//7
-  128,//8
-  256,//9
-  512,//10
-  1024,//11
-  2048,//12
-  4096,//13
-  8192,//14
-  };
 
 
 uint32_t resolve(uint32_t val)
@@ -355,29 +196,6 @@ for(int i=0;i<32;i++)
 }
 }
 
-uint16_t SD_CS[20]=
-{
-    0b000000000011111111111110,//1
-    0b000000000011111111111101,//2
-    0b000000000011111111111011,//3
-    0b000000000011111111110111,//4
-    0b000000000011111111101111,//5
-    0b000000000011111111011111,//6
-    0b000000000011111110111111,//7
-    0b000000000011111101111111,//8
-    0b000000000011111011111111,//9
-    0b000000000011110111111111,//10
-    0b000000000011101111111111,//11
-    0b000000000011011111111111,//12
-    0b000000000010111111111111,//13
-    0b000000000001111111111111,//14
-    0b000000000011111011111111,//15
-    0b000000000011110111111111,//16
-    0b000000000011101111111111,//17
-    0b000000000011011111111111,//18
-    0b000000000010111111111111,//19
-    0b000000000001111111111111,//20
-};
 
 uint8_t check_K3(uint8_t value)
 {
@@ -835,86 +653,11 @@ result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
 
-for(int g=0;g<num+4;g++)
+for(int i=0;i<20;i++)
 {
-  result_buff[3+g]=state_pin[g];
+  if(pku_nkk_21[i]==0)
+  state_pin[i]=0x04;//NC
 }
-result_buff[num+3]=gencrc(result_buff, num+3);
-
-for(int k=0;k<num+4;k++)
-{
-usart1.uart_tx_byte(result_buff[k]);
-}
-result[21]=0x77;
-count++;
-}
-
-void check_PKU_NKK_2_2(uint8_t num,uint8_t num_cable)
-{
-uint8_t count=0,k,q=0;
-for(int i=0;i<num;i++)
-{
-  if(i<16)
-  {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=res[1];
-
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=res[1];
-  }
-if(i>15)
-{
-    k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=res[1];
-
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=res[1];
-}
-}
- for(int x=0;x<num;x++)
-   {
-     if(ob[x]!=0)
-     {
-      kz[x]=resolve(ob[x]);
-     }
-  for(int z=0;z<num;z++)
-   {
-        if(kz[z]!=0 && kz[z]<32)
-        {
-        for(int i=0;i<32;i++) //K3
-        {
-          for(int j=0;j<32;j++)
-              {
-               if(kz[i]==kz[j] && i!=j && kz[i]!=0)
-                  {
-                     state_pin[i]=0x01; //K3
-                  }
-              }
-        }
-        }
-   }
-         if(ob[x]==0)
-        {
-              state_pin[x]=0x02; //OB
-        }
-          if(kz[x]==pku_nkk_22[x])
-         {
-              state_pin[x]=0x00; //OK
-         }
-         if(kz[x]!=pku_nkk_22[x] && ob[x]!=0)
-         {
-              state_pin[x]=0x03; //HP
-         }
-}
-
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=num_cable;
 
 for(int g=0;g<num+4;g++)
 {
@@ -929,6 +672,7 @@ usart1.uart_tx_byte(result_buff[k]);
 result[21]=0x77;
 count++;
 }
+
 
 void check_PKU_NKK_3(uint8_t num,uint8_t num_cable)
 {
@@ -996,6 +740,14 @@ if(i>15)
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
+
+for(int i=0;i<20;i++)
+{
+  if(pku_nkk_uart[i]==0)
+  state_pin[i]=0x04;//NC
+}
+
+
 
 for(int g=0;g<num+4;g++)
 {
@@ -1156,12 +908,13 @@ result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
 
- state_pin[0]=0x00; //OK
- state_pin[1]=0x00; //OK
- state_pin[12]=0x00; //OK
- state_pin[13]=0x00; //OK
- state_pin[14]=0x00; //OK
- state_pin[15]=0x00; //OK
+
+ state_pin[0]=0x04; //NC
+ state_pin[1]=0x04; //NC
+ state_pin[12]=0x04; //NC
+ state_pin[13]=0x04; //NC
+ state_pin[14]=0x04; //NC
+ state_pin[15]=0x04; //NC
 
 for(int g=0;g<num+4;g++)
 {
@@ -1277,6 +1030,19 @@ sw=1;
 return sw;
 }
 
+void check_UART()
+{
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=0x95;
+result_buff[3]=gencrc(result_buff,3);
+for(int k=0;k<4;k++)
+{
+  usart1.uart_tx_byte(result_buff[k]);
+}
+}
+
+
 int main()
 {
  gpio_init();
@@ -1351,6 +1117,8 @@ oled.busy_flag();
     ;
   //Теперь можно читать результат из JDR1
   uint32_t adc_res; //Использовал переменную для отладки. Можно и без неё
+
+
 
 
 while(1)
