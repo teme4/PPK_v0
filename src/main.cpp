@@ -1035,8 +1035,19 @@ void check_UART()
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=0x95;
-result_buff[3]=gencrc(result_buff,3);
-for(int k=0;k<4;k++)
+result_buff[3]=0x95;
+result_buff[4]=0x95;
+result_buff[5]=0x95;
+result_buff[6]=0x95;
+result_buff[7]=0x95;
+result_buff[8]=0x95;
+result_buff[9]=0x95;
+result_buff[10]=0x95;
+result_buff[11]=0x95;
+result_buff[12]=0x95;
+result_buff[13]=0x95;
+result_buff[14]=gencrc(result_buff,14);
+for(int k=0;k<15;k++)
 {
   usart1.uart_tx_byte(result_buff[k]);
 }
@@ -1197,7 +1208,8 @@ delay_ms(500);
 oled.Cursor(1,0);
 oled.PrintStr("                ");
 }*/
-
+ //check_eth(8,0x13);
+ //delay_ms(50);
 
 
 }

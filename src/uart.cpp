@@ -159,23 +159,20 @@ case 0x09:
     counter=0;
     break;
 case 0x10:
-
+     check_DOF(20,0x10);
     counter=0;
     break;
 case 0x11:
-    check_DOF(20,0x11);
+    check_ext_fridge(16,0x11);
     counter=0;
     break;
 case 0x12:
-check_ext_fridge(16,0x12);
+   check_eth(8,0x12);
    counter=0;
    break;
 case 0x13:
- check_eth(8,0x13);
+    check_SD_SC2(20,0x13);
     counter=0;
-    break;
-case 0x14:
-    check_SD_SC2(20,0x14);    counter=0;
     break;
 case 0x95:
     check_UART();
