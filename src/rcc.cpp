@@ -98,3 +98,34 @@ int ClockInit(void)
   //Выходим
   return 0;
 }
+
+//----------------------------------------------------------
+
+void RCC_init()
+{
+   BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
+   BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
+   BKP->CSR =0;                                             //������ �������
+   PWR->CR |= PWR_CR_DBP;                                   //1: ������� ������ � RTC � ��������� ���������
+   RCC->BDCR &=~ RCC_BDCR_BDRST;
+   RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
+   RCC->BDCR &=~ RCC_BDCR_LSEON;                            // ��������� LSE
+   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // ���� ���� ��������� ����������
+
+   RCC->CR &=~ RCC_CR_HSEON;                                // ��������� HSE
+   RCC->CR |= RCC_CR_HSION;                                 // �������� HSI ���������
+   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // ���� ���� ��������� �� ���������
+
+   RCC->CFGR |= RCC_CFGR_SW_HSI;                            // ������� HSI � �������� ���������� ������������
+   RCC->CFGR &=~ RCC_CFGR_PLLSRC;
+   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        // �������� ��� ����������� PLL !! PLL=x8 (4��� *8 =32 ���)
+   RCC->CFGR|= RCC_CFGR_PLLMULL_1 |RCC_CFGR_PLLMULL_2;
+
+   RCC->CR |= RCC_CR_PLLON;                                 // �������� PLL
+   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     // ���� ���� ���������� �� ���������
+
+   RCC->CFGR |= RCC_CFGR_SW_PLL;                            // ������� PLL � �������� ���������� ������������
+   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler ���������� � ������� �� 1
+   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler ���������� � ������� �� 1
+   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler ���������� � ������� �� 1
+}
