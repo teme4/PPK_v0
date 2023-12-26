@@ -2,17 +2,20 @@
 #include "uart.hpp"
 #include "gpio.hpp"
 #include "dma.hpp"
-#include "string.h"
+#include <string>
+#include <vector>
 #include "hardware_config.hpp"
 #include "math.h"
 #include "delay.hpp"
 
-#include "arial.hpp"
 #include "stdio.h"
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
 #include "rcc.hpp"
 #include "lcd.hpp"
+
+#include <string>
+#include <vector>
 
 char str[80];
 
@@ -69,51 +72,51 @@ void RCC_init()
 {
    BKP->CR &=~ BKP_CR_TPE;                                  //The TAMPER pin is free for general purpose I/O
    BKP->CR |= BKP_CR_TPAL;                                  //0: A high level on the TAMPER pin resets all data backup registers (if TPE bit is set).
-   BKP->CSR =0;                                             // 
-   PWR->CR |= PWR_CR_DBP;                                   //1:    RTC   
+   BKP->CSR =0;                                             //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+   PWR->CR |= PWR_CR_DBP;                                   //1: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ RTC ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
    RCC->BDCR &=~ RCC_BDCR_BDRST;
    RCC->BDCR &=~RCC_BDCR_RTCEN;                              //0: RTC clock disabled
-   RCC->BDCR &=~ RCC_BDCR_LSEON;                            //  LSE
-   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    //    
+   RCC->BDCR &=~ RCC_BDCR_LSEON;                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ LSE
+   while (RCC->BDCR & RCC_BDCR_LSERDY){}                    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-   RCC->CR &=~ RCC_CR_HSEON;                                //  HSE
-   RCC->CR |= RCC_CR_HSION;                                 //  HSI 
-   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     //     
+   RCC->CR &=~ RCC_CR_HSEON;                                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HSE
+   RCC->CR |= RCC_CR_HSION;                                 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HSI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+   while (!(RCC->CR & RCC_CR_HSIRDY)){}                     // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-   RCC->CFGR |= RCC_CFGR_SW_HSI;                            //  HSI    
+   RCC->CFGR |= RCC_CFGR_SW_HSI;                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HSI ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
    RCC->CFGR &=~ RCC_CFGR_PLLSRC;
-   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        //    PLL !! PLL=x8 (4 *8 =32 )
+   RCC->CFGR &=~ RCC_CFGR_PLLMULL_0;                        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PLL !! PLL=x8 (4ï¿½ï¿½ï¿½ *8 =32 ï¿½ï¿½ï¿½)
    RCC->CFGR|= RCC_CFGR_PLLMULL_1 |RCC_CFGR_PLLMULL_2;
 
-   RCC->CR |= RCC_CR_PLLON;                                 //  PLL
-   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     //     
+   RCC->CR |= RCC_CR_PLLON;                                 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PLL
+   while (!(RCC->CR & RCC_CR_PLLRDY)){}                     // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-   RCC->CFGR |= RCC_CFGR_SW_PLL;                            //  PLL    
-   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler     1
-   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler     1
-   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler     1
+   RCC->CFGR |= RCC_CFGR_SW_PLL;                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PLL ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+   RCC->CFGR |= RCC_CFGR_HPRE_DIV1;                         // ABH Prescaler ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 1
+   RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;                        // APB2 Prescaler ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 1
+   RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;                        // APB1 Prescaler ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 1
 }
 
 extern uint32_t SystemCoreClock;
 // clang-format off
 enum class IRQnSPI
 {
-    TXEIE                                       = (1<<7),///<e  .   FIFO
-    RXNEIE                                      = (1<<6),///<e    ( FIFO             )
-    ERRIE                                       = (1<<5),///<e    50 %    FIFO 
+    TXEIE                                       = (1<<7),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½e ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO
+    RXNEIE                                      = (1<<6),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½e ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ERRIE                                       = (1<<5),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½e ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 50 % ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     NONE                                        = (0<<0)
 };
 
 enum class RegCR1
 {
-    SPI_MODE0                                   = (0b00 ),///<SPI  Motorola(CPOL = 0, CPHA = 0);
-    SPI_MODE1                                   = (0b01 ),///<SPI  Motorola(CPOL = 0, CPHA = 1);
-    SPI_MODE2                                   = (0b10 ),///<SPI  Motorola(CPOL = 1, CPHA = 0);
-    SPI_MODE3                                   = (0b11 ),///<SPI  Motorola(CPOL = 1, CPHA = 1);
-    MASTER                                      = (1<<2 ),///< 
-    SLAVE                                       = (0<<0 ),///< 
-    ACTIVE                                      = (1<<6 ),///< 
-    INACTIVE                                    = (0<<0 ),///< ;
+    SPI_MODE0                                   = (0b00 ),///<SPI ï¿½ï¿½ï¿½ï¿½ï¿½ Motorola(CPOL = 0, CPHA = 0);
+    SPI_MODE1                                   = (0b01 ),///<SPI ï¿½ï¿½ï¿½ï¿½ï¿½ Motorola(CPOL = 0, CPHA = 1);
+    SPI_MODE2                                   = (0b10 ),///<SPI ï¿½ï¿½ï¿½ï¿½ï¿½ Motorola(CPOL = 1, CPHA = 0);
+    SPI_MODE3                                   = (0b11 ),///<SPI ï¿½ï¿½ï¿½ï¿½ï¿½ Motorola(CPOL = 1, CPHA = 1);
+    MASTER                                      = (1<<2 ),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    SLAVE                                       = (0<<0 ),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ACTIVE                                      = (1<<6 ),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    INACTIVE                                    = (0<<0 ),///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½;
     DFF8bit                                     = (0<<0 ),///<data frame format: 8bit;
     DFF16bit                                    = (1<<11),///<data frame format: 16bit;
     LSBF                                        = (1<<7 ),///<LSB  transmitted first
@@ -121,10 +124,10 @@ enum class RegCR1
 };
 enum class RegDMACR
 {
-    RXDMA_DIS                                   = 0x00,///<   DMA  FIFO 
-    RXDMA_EN                                    = 0x01,///<   DMA  FIFO 
-    TXDMA_DIS                                   = 0x00,///<   DMA  FIFO 
-    TXDMA_EN                                    = 0x02,///<   DMA  FIFO 
+    RXDMA_DIS                                   = 0x00,///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DMA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    RXDMA_EN                                    = 0x01,///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DMA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    TXDMA_DIS                                   = 0x00,///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DMA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    TXDMA_EN                                    = 0x02,///<ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DMA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FIFO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     NONE                                        = 0x00
 };
 void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
@@ -1096,13 +1099,13 @@ count++;
 void check_ext_fridge(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
-//////////////////////////////// 
+////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
-}////////////////////////////////  
+}////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
 for(int i=0;i<num;i++)
 {
@@ -1181,13 +1184,13 @@ result[21]=0x77;
 void check_SD_SC2(uint8_t num,uint8_t num_cable)
 {
    uint8_t count=0,k;
-//////////////////////////////// 
+////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
 ob[i]=0;
 result[i]=0x77;
-}////////////////////////////////  
+}////////////////////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
 for(int i=0;i<num;i++)
 {
@@ -1273,16 +1276,16 @@ int k=ClockInit();
 lcd oled;
 /*
 lcd oled;
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
-oled.InitializeLCD(); // 
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+oled.InitializeLCD(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //oled.ClearLCDScreen();
 oled.PrintStr("Start");
 
@@ -1291,9 +1294,9 @@ extern gpio gpio_stm32f103RC;
 Led mcu_led;
 
 std::string menu[10];
-menu[0]=" ";
-menu[1]="";
-menu[2]="";
+menu[0]="ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+menu[1]="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+menu[2]="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
 oled.InitializeLCD();
 
 
@@ -1339,6 +1342,72 @@ oled.LCD_String_Cirilic("BBBBBB");
 while(1)
 {
 //oled.LCD_String_Cirilic("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+
+
+int main()
+{
+gpio_init();
+usart1.usart_init();
+SettingsSPI(SPI2,
+            RegCR1::ACTIVE,
+            RegCR1::MASTER,
+            2,
+            RegCR1::SPI_MODE1,//1 => 595 3=>165D
+            RegCR1::DFF8bit,
+            RegCR1::MSBF);
+
+int k=ClockInit();
+lcd oled;
+extern gpio gpio_stm32f103RC;
+Led mcu_led;
+
+
+
+
+
+
+
+oled.InitializeLCD();
+
+
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
+
+
+oled.ClearLCDScreen();
+oled.busy_flag();
+
+
+  RCC->APB2ENR|=RCC_APB2ENR_ADC1EN; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+  ADC1->CR2 |= ADC_CR2_CAL; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+  while (!(ADC1->CR2 & ADC_CR2_CAL))
+    ; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  ADC1->SMPR2 |= (ADC_SMPR2_SMP1_2 | ADC_SMPR2_SMP1_1 | ADC_SMPR2_SMP1_0); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                                                                                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  ADC1->CR2 |= ADC_CR2_JEXTSEL; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                                                       //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ JSWSTART
+  ADC1->CR2 |= ADC_CR2_JEXTTRIG; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  ADC1->CR2 |= ADC_CR2_CONT; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  ADC1->CR1 |= ADC_CR1_JAUTO; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                                     //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  ADC1->JSQR |= (10<<15); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ADC1)
+  ADC1->CR2 |= ADC_CR2_ADON;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+  ADC1->CR2 |= ADC_CR2_JSWSTART; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  while (!(ADC1->SR & ADC_SR_JEOC)); //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ JDR1
+  uint32_t adc_res; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½
+
+
+
+
+//std::vector<string> cables;  //declaring a vector of string
+
+
+while(1)
+{
+
 
 }
 }
