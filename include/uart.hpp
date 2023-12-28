@@ -1,5 +1,6 @@
 #include "stm32f1xx.h"
 #include "stdio.h"
+#pragma once 
 
 enum class usart_SR
 {

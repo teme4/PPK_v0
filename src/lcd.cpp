@@ -1,13 +1,7 @@
-#include <stm32f1xx.h>
-#include "hardware_config.hpp"
 #include "lcd.hpp"
-#include "gpio.hpp"
-#include "delay.hpp"
-
 #define LCD_Goto(x,y) LCD_WriteCom((((((y)& 1)*0x40)+((x)& 7))|128),0)
-
 extern gpio_lcd_oled gpio_lcds;
-extern gpio gpio_stm32f103RC;
+
 const std::map<char,uint8_t> lcd::_cyrillic
 {
 {'À',65},
@@ -153,7 +147,7 @@ void lcd:: InitializeLCD(void)
 }
   //---˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜---//
 void lcd:: Cursor(char Row, char Col)
-{ 
+{
  char address;
    if (Row == 0)
    address = 0;
@@ -186,7 +180,6 @@ void lcd:: LCD_String(char* st)
 
 void lcd:: LCD_String_Cirilic(std::string st)
 {
-  uint8_t i=0;
   for(char &symbol : st)
   {
     if(!_cyrillic.count(symbol))
@@ -196,14 +189,8 @@ void lcd:: LCD_String_Cirilic(std::string st)
    else{
    SendByte(_cyrillic.at(symbol),1);
    }
-  
   }
 }
-
-
-
-
-
 
 /**/
 void lcd:: fake_ClearLCD()

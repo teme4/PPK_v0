@@ -1,11 +1,8 @@
 #include "hardware_config.hpp"
-#include "gpio.hpp"
 
-
-
-gpio gpio_stm32f103RC;
+extern gpio gpio_stm32f103RC;
 extern gpio stm32f103;
-gpio_lcd_oled gpio_lcds;
+extern gpio_lcd_oled gpio_lcds;
 
 void gpio_init()
 {

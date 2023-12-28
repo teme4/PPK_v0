@@ -1,9 +1,9 @@
-#ifndef LIST_H_
-#define LIST_H_
-
+#ifndef _PIN_CONFIG_STM32
+#define _PIN_CONFIG_STM32
 
 #include <stm32f1xx.h>
-
+#include "gpio.hpp"
+#include "main.hpp"
 //USART1
 #define usart_tx_pin						  	9
 #define usart_rx_pin						    10
@@ -12,7 +12,7 @@
 struct gpio_usart
 {
     uint8_t TX=9;
-    uint8_t RX=10;   
+    uint8_t RX=10;
 };
 
 //Parallel_BUS LCD
@@ -36,7 +36,7 @@ struct gpio_lcd_oled
 struct Led
 {
     uint8_t green=6;
-    uint8_t red=7;   
+    uint8_t red=7;
 };
 
 //595
@@ -44,6 +44,11 @@ struct Led
 #define clock_pin				             11
 #define latcg_pin				             12
 #define EN_1      				             2
+/*struct _595
+{
+    uint8_t green=6;
+    uint8_t red=7;
+};*/
 
 //165
 #define data_pin						     8
@@ -59,6 +64,4 @@ struct Led
 #define MOSI_595    		                 15
 
 void gpio_init(void);
-
-
-#endif
+#endif//#endif//_PIN_STM32

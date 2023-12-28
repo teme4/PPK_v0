@@ -1,5 +1,6 @@
 #pragma once //исходный файл при компиляции подключался строго один раз
 #include <stm32f1xx.h>
+#pragma once 
 
 #define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
 #define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000

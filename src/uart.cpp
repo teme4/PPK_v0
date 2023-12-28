@@ -6,21 +6,8 @@
 uint8_t len=0;
 uint8_t RX_data[32];
 
-extern lcd oled;
-
-
-void check_SD_SC2(uint8_t num,uint8_t num_cable);
-void check_DOF(uint8_t num,uint8_t num_cable);
-void check_eth(uint8_t num,uint8_t num_cable);
-void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
-void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
-void check_ext_fridge(uint8_t num,uint8_t num_cable);
-void check_km_1(uint8_t num,uint8_t num_cable);
-void check_km_2(uint8_t num,uint8_t num_cable);
-void check_UART();
-
-
-
+lcd oled;
+extern usart usart1;
 
 
 /*Trancmited 1 byte*/
