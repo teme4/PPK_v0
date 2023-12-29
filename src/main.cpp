@@ -5,7 +5,7 @@
 //#include "74hc165d.hpp"
 #include "rcc.hpp"
 #include "lcd.hpp"
-//#include "lcd_menu.hpp"
+#include "lcd_menu.hpp"
 //#include "connectors_pins.hpp"
 
 #include "uart.hpp"
@@ -106,10 +106,10 @@ SPI2->DR = data ;
 int main()
 {
 //gpio_lcd_oled gpio_lcds;
-Led mcu_led;
 extern lcd oled;
 extern gpio gpio_stm32f103RC;
 extern usart usart1;
+extern Led mcu_led;
 
 gpio_init();
 usart1.usart_init();
@@ -132,10 +132,10 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 oled.ClearLCDScreen();
 oled.busy_flag();
 
-/*
+
 adc_init();
 start_menu();
-*/
+
 while(1)
 {
 

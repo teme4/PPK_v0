@@ -23,8 +23,7 @@ extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
 extern void check_km_1(uint8_t num,uint8_t num_cable);
 extern void check_km_2(uint8_t num,uint8_t num_cable);
 extern void check_UART();
-
-
+/*
 std::vector<std::string> cables_list
 {
 "NKK-MLI",
@@ -40,7 +39,8 @@ std::vector<std::string> cables_list
 "DOF-fri",
 "Ethernet",
 "NKK-Oswitch",
-};
+};*/
+
 std::vector<std::string> cables_list_ru
 {
 "Õ  -ÃÀ»",

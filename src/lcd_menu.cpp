@@ -1,5 +1,4 @@
 #include "lcd_menu.hpp"
-#include "lcd.hpp"
 
 extern lcd oled;
 extern Led mcu_led;
