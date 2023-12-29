@@ -1,8 +1,7 @@
 #ifndef DMA
 #define DMA
-
-#include "stm32f1xx.h"
-
+#include <stm32f1xx.h>
+#pragma once 
 
 class dma_usart
 {

@@ -4,10 +4,9 @@
 //#include <stm32f1xx.h>
 #include <map>
 #include <string>
-#include "main.hpp"
 #include "gpio.hpp"
 #include "hardware_config.hpp"
-
+#pragma once 
 //extern gpio_lcd_oled gpio_lcds;
 extern gpio gpio_stm32f103RC;
 
@@ -69,7 +68,7 @@ void fake_ClearLCD(void);
 void LCD_String_Cirilic(std::string st);
 };
 
-
+/*
 extern void check_SD_SC2(uint8_t num,uint8_t num_cable);
 extern void check_DOF(uint8_t num,uint8_t num_cable);
 extern void check_eth(uint8_t num,uint8_t num_cable);
@@ -79,5 +78,5 @@ extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
 extern void check_km_1(uint8_t num,uint8_t num_cable);
 extern void check_km_2(uint8_t num,uint8_t num_cable);
 extern void check_UART();
-
+*/
 #endif

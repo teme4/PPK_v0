@@ -1,5 +1,5 @@
 #include <stm32f1xx.h>
-
+#pragma once 
 uint32_t pku_nkk_21[20]=
 {
 1,

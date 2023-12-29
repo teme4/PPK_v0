@@ -1,6 +1,6 @@
 #include "stm32f1xx.h"
 #include "stdio.h"
-#pragma once 
+#pragma once
 
 enum class usart_SR
 {
@@ -65,3 +65,12 @@ void usart_init(void);
 
 uint16_t USART_RX_TX_Str (uint8_t* rx_dt);
 uint8_t gencrc(uint8_t *data, size_t len);
+extern void check_km_1(uint8_t num,uint8_t num_cable);
+extern void check_km_2(uint8_t num,uint8_t num_cable);
+extern void check_DOF(uint8_t num,uint8_t num_cable);
+extern void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
+extern void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
+extern void check_eth(uint8_t num,uint8_t num_cable);
+extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
+extern void check_SD_SC2(uint8_t num,uint8_t num_cable);
+extern void check_UART();

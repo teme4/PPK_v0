@@ -1,12 +1,25 @@
 
 #ifndef _PIN_STM32
 #define _PIN_STM32
-#include <main.hpp>
+#include <stm32f1xx.h>
 #include <vector>
-
+#include <string>
+#pragma once
 void start_menu(void);
 void adc_init(void);
 uint8_t adc1_scan();
+
+extern void check_SD_SC2(uint8_t num,uint8_t num_cable);
+extern void check_DOF(uint8_t num,uint8_t num_cable);
+extern void check_eth(uint8_t num,uint8_t num_cable);
+extern void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
+extern void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
+extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
+extern void check_km_1(uint8_t num,uint8_t num_cable);
+extern void check_km_2(uint8_t num,uint8_t num_cable);
+extern void check_UART();
+
+
 
 
 #pragma once

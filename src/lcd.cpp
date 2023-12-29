@@ -1,4 +1,5 @@
 #include "lcd.hpp"
+#include "delay.hpp"
 #define LCD_Goto(x,y) LCD_WriteCom((((((y)& 1)*0x40)+((x)& 7))|128),0)
 extern gpio_lcd_oled gpio_lcds;
 

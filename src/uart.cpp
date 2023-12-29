@@ -2,6 +2,7 @@
 #include "uart.hpp"
 #include <string.h>
 #include "lcd.hpp"
+#include "cable_test.hpp"
 
 uint8_t len=0;
 uint8_t RX_data[32];
