@@ -1,10 +1,12 @@
+#ifndef CABLE_TEST
+#define CABLE_TEST
 #include <stm32f1xx.h>
 #include "74hc595.hpp"
 #include "74hc165d.hpp"
 #include "uart.hpp"
-#pragma once 
-extern usart usart1;
+#include "connectors_pins.hpp"
 
+extern usart usart1;
 
 uint8_t result[32]={0x77,},n=0,m=0;
 uint32_t k3[32]={0,};
@@ -31,3 +33,5 @@ void check_eth(uint8_t num,uint8_t num_cable);
 void check_ext_fridge(uint8_t num,uint8_t num_cable);
 void check_SD_SC2(uint8_t num,uint8_t num_cable);
 void check_UART();
+
+#endif

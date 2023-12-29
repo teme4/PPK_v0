@@ -1,5 +1,6 @@
+#ifndef CONNECTORS_PINS
+#define CONNECTORS_PINS
 #include <stm32f1xx.h>
-#pragma once 
 uint32_t pku_nkk_21[20]=
 {
 1,
@@ -142,3 +143,5 @@ uint16_t SD_CS[20]=
     0b000000000010111111111111,//19
     0b000000000001111111111111,//20
 };
+
+#endif

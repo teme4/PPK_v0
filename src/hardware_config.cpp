@@ -1,8 +1,8 @@
 #include "hardware_config.hpp"
 
-extern gpio gpio_stm32f103RC;
-extern gpio stm32f103;
-extern gpio_lcd_oled gpio_lcds;
+gpio gpio_stm32f103RC;
+gpio_lcd_oled gpio_lcds;
+
 
 void gpio_init()
 {
@@ -38,8 +38,8 @@ gpio_stm32f103RC.gpio_conf(GPIOB,pl_165,gpio_stm32f103RC.gpio_mode_pp_50);
 gpio_stm32f103RC.gpio_conf(GPIOC,0,gpio_stm32f103RC.input_mode_analog);
 
 
-stm32f103.set_pin_state(GPIOB,EN_595,1);
-stm32f103.set_pin_state(GPIOB,CS_595,1);
+gpio_stm32f103RC.set_pin_state(GPIOB,EN_595,1);
+gpio_stm32f103RC.set_pin_state(GPIOB,CS_595,1);
 
 //leds
 Led mcu_led;

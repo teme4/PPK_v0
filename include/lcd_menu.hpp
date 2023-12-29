@@ -1,10 +1,15 @@
 
 #ifndef _PIN_STM32
 #define _PIN_STM32
+#pragma once
 #include <stm32f1xx.h>
 #include <vector>
 #include <string>
-#pragma once
+#include "hardware_config.hpp"
+#include "uart.hpp"
+#include "gpio.hpp"
+#include "delay.hpp"
+
 void start_menu(void);
 void adc_init(void);
 uint8_t adc1_scan();
@@ -20,9 +25,6 @@ extern void check_km_2(uint8_t num,uint8_t num_cable);
 extern void check_UART();
 
 
-
-
-#pragma once
 std::vector<std::string> cables_list
 {
 "NKK-MLI",

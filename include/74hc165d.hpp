@@ -3,7 +3,10 @@
 #include <stm32f1xx.h>
 #include "hardware_config.hpp"
 #include "vector"
-#pragma once 
+#include "gpio.hpp"
+#include "delay.hpp"
+
+#pragma once
 
 extern uint8_t res[32];
 uint16_t flex_cable();

@@ -1,5 +1,10 @@
-#include "stm32f1xx.h"
+#ifndef UART
+#define UART
+
 #include "stdio.h"
+#include <stm32f1xx.h>
+#include <string.h>
+#include "lcd.hpp"
 #pragma once
 
 enum class usart_SR
@@ -74,3 +79,5 @@ extern void check_eth(uint8_t num,uint8_t num_cable);
 extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
 extern void check_SD_SC2(uint8_t num,uint8_t num_cable);
 extern void check_UART();
+
+#endif

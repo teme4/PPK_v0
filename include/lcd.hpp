@@ -6,8 +6,10 @@
 #include <string>
 #include "gpio.hpp"
 #include "hardware_config.hpp"
-#pragma once 
-//extern gpio_lcd_oled gpio_lcds;
+#include "delay.hpp"
+#pragma once
+
+extern gpio_lcd_oled gpio_lcds;
 extern gpio gpio_stm32f103RC;
 
 // commands

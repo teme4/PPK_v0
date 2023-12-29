@@ -1,42 +1,37 @@
-//#include <stm32f1xx.h>
 #include "main.hpp"
 #include <stm32f1xx.h>
-#include "stdio.h"
-#include "74hc595.hpp"
-#include "74hc165d.hpp"
+//#include "stdio.h"
+//#include "74hc595.hpp"
+//#include "74hc165d.hpp"
 #include "rcc.hpp"
 #include "lcd.hpp"
-#include "lcd_menu.hpp"
-#include "connectors_pins.hpp"
+//#include "lcd_menu.hpp"
+//#include "connectors_pins.hpp"
 
 #include "uart.hpp"
 #include "gpio.hpp"
-#include "dma.hpp"
-#include "string.h"
+//#include "dma.hpp"
+//#include "string.h"
 #include "hardware_config.hpp"
-#include "math.h"
-#include "delay.hpp"
-#include <string>
-#include <vector>
+//#include "math.h"
+//#include "delay.hpp"
+//#include <string>
+//#include <vector>
 
-gpio_lcd_oled gpio_lcds;
-Led mcu_led;
-lcd oled;
-gpio gpio_stm32f103RC;
-usart usart1;
+
 //dma_usart dma_usart1;
 
-char str[80];
-uint8_t res[32]={0,};
+//char str[80];
+//uint8_t res[32]={0,};
+//uint16_t data_state[32];
+//char temp[1];
 
-uint16_t data_state[32];
-char temp[1];
-
+/*
 void breakpoint(const char * data)
 {
 usart1.uart_tx_bytes(data);
 usart1.uart_enter();
-}
+}*/
 
 /*
 //----------------------------------------------------------
@@ -96,9 +91,8 @@ void SettingsSPI (SPI_TypeDef*SPIx ,RegCR1 SPE,
     SPIx->CR1 |= static_cast<uint32_t>(LsbMsbFirst);
     SPIx->CR1 |= SPI_CR1_SSI | SPI_CR1_SSM;
     SPIx->CR1 |= static_cast<uint32_t>(MS);
-
    // SPIx->CR2 |= static_cast<uint32_t>(TxDmacr);
-    //SPIx->CR2 |= static_cast<uint32_t>(RxDmacr);
+   // SPIx->CR2 |= static_cast<uint32_t>(RxDmacr);
 
     SPIx->CR1 |= static_cast<uint32_t>(SPE);
                       }
@@ -109,11 +103,14 @@ while (!(SPI2->SR & SPI_SR_TXE));
 SPI2->DR = data ;
 }
 
-
-
-
 int main()
 {
+//gpio_lcd_oled gpio_lcds;
+Led mcu_led;
+extern lcd oled;
+extern gpio gpio_stm32f103RC;
+extern usart usart1;
+
 gpio_init();
 usart1.usart_init();
 SettingsSPI(SPI2,
@@ -125,8 +122,6 @@ SettingsSPI(SPI2,
             RegCR1::MSBF);
 
 int k=ClockInit();
-
-
 oled.InitializeLCD();
 
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
@@ -137,10 +132,10 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 oled.ClearLCDScreen();
 oled.busy_flag();
 
-
+/*
 adc_init();
 start_menu();
-
+*/
 while(1)
 {
 

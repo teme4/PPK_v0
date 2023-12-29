@@ -1,14 +1,10 @@
-#include <stm32f1xx.h>
 #include "uart.hpp"
-#include <string.h>
-#include "lcd.hpp"
-#include "cable_test.hpp"
 
 uint8_t len=0;
 uint8_t RX_data[32];
 
 lcd oled;
-extern usart usart1;
+usart usart1;
 
 
 /*Trancmited 1 byte*/

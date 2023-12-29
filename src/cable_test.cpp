@@ -1,6 +1,4 @@
 #include "cable_test.hpp"
-#include "uart.hpp"
-#include "connectors_pins.hpp"
 
 uint32_t resolve(uint32_t val)
 {

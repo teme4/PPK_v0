@@ -1,23 +1,9 @@
 #include "lcd_menu.hpp"
 #include "lcd.hpp"
-#include "hardware_config.hpp"
-#include "uart.hpp"
-#include "gpio.hpp"
-#include "delay.hpp"
 
 extern lcd oled;
 extern Led mcu_led;
-/*
-extern void check_SD_SC2(uint8_t num,uint8_t num_cable);
-extern void check_DOF(uint8_t num,uint8_t num_cable);
-extern void check_eth(uint8_t num,uint8_t num_cable);
-extern void check_PKU_NKK_3(uint8_t num,uint8_t num_cable);
-extern void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable);
-extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
-extern void check_km_1(uint8_t num,uint8_t num_cable);
-extern void check_km_2(uint8_t num,uint8_t num_cable);
-extern void check_UART();
-*/
+
 void adc_init()
 {
   RCC->APB2ENR|=RCC_APB2ENR_ADC1EN; //˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜

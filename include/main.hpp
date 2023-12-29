@@ -34,14 +34,6 @@ enum class RegDMACR
     NONE                                        = 0x00
 };
 
-
-
-
-
-
-
-
-
 void breakpoint(const char * data);
 void SettingsSPI(SPI_TypeDef*SPIx ,RegCR1 SPE,
                       RegCR1 MS,

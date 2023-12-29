@@ -1,6 +1,5 @@
 #include <stm32f1xx.h>
 
-
 #pragma once
 class gpio
 {

@@ -1,4 +1,6 @@
-#include <stm32f1xx.h>
+#ifndef _PIN_MASK_FOR_74HC165_
+#define _PIN_MASK_FOR_74HC165_
+
 #include "gpio.hpp"
 
 void gpio::  Set_pin_H(GPIO_TypeDef *port,uint8_t pin)
@@ -41,5 +43,5 @@ void gpio::gpio_conf(GPIO_TypeDef * port, uint32_t pin, uint8_t mode)
     {
         return 0;
     }
-        
 }
+#endif
