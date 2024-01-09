@@ -7,8 +7,7 @@ void adc_init()
 {
   RCC->APB2ENR|=RCC_APB2ENR_ADC1EN; //  
   ADC1->CR2 |= ADC_CR2_CAL; //  
-  while (!(ADC1->CR2 & ADC_CR2_CAL))
-    ; //  
+  while (!(ADC1->CR2 & ADC_CR2_CAL)); //  
   ADC1->SMPR2 |= (ADC_SMPR2_SMP1_2 | ADC_SMPR2_SMP1_1 | ADC_SMPR2_SMP1_0); //
                                                                                             //  
   ADC1->CR2 |= ADC_CR2_JEXTSEL; //  
@@ -24,6 +23,24 @@ void adc_init()
   //     JDR1
   uint32_t adc_res; //   .    
 }
+
+std::vector<std::string> cables_list_ru
+{
+"ΝΚΚ-ΜΛΘ",
+"ΝΚΚ-οεπεκλώχ.",
+"ΟΟ1-ΟΟ2",
+"ΟΚΣ-ΚΜ(ΐλθρΰ)",
+"ΟΚΣ-ΚΜ(Αξα)",
+"ΟΚΣ-SD/SC",
+"ΝΚΚ-κξμοενρ.",
+"ΟΚΣ-ΝΚΚ(UART)",
+"ΟΚΣ-ΝΚΚ(Αΰς/ΐΞΜ)",
+"ΟΚΣ-ΔΞΤ",
+"ΔΞΤ-υξξλξδ.",
+"Ethernet",
+"ΝΚΚ-Ξος.οεπεκλ.",
+};
+
 
 uint8_t adc1_scan()
 {
@@ -99,7 +116,7 @@ case 0x13:
 }
 }
 oled.Cursor(1,0);
-oled.LCD_String_Cirilic(cables_list_ru[i]);
+oled.LCD_String_Cirilic(cables_list_ru.at(i));
 delay_ms(500);
 oled.Cursor(1,0);
 oled.PrintStr("                ");

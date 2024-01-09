@@ -2,6 +2,7 @@
 #ifndef _PIN_STM32
 #define _PIN_STM32
 #pragma once
+
 #include <stm32f1xx.h>
 #include <vector>
 #include <string>
@@ -23,6 +24,7 @@ extern void check_ext_fridge(uint8_t num,uint8_t num_cable);
 extern void check_km_1(uint8_t num,uint8_t num_cable);
 extern void check_km_2(uint8_t num,uint8_t num_cable);
 extern void check_UART();
+
 /*
 std::vector<std::string> cables_list
 {
@@ -40,22 +42,5 @@ std::vector<std::string> cables_list
 "Ethernet",
 "NKK-Oswitch",
 };*/
-
-std::vector<std::string> cables_list_ru
-{
-"НКК-МЛИ",
-"НКК-переключ.",
-"ПП1-ПП2",
-"ПКУ-КМ(Алиса)",
-"ПКУ-КМ(Боб)",
-"ПКУ-SD/SC",
-"НКК-компенс.",
-"ПКУ-НКК(UART)",
-"ПКУ-НКК(Бат/АОМ)",
-"ПКУ-ДОФ",
-"ДОФ-хоолод.",
-"Ethernet",
-"НКК-Опт.перекл.",
-};
 
 #endif//_PIN_STM32

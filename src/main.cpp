@@ -1,8 +1,8 @@
 #include "main.hpp"
 #include <stm32f1xx.h>
-//#include "stdio.h"
-//#include "74hc595.hpp"
-//#include "74hc165d.hpp"
+#include "stdio.h"
+#include "74hc595.hpp"
+#include "74hc165d.hpp"
 #include "rcc.hpp"
 #include "lcd.hpp"
 #include "lcd_menu.hpp"
@@ -128,10 +128,8 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,0);
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 
-
 oled.ClearLCDScreen();
 oled.busy_flag();
-
 
 adc_init();
 start_menu();
