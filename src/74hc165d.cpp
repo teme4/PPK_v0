@@ -2,24 +2,15 @@
 #include "74hc165d.hpp"
 
 
-
-std::vector<uint16_t> vector_pins;  // создали вектор
-volatile uint16_t pin_bits[32][5]={{0,0,0,0,0},};
-//extern gpio stm32f103;
-extern gpio gpio_stm32f103RC;
-uint8_t res[32];
-
-//std::vector<uint16_t> flex_cable()
-uint16_t flex_cable()
+uint16_t IC_74HC165::flex_cable()
 {
    SPI2->CR1 |= static_cast<uint32_t>(0b11);//mode3
   uint8_t chip=15;
-  vector_pins.reserve(16);  // указали число ячеек
- // set_pin_HC74_595(val,state);
-  gpio_stm32f103RC.set_pin_state(GPIOB,EN_165,0);
-  gpio_stm32f103RC.set_pin_state(GPIOB,pl_165,1);
-  gpio_stm32f103RC.set_pin_state(GPIOB,pl_165,0);
-  gpio_stm32f103RC.set_pin_state(GPIOB,pl_165,1);
+  vector_pins.reserve(16);
+  GPIOB->BSRR = (1<<EN_165+16);//L
+    GPIOB->BSRR = (1<<pl_165);//H
+      GPIOB->BSRR = (1<<pl_165+16);//L
+        GPIOB->BSRR = (1<<pl_165);//H
   for(int i=0;i<chip;i++)
   {
     while(!(SPI2->SR & SPI_SR_TXE));
@@ -28,6 +19,6 @@ uint16_t flex_cable()
     vector_pins[i]= SPI2->DR;
     res[i]=SPI2->DR;
   }
-  gpio_stm32f103RC.set_pin_state(GPIOB,EN_165,1);
+ GPIOB->BSRR = (1<<EN_165);//H
 return *res;
- }
+}

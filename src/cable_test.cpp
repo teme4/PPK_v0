@@ -1,5 +1,9 @@
 #include "cable_test.hpp"
 
+IC_74HC165 IC__74HC165;
+IC_74hc595 IC__74hc595;
+
+
 uint32_t resolve(uint32_t val)
 {
 for(int i=0;i<32;i++)
@@ -43,31 +47,31 @@ count += static_cast<bool>(value & (1<<i));
 return count;
 }
 
-void check_km_1(uint8_t num,uint8_t num_cable)
+void check_km_1(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
 uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+    IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 }
 }
 for(int x=0;x<num;x++)
@@ -121,38 +125,40 @@ for(int g=0;g<num+4;g++)
   result_buff[3+g]=state_pin[g];
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
-
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
 }
+}
 
-void check_km_2(uint8_t num,uint8_t num_cable)
+void check_km_2(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
 uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+    IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=(res[12]<<24)|(res[11]<<16)|(res[14]<<8)|res[13];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 }
 }
 for(int x=0;x<num;x++)
@@ -208,37 +214,40 @@ for(int g=0;g<num+4;g++)
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
 }
+}
 
-void check_DOF(uint8_t num,uint8_t num_cable)
+void check_DOF(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
 uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+    IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+    IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=(res[2]<<24)|(res[3]<<16)|(res[4]<<8)|res[5];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
 }
 }
   for(int x=0;x<num;x++)
@@ -266,7 +275,6 @@ if(i>15)
         }
         }
    }
- 
 
           if(kz[x]==dof_pins_2[x])
          {
@@ -305,38 +313,40 @@ for(int g=0;g<num+4;g++)
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-result[21]=0x77;
+}
 }
 
-void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable)
+void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
 uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=res[1];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=IC__74HC165.res[1];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=res[1];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+     IC__74HC165.flex_cable();
+    ob[i]=IC__74HC165.res[1];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=res[1];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=IC__74HC165.res[1];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=res[1];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=IC__74HC165.res[1];
 }
 }
  for(int x=0;x<num;x++)
@@ -390,41 +400,41 @@ for(int g=0;g<num+4;g++)
   result_buff[3+g]=state_pin[g];
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
-
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-result[21]=0x77;
-count++;
+}
 }
 
 
-void check_PKU_NKK_3(uint8_t num,uint8_t num_cable)
+void check_PKU_NKK_3(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
 uint8_t count=0,k,q=0;
 for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=res[1];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=IC__74HC165.res[1];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=res[1];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+     IC__74HC165.flex_cable();
+    ob[i]=IC__74HC165.res[1];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=res[1];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=IC__74HC165.res[1];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=res[1];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=IC__74HC165.res[1];
 }
 }
  for(int x=0;x<num;x++)
@@ -481,26 +491,27 @@ for(int g=0;g<num+4;g++)
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-result[21]=0x77;
-count++;
+}
 }
 
-void check_eth(uint8_t num,uint8_t num_cable)
+void check_eth(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
 uint8_t count=0;
 for(int i=0;i<num;i++)
 {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=res[6];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=IC__74HC165.res[6];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=res[6];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+    IC__74HC165.flex_cable();
+    ob[i]=IC__74HC165.res[6];
 }
   for(int x=0;x<num;x++)
    {
@@ -562,15 +573,16 @@ for(int g=0;g<num+4;g++)
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-result[21]=0x77;
-count++;
+}
 }
 
-void check_ext_fridge(uint8_t num,uint8_t num_cable)
+void check_ext_fridge(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
    uint8_t count=0,k;
 ////////////////////////////////˜˜˜˜˜˜˜ ˜˜˜˜˜˜
@@ -585,24 +597,24 @@ for(int i=0;i<num;i++)
 {
     if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+    IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 }
 }
   for(int x=0;x<num;x++)
@@ -648,17 +660,18 @@ for(int g=0;g<num+4;g++)
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
 
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-
-result[21]=0x77;
+}
 }
 
-void check_SD_SC2(uint8_t num,uint8_t num_cable)
+void check_SD_SC2(uint8_t num,uint8_t num_cable,uint8_t functions)
 {
-   uint8_t count=0,k;
+uint8_t count=0,k;
 ////////////////////////////////˜˜˜˜˜˜˜ ˜˜˜˜˜˜
 for(int i=0;i<num;i++)
 {
@@ -671,24 +684,24 @@ for(int i=0;i<num;i++)
 {
     if(i<16)
   {
-    HC74_595_SET(1<<i,0x0000,0);
-    flex_cable();
-    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    HC74_595_SET(1<<i,0x0000,1);
-    flex_cable();
-    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+    IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
   }
 if(i>15)
 {
     k=i-16;
-    HC74_595_SET(0x0000,1<<k,0);
-    flex_cable();
-    k3[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    HC74_595_SET(0x0000,1<<k,1);
-    flex_cable();
-    ob[i]=(res[8]<<16)|(res[9]<<8)|res[10];
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 }
 }
   for(int x=0;x<num;x++)
@@ -746,16 +759,14 @@ for(int g=0;g<num+4;g++)
   result_buff[3+g]=state_pin[g];
 }
 result_buff[num+3]=gencrc(result_buff, num+3);
-
+if(functions==0)
+{
 for(int k=0;k<num+4;k++)
 {
 usart1.uart_tx_byte(result_buff[k]);
 }
-
-result[21]=0x77;
 }
-
-
+}
 
 void check_UART()
 {
@@ -777,5 +788,95 @@ result_buff[14]=gencrc(result_buff,14);
 for(int k=0;k<15;k++)
 {
   usart1.uart_tx_byte(result_buff[k]);
+}
+}
+
+uint8_t pin_order[20];
+
+
+void check_univers(std::vector<uint8_t>*vec,uint8_t num_cable,uint8_t functions)
+{
+uint8_t count=0,k,q=0, num=20;
+//Âûñòàâëÿåì ëîãè÷åñêèå 0 è 1.
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
+
+    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
+  }
+if(i>15)
+{
+    k=i-16;
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
+     IC__74HC165.flex_cable();
+    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
+
+    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
+     IC__74HC165.flex_cable();
+    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
+}
+}
+for(int x=0;x<num;x++)
+   {
+      if(ob[x]!=0)
+      kz[x]=resolve(ob[x]);
+      if(kz[x]>15)
+      kz[x]=kz[x]-16;
+    }
+count++;
+/****************************************************/
+for(int x=0;x<num;x++)
+   {
+          if(kz[x]==pin_order[x])
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(kz[1]==1 || kz[1]==16)
+              {
+              ignore[x]=0x77;
+              state_pin[x]=0x00;
+              }
+              if(ignore[x]!=0x77)
+              {
+                state_pin[x]=0x03; //HP
+                ignore[x]=0x99;
+              }
+        }
+   }
+for(int i=0;i<20;i++)
+{
+if(ob[i]==0)
+{
+  state_pin[i]=0x02; //OB
+}
+if(pin_order [i]==0)
+{
+  state_pin[i]=0x04;//NC
+}
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+if(functions==0)
+{
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
 }
 }

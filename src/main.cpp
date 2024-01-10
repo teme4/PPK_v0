@@ -6,7 +6,7 @@
 #include "rcc.hpp"
 #include "lcd.hpp"
 #include "lcd_menu.hpp"
-//#include "connectors_pins.hpp"
+//#include "cable_test.hpp"
 
 #include "uart.hpp"
 #include "gpio.hpp"
@@ -131,12 +131,40 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 oled.ClearLCDScreen();
 oled.busy_flag();
 
+std::vector<uint8_t> dof
+{
+25,
+19,
+26,
+5,
+11,
+6,
+12,
+0,
+10,
+0,
+20,
+22,
+21,
+23,
+14,
+24,
+15,
+17,
+16,
+13,
+};
+
 adc_init();
-start_menu();
+//check_univers(,0x01,1);
+//check_univers(&dof ,0x01 ,1);
 
 while(1)
 {
-
+if (adc1_scan()==1)
+{
+  start_menu();
+}
 
 }
 }

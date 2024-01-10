@@ -106,56 +106,55 @@ if(RX_data[3]==crc)
 switch (RX_data[2])
 {
 case 0x01:
-    check_SD_SC2(16,0x01);
+    check_SD_SC2(16,0x01,0);
     counter=0;
-    //oled.LCD_String("Start");
     break;
 case 0x02:
-    check_SD_SC2(20,0x02);
+    check_SD_SC2(20,0x02,0);
     counter=0;
     break;
 case 0x03:
-    check_SD_SC2(8,0x03);
+    check_SD_SC2(8,0x03,0);
     counter=0;
     break;
 case 0x04:
-check_km_1(20,0x04);
+check_km_1(20,0x04,0);
     counter=0;
     break;
 case 0x05:
-check_km_2(20,0x05);
+check_km_2(20,0x05,0);
     counter=0;
     break;
 case 0x06:
-   check_SD_SC2(14,0x06);
+   check_SD_SC2(14,0x06,0);
     counter=0;
     break;
 case 0x07:
-    check_SD_SC2(10,0x07);
+    check_SD_SC2(10,0x07,0);
     counter=0;
     break;
 case 0x08:
-    check_PKU_NKK_3(20,0x08);
+    check_PKU_NKK_3(20,0x08,0);
     counter=0;
     break;
 case 0x09:
-    check_PKU_NKK_2_1(20,0x09);
+    check_PKU_NKK_2_1(20,0x09,0);
     counter=0;
     break;
 case 0x10:
-     check_DOF(20,0x10);
+     check_DOF(20,0x10,0);
     counter=0;
     break;
 case 0x11:
-    check_ext_fridge(16,0x11);
+    check_ext_fridge(16,0x11,0);
     counter=0;
     break;
 case 0x12:
-   check_eth(8,0x12);
+   check_eth(8,0x12,0);
    counter=0;
    break;
 case 0x13:
-    check_SD_SC2(20,0x13);
+    check_SD_SC2(20,0x13,0);
     counter=0;
     break;
 case 0x95:
