@@ -6,6 +6,7 @@
 #include "74hc165d.hpp"
 #include "uart.hpp"
 #include "connectors_pins.hpp"
+#include "gpio.hpp"
 
 extern usart usart1;
 

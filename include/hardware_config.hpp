@@ -3,10 +3,10 @@
 
 #include <stm32f1xx.h>
 #include "gpio.hpp"
+
 //USART1
 #define usart_tx_pin						  	9
 #define usart_rx_pin						    10
-#pragma once
 
 struct gpio_usart
 {

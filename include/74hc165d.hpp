@@ -6,7 +6,6 @@
 #include "gpio.hpp"
 #include "delay.hpp"
 
-
 class IC_74HC165
 {
 private:
@@ -14,7 +13,9 @@ private:
 public:
 uint8_t res[32];
 std::vector<uint16_t> vector_pins;
-uint16_t flex_cable();
+gpio gpio_stm32f103;
+
+uint16_t Read_pin_state();
 };
 
 #endif //_PIN_MASK_FOR_74HC165_

@@ -54,23 +54,23 @@ for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,  1<<i,  0x0000,  0);
+    IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 }
 }
@@ -141,23 +141,23 @@ for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,1);
+    IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 }
 }
@@ -230,23 +230,23 @@ for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,0);
+    IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,1);
+    IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
 }
 }
@@ -329,23 +329,23 @@ for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=IC__74HC165.res[1];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=IC__74HC165.res[1];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=IC__74HC165.res[1];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=IC__74HC165.res[1];
 }
 }
@@ -417,23 +417,23 @@ for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=IC__74HC165.res[1];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=IC__74HC165.res[1];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=IC__74HC165.res[1];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=IC__74HC165.res[1];
 }
 }
@@ -505,12 +505,12 @@ void check_eth(uint8_t num,uint8_t num_cable,uint8_t functions)
 uint8_t count=0;
 for(int i=0;i<num;i++)
 {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=IC__74HC165.res[6];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+    IC__74HC165.Read_pin_state();
     ob[i]=IC__74HC165.res[6];
 }
   for(int x=0;x<num;x++)
@@ -597,23 +597,23 @@ for(int i=0;i<num;i++)
 {
     if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
+    IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 }
 }
@@ -684,23 +684,23 @@ for(int i=0;i<num;i++)
 {
     if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-    IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+    IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[8]<<16)|(IC__74HC165.res[9]<<8)|IC__74HC165.res[10];
 }
 }
@@ -802,23 +802,23 @@ for(int i=0;i<num;i++)
 {
   if(i<16)
   {
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    IC__74hc595.HC74_595_SET(1<<i,0x0000,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
   }
 if(i>15)
 {
     k=i-16;
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,0);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
     k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 
-    IC__74hc595.HC74_595_SET(0x0000,1<<k,1);
-     IC__74HC165.flex_cable();
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
     ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
 }
 }

@@ -1,6 +1,8 @@
+#ifndef _GPIO
+#define _GPIO
+
 #include <stm32f1xx.h>
 
-#pragma once
 class gpio
 {
 private:
@@ -8,7 +10,6 @@ private:
  void Set_pin_L(GPIO_TypeDef *port,uint8_t pin);
 
 public:
-
  //            General purpose output
 uint8_t gpio_mode_pp_2=             0x01;
 uint8_t gpio_mode_pp_10=            0x02;
@@ -29,12 +30,10 @@ uint8_t input_mode_floating=	      0x04;
 uint8_t input_mode_pull_down=       0x28;
 uint8_t input_mode_pull_up=         0x48;
 
-
-
   void gpio_conf(GPIO_TypeDef * port, uint32_t pin, uint8_t mode);
   void set_pin_state(GPIO_TypeDef *GPIOx,uint8_t pin,uint8_t state);
   int get_state_pin (GPIO_TypeDef *GPIOx, uint8_t pin);
   //void config_af(GPIO_TypeDef *GPIOx, uint8_t PIN, uint8_t AF);
 };
 
-
+ #endif
