@@ -5,7 +5,7 @@
 #include <stm32f1xx.h>
 #include <string.h>
 #include "lcd.hpp"
-
+#include <vector>
 
 enum class usart_SR
 {
@@ -67,17 +67,17 @@ void uart_tx_bytes(const char * data);
 void uart_enter(void);
 void usart_init(void);
 };
-
-uint16_t USART_RX_TX_Str (uint8_t* rx_dt);
 uint8_t gencrc(uint8_t *data, size_t len);
-extern void check_km_1(uint8_t num,uint8_t num_cable,uint8_t functions);
-extern void check_km_2(uint8_t num,uint8_t num_cable,uint8_t functions);
-extern void check_DOF(uint8_t num,uint8_t num_cable,uint8_t functions);
+
+extern uint32_t resolve(uint32_t val);
+extern uint32_t find_K3(uint32_t *val);
+extern uint8_t check_K3(uint8_t value);
+extern uint8_t check_num_0(uint8_t value);
 extern void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable,uint8_t functions);
 extern void check_PKU_NKK_3(uint8_t num,uint8_t num_cable,uint8_t functions);
 extern void check_eth(uint8_t num,uint8_t num_cable,uint8_t functions);
 extern void check_ext_fridge(uint8_t num,uint8_t num_cable,uint8_t functions);
-extern void check_SD_SC2(uint8_t num,uint8_t num_cable,uint8_t functions);
 extern void check_UART();
-
+extern void check_univers(std::vector<uint16_t>vec,uint8_t num_cable,uint8_t functions);
+extern void check_flex_cables(std::vector<uint16_t> vec,uint8_t num,uint8_t num_cable,uint8_t functions);
 #endif

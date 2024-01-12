@@ -1,5 +1,6 @@
 #include "cable_test.hpp"
 
+
 IC_74HC165 IC__74HC165;
 IC_74hc595 IC__74hc595;
 
@@ -45,281 +46,6 @@ for (uint8_t i=0; i<8; i++)
 count += static_cast<bool>(value & (1<<i));
 }
 return count;
-}
-
-void check_km_1(uint8_t num,uint8_t num_cable,uint8_t functions)
-{
-uint8_t count=0,k,q=0;
-for(int i=0;i<num;i++)
-{
-  if(i<16)
-  {
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,  1<<i,  0x0000,  0);
-    IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,1);
-     IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-  }
-if(i>15)
-{
-    k=i-16;
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,0);
-     IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,1);
-     IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-}
-}
-for(int x=0;x<num;x++)
-   {
-      if(ob[x]!=0)
-      kz[x]=resolve(ob[x]);
-      if(kz[x]>15)
-      kz[x]=kz[x]-16;
-    }
-count++;
-/****************************************************/
-for(int x=0;x<num;x++)
-   {
-          if(kz[x]==km1[x])
-         {
-              state_pin[x]=0x00; //OK
-              ignore[x]=0x77;
-         }
-         else
-         {
-              if(kz[1]==1 || kz[1]==16)
-              {
-              ignore[x]=0x77;
-              state_pin[x]=0x00;
-              }
-              if(ignore[x]!=0x77)
-              {
-                state_pin[x]=0x03; //HP
-                ignore[x]=0x99;
-              }
-        }
-   }
-for(int i=0;i<20;i++)
-{
-if(ob[i]==0)
-{
-  state_pin[i]=0x02; //OB
-}
-if(km1[i]==0)
-{
-  state_pin[i]=0x04;//NC
-}
-}
-
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=num_cable;
-//result_buff[4]=0x00;
-for(int g=0;g<num+4;g++)
-{
-  result_buff[3+g]=state_pin[g];
-}
-result_buff[num+3]=gencrc(result_buff, num+3);
-if(functions==0)
-{
-for(int k=0;k<num+4;k++)
-{
-usart1.uart_tx_byte(result_buff[k]);
-}
-}
-}
-
-void check_km_2(uint8_t num,uint8_t num_cable,uint8_t functions)
-{
-uint8_t count=0,k,q=0;
-for(int i=0;i<num;i++)
-{
-  if(i<16)
-  {
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,0);
-     IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,1);
-    IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-  }
-if(i>15)
-{
-    k=i-16;
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,0);
-     IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,1);
-     IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-}
-}
-for(int x=0;x<num;x++)
-   {
-      if(ob[x]!=0)
-      kz[x]=resolve(ob[x]);
-      if(kz[x]>15)
-      kz[x]=kz[x]-16;
-    }
-count++;
-/****************************************************/
-
-for(int x=0;x<num;x++)
-   {
-          if(kz[x]==km2[x])
-         {
-              state_pin[x]=0x00; //OK
-              ignore[x]=0x77;
-         }
-         else
-         {
-              if(kz[1]==1 || kz[1]==16)
-              {
-              ignore[x]=0x77;
-              state_pin[x]=0x00;
-              }
-              if(ignore[x]!=0x77)
-              {
-                state_pin[x]=0x03; //HP
-                ignore[x]=0x99;
-              }
-        }
-   }
-for(int i=0;i<20;i++)
-{
-if(ob[i]==0)
-{
-  state_pin[i]=0x02; //OB
-}
-if(km2[i]==0)
-{
-  state_pin[i]=0x04;//NC
-}
-}
-
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=num_cable;
-
-for(int g=0;g<num+4;g++)
-{
-  result_buff[3+g]=state_pin[g];
-}
-result_buff[num+3]=gencrc(result_buff, num+3);
-
-if(functions==0)
-{
-for(int k=0;k<num+4;k++)
-{
-usart1.uart_tx_byte(result_buff[k]);
-}
-}
-}
-
-void check_DOF(uint8_t num,uint8_t num_cable,uint8_t functions)
-{
-uint8_t count=0,k,q=0;
-for(int i=0;i<num;i++)
-{
-  if(i<16)
-  {
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,0);
-    IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 1<<i,0x0000,1);
-    IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
-  }
-if(i>15)
-{
-    k=i-16;
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,0);
-     IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103, 0x0000,1<<k,1);
-     IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[2]<<24)|(IC__74HC165.res[3]<<16)|(IC__74HC165.res[4]<<8)|IC__74HC165.res[5];
-}
-}
-  for(int x=0;x<num;x++)
-   {
-      kz[x]=resolve(ob[x]);
-    if(ob[x]==0)
-     {
-        state_pin[x]=0x02; //OB
-        kz[x]=100;
-        ignore[x]=0x88;
-     }
-  for(int z=0;z<num;z++)
-   {
-        if(kz[z]!=0 && kz[z]<32)
-        {
-        for(int i=0;i<32;i++) //K3
-        {
-          for(int j=0;j<32;j++)
-              {
-               if(kz[i]==kz[j] && i!=j)
-                  {
-                     state_pin[i]=0x01; //K3
-                  }
-              }
-        }
-        }
-   }
-
-          if(kz[x]==dof_pins_2[x])
-         {
-              state_pin[x]=0x00; //OK
-              ignore[x]=0x77;
-         }
-         else
-         {
-              if(ignore[x]!=0x77)
-              {
-                state_pin[x]=0x03; //OB
-                ignore[x]=0x99;
-              }
-        }
-
-
-}
-for(int i=0;i<32;i++)
-{
-if(ob[i]==0)
-     state_pin[i]=0x02; //OB
-}
-
- if(state_pin[7]==state_pin[9])
-{
-state_pin[7]=0x04;
-state_pin[9]=0x04;
-}
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=num_cable;
-
-for(int g=0;g<num+4;g++)
-{
-  result_buff[3+g]=state_pin[g];
-}
-result_buff[num+3]=gencrc(result_buff, num+3);
-
-if(functions==0)
-{
-for(int k=0;k<num+4;k++)
-{
-usart1.uart_tx_byte(result_buff[k]);
-}
-}
 }
 
 void check_PKU_NKK_2_1(uint8_t num,uint8_t num_cable,uint8_t functions)
@@ -506,7 +232,7 @@ uint8_t count=0;
 for(int i=0;i<num;i++)
 {
     IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
-     IC__74HC165.Read_pin_state();
+    IC__74HC165.Read_pin_state();
     k3[i]=IC__74HC165.res[6];
 
     IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
@@ -521,27 +247,25 @@ for(int i=0;i<num;i++)
      }
     if(ob[x]==0)
      {
-        state_pin[x]=0x02; //OB
+        state_pin[x]=0x02;//OB
         kz[x]=100;
      }
   for(int z=0;z<num;z++)
    {
         if(kz[z]!=0 && kz[z]<32)
         {
-        for(int i=0;i<32;i++) //K3
+        for(int i=0;i<32;i++)//K3
         {
           for(int j=0;j<32;j++)
               {
                if(kz[i]==kz[j] && i!=j)
                   {
-                     state_pin[i]=0x01; //K3
+                     state_pin[i]=0x01;//K3
                   }
               }
         }
         }
    }
- 
-
           if(kz[x]==x+1)
          {
               state_pin[x]=0x00; //OK
@@ -561,7 +285,7 @@ for(int i=0;i<num;i++)
 for(int i=0;i<32;i++)
 {
 if(ob[i]==0)
-  state_pin[i]=0x02; //OB
+  state_pin[i]=0x02;//OB
 }
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
@@ -629,7 +353,6 @@ if(i>15)
   if(count==0)
   {
     state_pin[x]=0x02; //OBR
-   // k3[x]=k3[x] & 1<<x;
   }
   if(count==num-1)
   {
@@ -645,7 +368,6 @@ if(i>15)
 result_buff[0]=0xAA;
 result_buff[1]=0x55;
 result_buff[2]=num_cable;
-
 
  state_pin[0]=0x04; //NC
  state_pin[1]=0x04; //NC
@@ -669,10 +391,144 @@ usart1.uart_tx_byte(result_buff[k]);
 }
 }
 
-void check_SD_SC2(uint8_t num,uint8_t num_cable,uint8_t functions)
+void check_UART()
 {
-uint8_t count=0,k;
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=0x95;
+result_buff[3]=0x95;
+result_buff[4]=0x95;
+result_buff[5]=0x95;
+result_buff[6]=0x95;
+result_buff[7]=0x95;
+result_buff[8]=0x95;
+result_buff[9]=0x95;
+result_buff[10]=0x95;
+result_buff[11]=0x95;
+result_buff[12]=0x95;
+result_buff[13]=0x95;
+result_buff[14]=gencrc(result_buff,14);
+for(int k=0;k<15;k++)
+{
+  usart1.uart_tx_byte(result_buff[k]);
+}
+}
+
+
+void check_univers(std::vector<uint16_t> vec,uint8_t num_cable,uint8_t functions)
+{
+uint8_t count=0,k,q=0;
+uint8_t num=20;
+uint8_t res1,res2,res3,res4;
+//Выбор сдвигового регистра для KM1 KM2
+if(num_cable==0x04||num_cable==0x05)
+{
+  res1=12;
+  res2=11;
+  res3=14;
+  res4=13;
+}
+//Выбор сдвигового регистра для DOF
+if(num_cable==0x10)
+{
+  res1=2;
+  res2=3;
+  res3=4;
+  res4=5;
+}
+//Выставляем логические 0 и 1.
+for(int i=0;i<num;i++)
+{
+  if(i<16)
+  {
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
+     IC__74HC165.Read_pin_state();
+    k3[i]=(IC__74HC165.res[res1]<<24)|(IC__74HC165.res[res2]<<16)|(IC__74HC165.res[res3]<<8)|IC__74HC165.res[res4];
+
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
+     IC__74HC165.Read_pin_state();
+    ob[i]=(IC__74HC165.res[res1]<<24)|(IC__74HC165.res[res2]<<16)|(IC__74HC165.res[res3]<<8)|IC__74HC165.res[res4];
+  }
+if(i>15)
+{
+    k=i-16;
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
+     IC__74HC165.Read_pin_state();
+    k3[i]=(IC__74HC165.res[res1]<<24)|(IC__74HC165.res[res2]<<16)|(IC__74HC165.res[res3]<<8)|IC__74HC165.res[res4];
+
+    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
+     IC__74HC165.Read_pin_state();
+    ob[i]=(IC__74HC165.res[res1]<<24)|(IC__74HC165.res[res2]<<16)|(IC__74HC165.res[res3]<<8)|IC__74HC165.res[res4];
+}
+}
+for(int x=0;x<num;x++)
+   {
+      if(ob[x]!=0)
+      kz[x]=resolve(ob[x]);
+      if(kz[x]>15)
+      kz[x]=kz[x]-16;
+    }
+count++;
+/****************************************************/
+for(int x=0;x<num;x++)
+   {
+         if(kz[x]==vec.at(x))
+         {
+              state_pin[x]=0x00; //OK
+              ignore[x]=0x77;
+         }
+         else
+         {
+              if(num_cable==0x05)
+              {
+                  if(kz[1]==1 || kz[1]==16)// ||
+                  {
+                       ignore[x]=0x77;
+                       state_pin[x]=0x00;
+                  }
+                  if(ignore[x]!=0x77)
+                  {
+                  state_pin[x]=0x03; //HP
+                  ignore[x]=0x99;
+                  }
+              }
+        }
+   }
+for(int i=0;i<20;i++)
+{
+if(ob[i]==0)
+{
+  state_pin[i]=0x02; //OB
+}
+if(vec.at(i)==0)
+{
+  state_pin[i]=0x04;//NC
+}
+}
+
+result_buff[0]=0xAA;
+result_buff[1]=0x55;
+result_buff[2]=num_cable;
+for(int g=0;g<num+4;g++)
+{
+  result_buff[3+g]=state_pin[g];
+}
+result_buff[num+3]=gencrc(result_buff, num+3);
+if(functions==0)
+{
+for(int k=0;k<num+4;k++)
+{
+usart1.uart_tx_byte(result_buff[k]);
+}
+}
+}
+
+void check_flex_cables(std::vector<uint16_t> vec,uint8_t num,uint8_t num_cable,uint8_t functions)
+{
+uint8_t count=0,k=0;
+
 //////////////////////////////// 
+
 for(int i=0;i<num;i++)
 {
 k3[i]=0;
@@ -754,119 +610,6 @@ if (num==16)
     state_pin[19]=0x04; //NC
 }
 
-for(int g=0;g<num+4;g++)
-{
-  result_buff[3+g]=state_pin[g];
-}
-result_buff[num+3]=gencrc(result_buff, num+3);
-if(functions==0)
-{
-for(int k=0;k<num+4;k++)
-{
-usart1.uart_tx_byte(result_buff[k]);
-}
-}
-}
-
-void check_UART()
-{
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=0x95;
-result_buff[3]=0x95;
-result_buff[4]=0x95;
-result_buff[5]=0x95;
-result_buff[6]=0x95;
-result_buff[7]=0x95;
-result_buff[8]=0x95;
-result_buff[9]=0x95;
-result_buff[10]=0x95;
-result_buff[11]=0x95;
-result_buff[12]=0x95;
-result_buff[13]=0x95;
-result_buff[14]=gencrc(result_buff,14);
-for(int k=0;k<15;k++)
-{
-  usart1.uart_tx_byte(result_buff[k]);
-}
-}
-
-uint8_t pin_order[20];
-
-
-void check_univers(std::vector<uint8_t>*vec,uint8_t num_cable,uint8_t functions)
-{
-uint8_t count=0,k,q=0, num=20;
-//Выставляем логические 0 и 1.
-for(int i=0;i<num;i++)
-{
-  if(i<16)
-  {
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,0);
-     IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,1<<i,0x0000,1);
-     IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-  }
-if(i>15)
-{
-    k=i-16;
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,0);
-     IC__74HC165.Read_pin_state();
-    k3[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-
-    IC__74hc595.HC74_595_SET(IC__74hc595.gpio_stm32f103,0x0000,1<<k,1);
-     IC__74HC165.Read_pin_state();
-    ob[i]=(IC__74HC165.res[12]<<24)|(IC__74HC165.res[11]<<16)|(IC__74HC165.res[14]<<8)|IC__74HC165.res[13];
-}
-}
-for(int x=0;x<num;x++)
-   {
-      if(ob[x]!=0)
-      kz[x]=resolve(ob[x]);
-      if(kz[x]>15)
-      kz[x]=kz[x]-16;
-    }
-count++;
-/****************************************************/
-for(int x=0;x<num;x++)
-   {
-          if(kz[x]==pin_order[x])
-         {
-              state_pin[x]=0x00; //OK
-              ignore[x]=0x77;
-         }
-         else
-         {
-              if(kz[1]==1 || kz[1]==16)
-              {
-              ignore[x]=0x77;
-              state_pin[x]=0x00;
-              }
-              if(ignore[x]!=0x77)
-              {
-                state_pin[x]=0x03; //HP
-                ignore[x]=0x99;
-              }
-        }
-   }
-for(int i=0;i<20;i++)
-{
-if(ob[i]==0)
-{
-  state_pin[i]=0x02; //OB
-}
-if(pin_order [i]==0)
-{
-  state_pin[i]=0x04;//NC
-}
-}
-
-result_buff[0]=0xAA;
-result_buff[1]=0x55;
-result_buff[2]=num_cable;
 for(int g=0;g<num+4;g++)
 {
   result_buff[3+g]=state_pin[g];

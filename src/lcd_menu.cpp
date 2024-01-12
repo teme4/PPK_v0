@@ -74,43 +74,43 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);
 switch (i)
 {
 case 0x01:
-    check_SD_SC2(16,0x01,1);
+  //  check_SD_SC2(16,0x01,1);
     break;
 case 0x02:
-    check_SD_SC2(20,0x02,1);
+  //  check_SD_SC2(20,0x02,1);
     break;
 case 0x03:
-    check_SD_SC2(8,0x03,1);
+//check_SD_SC2(8,0x03,1);
     break;
 case 0x04:
-    check_km_1(20,0x04,1);
+    //check_km_1(20,0x04,1);
     break;
 case 0x05:
-    check_km_2(20,0x05,1);
+    //check_km_2(20,0x05,1);
     break;
 case 0x06:
-    check_SD_SC2(14,0x06,1);
+  //  check_SD_SC2(14,0x06,1);
     break;
 case 0x07:
-    check_SD_SC2(10,0x07,1);
+//check_SD_SC2(10,0x07,1);
     break;
 case 0x08:
-    check_PKU_NKK_3(20,0x08,1);
+    //check_PKU_NKK_3(20,0x08,1);
     break;
 case 0x09:
-    check_PKU_NKK_2_1(20,0x09,1);
+   // check_PKU_NKK_2_1(20,0x09,1);
     break;
 case 0x10:
-     check_DOF(20,0x10,1);
+    // check_DOF(20,0x10,1);
     break;
 case 0x11:
-    check_ext_fridge(16,0x11,1);
+    //check_ext_fridge(16,0x11,1);
     break;
 case 0x12:
-   check_eth(8,0x12,1);
+   //check_eth(8,0x12,1);
    break;
 case 0x13:
-   check_SD_SC2(20,0x13,1);
+ //  check_SD_SC2(20,0x13,1);
    break;
 }
 oled.ClearLCDScreen();

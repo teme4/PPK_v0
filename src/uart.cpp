@@ -6,6 +6,103 @@ uint8_t RX_data[32];
 lcd oled;
 usart usart1;
 
+std::vector<uint16_t> SD_CS
+{
+    0b000000000011111111111110,//1
+    0b000000000011111111111101,//2
+    0b000000000011111111111011,//3
+    0b000000000011111111110111,//4
+    0b000000000011111111101111,//5
+    0b000000000011111111011111,//6
+    0b000000000011111110111111,//7
+    0b000000000011111101111111,//8
+    0b000000000011111011111111,//9
+    0b000000000011110111111111,//10
+    0b000000000011101111111111,//11
+    0b000000000011011111111111,//12
+    0b000000000010111111111111,//13
+    0b000000000001111111111111,//14
+    0b000000000011111011111111,//15
+    0b000000000011110111111111,//16
+    0b000000000011101111111111,//17
+    0b000000000011011111111111,//18
+    0b000000000010111111111111,//19
+    0b000000000001111111111111,//20
+};
+
+
+std::vector<uint16_t>dof
+{
+25,
+19,
+26,
+5,
+11,
+6,
+12,
+0,
+10,
+0,
+20,
+22,
+21,
+23,
+14,
+24,
+15,
+17,
+16,
+13,
+};
+
+std::vector<uint16_t> km_2
+{
+12,
+16,
+11,
+6,
+0,
+0,
+0,
+0,
+2,
+4,
+3,
+5,
+12,
+6,
+11,
+2,
+5,
+3,
+4,
+0,
+};
+
+std::vector<uint16_t> km_1
+{
+12,
+16,
+11,
+6,
+0,
+0,
+0,
+0,
+2,
+4,
+3,
+5,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+};
+
 
 /*Trancmited 1 byte*/
 void usart::uart_tx_byte(uint8_t data)
@@ -106,31 +203,31 @@ if(RX_data[3]==crc)
 switch (RX_data[2])
 {
 case 0x01:
-    check_SD_SC2(16,0x01,0);
+    check_flex_cables(SD_CS,16,0x01,0);
     counter=0;
     break;
 case 0x02:
-    check_SD_SC2(20,0x02,0);
+    check_flex_cables(SD_CS,20,0x02,0);
     counter=0;
     break;
 case 0x03:
-    check_SD_SC2(8,0x03,0);
+    check_flex_cables(SD_CS,8,0x03,0);
     counter=0;
     break;
 case 0x04:
-check_km_1(20,0x04,0);
+    check_univers(km_1,0x04,0);
     counter=0;
     break;
 case 0x05:
-check_km_2(20,0x05,0);
+    check_univers(km_2,0x05,0);
     counter=0;
     break;
 case 0x06:
-   check_SD_SC2(14,0x06,0);
+    check_flex_cables(SD_CS,14,0x06,0);
     counter=0;
     break;
 case 0x07:
-    check_SD_SC2(10,0x07,0);
+    check_flex_cables(SD_CS,10,0x07,0);
     counter=0;
     break;
 case 0x08:
@@ -142,7 +239,7 @@ case 0x09:
     counter=0;
     break;
 case 0x10:
-     check_DOF(20,0x10,0);
+    check_univers(dof,0x10,0);
     counter=0;
     break;
 case 0x11:
@@ -150,11 +247,11 @@ case 0x11:
     counter=0;
     break;
 case 0x12:
-   check_eth(8,0x12,0);
-   counter=0;
-   break;
+    check_eth(8,0x12,0);
+    counter=0;
+    break;
 case 0x13:
-    check_SD_SC2(20,0x13,0);
+     check_flex_cables(SD_CS,20,0x013,0);
     counter=0;
     break;
 case 0x95:
@@ -170,4 +267,3 @@ break;
 }
  counter++;
 }
-
