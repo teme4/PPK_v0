@@ -17,7 +17,7 @@
 //#include "delay.hpp"
 //#include <string>
 //#include <vector>
-
+int counter_ = 0;
 
 //dma_usart dma_usart1;
 
@@ -133,19 +133,62 @@ oled.busy_flag();
 
 
 
-adc_init();
+//adc_init();
 //check_univers(,0x01,1);
 //check_univers(&dof ,0x01 ,1);
 
+// ¬ключаем тактовые сигналы используемых периферийных устройств:
+// AFIO (дл€ доступа к регистрам AFIO->EXTICR[]),
+
+__enable_irq ();  // разрешить прерывани€
+
+ RCC->APB2ENR|=RCC_APB2ENR_AFIOEN;
+
+    const unsigned int PortNumber=1; // 0 - A, 1 - B, 2 - C, ...
+    const unsigned int PinNumber=2;//номер пина
+   // AFIO->EXTICR[PIN/4]=AFIO->EXTICR[PIN/4]&~(0xF<<PIN%4*4)|(PORT<<PIN%4*4);
+
+    //AFIO->EXTICR[PIN>>2]=AFIO->EXTICR[PIN>>2]&~(0xF<<((PIN&3)<<2))|(PORT<<((PIN&3)<<2));
+
+AFIO->EXTICR[PinNumber >> 2] = (PortNumber & 0x0F) << (4 * (PinNumber & 0x03));
+        EXTI->FTSR |= (EXTI_FTSR_FT0 << PinNumber);
+        EXTI->RTSR |= (EXTI_RTSR_RT0 << PinNumber);
+        EXTI->PR |= (EXTI_PR_PR0 << PinNumber);
+        EXTI->IMR |= (EXTI_IMR_MR0 << PinNumber);
+
+
+	//EXTI->FTSR |= (1<<2);	//прерывани€ по восход€щему фронту дл€ пина 2
+  //EXTI->RTSR|= (1<<2); 	//прерывани€ по спадающему фронту дл€ пина 2
+	//EXTI->IMR |= (1<<2); //разрешить внешние прерывани€ дл€ пина 2
+  NVIC_SetPriority(EXTI2_IRQn, 0); // делаем прерывание высокоприоритетным.
+	NVIC_EnableIRQ (EXTI2_IRQn); //разрешить прерывани€ в NVIC
+  
 while(1)
 {
-if (adc1_scan()==1)
+
+
+
+  /*
+if(encoder_check()==0)
 {
   start_menu();
-}
+}*/
+
 
 }
 }
+//ќбработчик EXTI 2
+extern "C" void EXTI2_IRQHandler(void)
+{
+   // —брасываем нулевой бит регистра EXTI->PR записыва€ в бит 1.
+    EXTI->PR=(1<<2);
+    // ¬ыполн€ем прочие действи€, в данном случае, управл€ем светодиодом.
+     start_menu();
+}
+
+
+
+
 
 extern "C"
 {

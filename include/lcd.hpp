@@ -67,7 +67,7 @@ void Cursor(char Row, char Col);
 void PrintStr(char *Text);
 void LCD_String(char* st);
 void fake_ClearLCD(void);
-void LCD_String_Cirilic(std::string st);
+void LCD_String_Cyrilic(std::string st);
 };
 
 /*

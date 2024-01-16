@@ -183,7 +183,7 @@ void lcd:: LCD_String(char* st)
   }
 }
 
-void lcd:: LCD_String_Cirilic(std::string st)
+void lcd:: LCD_String_Cyrilic(std::string st)
 {
   for(char &symbol : st)
   {

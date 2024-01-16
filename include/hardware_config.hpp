@@ -62,5 +62,11 @@ struct Led
 #define MISO_595   		                     14
 #define MOSI_595    		                 15
 
+
+
+#define encoder_DT    		                 1
+#define encoder_SW    		                 2
+#define encoder_CLK    		                 0
+
 void gpio_init(void);
 #endif//#endif//_PIN_STM32

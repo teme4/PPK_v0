@@ -3,6 +3,89 @@
 extern lcd oled;
 extern Led mcu_led;
 
+extern "C" void TIM1_IRQHandler(void){
+
+	if(TIM1->SR & TIM_SR_TIF){
+
+		/* Toggle LED (PA4 pin) */
+	//	GPIOA->ODR ^= GPIO_ODR_4;
+    gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
+
+
+		/* Interrupt enabled */
+		TIM1->SR &= ~TIM_SR_TIF;
+	}
+
+}
+
+void Enc_Trig_Int(void){
+
+	/* Trigger Edge Detector */
+
+	/* 0000: No filter, sampling is done at fDTS */
+	TIM1->SMCR &= ~(TIM_SMCR_ETF);
+
+	/* 100: TI1 Edge Detector (TI1F_ED) */
+	TIM1->SMCR &= ~(TIM_SMCR_TS_0 | TIM_SMCR_TS_1);
+	TIM1->SMCR |= TIM_SMCR_TS_2;
+
+	/* 1: Trigger interrupt enabled. */
+	TIM1->DIER |= TIM_DIER_TIE;
+
+	NVIC_EnableIRQ(TIM1_CC_IRQn);
+}
+
+void tim1_init()
+{
+RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+
+/* 01: CC1 channel is configured as input, IC1 is mapped on TI1
+ * 01: CC2 channel is configured as input, IC2 is mapped on TI2 */
+TIM1->CCMR1 |= (TIM_CCMR1_CC1S_0 | TIM_CCMR1_CC2S_0);
+TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S_1 | TIM_CCMR1_CC2S_1);
+
+	/* 00: noninverted/rising edge */
+	TIM1->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC2P);
+	TIM1->CCER &= ~(TIM_CCER_CC2NP | TIM_CCER_CC2NP);
+
+	/* 001: Encoder mode 1 - Counter counts up/down on TI2FP1 edge depending on TI1FP2 level */
+	TIM1->SMCR |= TIM_SMCR_SMS_0;
+	TIM1->SMCR &= ~TIM_SMCR_SMS_1;
+	TIM1->SMCR &= ~TIM_SMCR_SMS_2;
+
+	/* 1111: fSAMPLING = fDTS / 32, N = 8 */
+	TIM1->CCMR1 |= (TIM_CCMR1_IC1F_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC1F_2 | TIM_CCMR1_IC1F_3);
+	TIM1->CCMR1 |= (TIM_CCMR1_IC2F_0 | TIM_CCMR1_IC2F_1 | TIM_CCMR1_IC2F_2 | TIM_CCMR1_IC2F_3);
+
+	/* Auto-Reload Register (MAX counter number) */
+	TIM1->ARR = 30;
+
+	//Enc_Trig_Int();
+
+	/* 1: Counter enabled */
+	TIM1->CR1 |= TIM_CR1_CEN;
+}
+
+
+
+uint8_t encoder_check()
+{
+if(gpio_stm32f103RC.get_state_pin(GPIOB,encoder_SW)==0)
+{
+return 0;
+}
+if(gpio_stm32f103RC.get_state_pin(GPIOB,encoder_CLK)==0 && gpio_stm32f103RC.get_state_pin(GPIOB,encoder_DT)==1 )
+{
+return 1;
+}
+if(gpio_stm32f103RC.get_state_pin(GPIOB,encoder_CLK)==1 && gpio_stm32f103RC.get_state_pin(GPIOB,encoder_DT)==0 )
+{
+return 2;
+}
+return 7;
+}
+
+
 void adc_init()
 {
   RCC->APB2ENR|=RCC_APB2ENR_ADC1EN; //˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜
@@ -64,61 +147,82 @@ return sw;
 void start_menu()
 {
 oled.Cursor(0,0);
-oled.LCD_String_Cirilic("Âûáîð êàáåëÿ:");
-for (int i=0;i<13;i++)
-{
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
-if(adc1_scan()==3)
+oled.LCD_String_Cyrilic("Âûáîð êàáåëÿ:");
+int i=1;
+while(1)
 {
 gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);
+/*
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);*/
+/*if(encoder_check()==1)
+{
+i++;
+}
+delay_ms(100);
+if(encoder_check()==2)
+{
+i--;
+}
+delay_ms(100);*/
+if(i<1)
+{
+    i=13;
+}
+if(i>13)
+{
+    i=1;
+}
 switch (i)
 {
-case 0x01:
+case 1:
   //  check_SD_SC2(16,0x01,1);
     break;
-case 0x02:
+case 2:
   //  check_SD_SC2(20,0x02,1);
     break;
-case 0x03:
+case 3:
 //check_SD_SC2(8,0x03,1);
     break;
-case 0x04:
+case 4:
     //check_km_1(20,0x04,1);
     break;
-case 0x05:
+case 5:
     //check_km_2(20,0x05,1);
     break;
-case 0x06:
+case 6:
   //  check_SD_SC2(14,0x06,1);
     break;
-case 0x07:
+case 7:
 //check_SD_SC2(10,0x07,1);
     break;
-case 0x08:
+case 8:
     //check_PKU_NKK_3(20,0x08,1);
     break;
-case 0x09:
+case 9:
    // check_PKU_NKK_2_1(20,0x09,1);
     break;
-case 0x10:
+case 10:
     // check_DOF(20,0x10,1);
     break;
-case 0x11:
+case 11:
     //check_ext_fridge(16,0x11,1);
     break;
-case 0x12:
+case 12:
    //check_eth(8,0x12,1);
    break;
-case 0x13:
+case 13:
  //  check_SD_SC2(20,0x13,1);
    break;
+default:
+
+break;
 }
-oled.ClearLCDScreen();
-return;
-}
+//oled.ClearLCDScreen();
+//return;
+
 oled.Cursor(1,0);
-oled.LCD_String_Cirilic(cables_list_ru.at(i));
-delay_ms(1000);
+oled.LCD_String_Cyrilic(cables_list_ru.at(i));
+delay_ms(200);
 oled.Cursor(1,0);
 oled.PrintStr("                ");
 }
