@@ -187,9 +187,6 @@ extern "C" void EXTI2_IRQHandler(void)
 }
 
 
-
-
-
 extern "C"
 {
 void HardFault_Handler(void)
