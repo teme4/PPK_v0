@@ -37,52 +37,46 @@ void Enc_Trig_Int(void){
 
 void tim1_init()
 {
-RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 
+RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 /* 01: CC1 channel is configured as input, IC1 is mapped on TI1
  * 01: CC2 channel is configured as input, IC2 is mapped on TI2 */
+TIM1->CCER = TIM_CCER_CC1P | TIM_CCER_CC2P;
+TIM1->CCMR1 = TIM_CCMR1_CC1S_0 | TIM_CCMR1_CC2S_0;
+TIM1->SMCR = TIM_SMCR_SMS_0 | TIM_SMCR_SMS_1;
+TIM1->ARR = 13;
+TIM1->CR1 = TIM_CR1_CEN;
+/*
 TIM1->CCMR1 |= (TIM_CCMR1_CC1S_0 | TIM_CCMR1_CC2S_0);
 TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S_1 | TIM_CCMR1_CC2S_1);
 
-	/* 00: noninverted/rising edge */
+	// 00: noninverted/rising edge //
 	TIM1->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC2P);
 	TIM1->CCER &= ~(TIM_CCER_CC2NP | TIM_CCER_CC2NP);
 
-	/* 001: Encoder mode 1 - Counter counts up/down on TI2FP1 edge depending on TI1FP2 level */
+	// 001: Encoder mode 1 - Counter counts up/down on TI2FP1 edge depending on TI1FP2 level //
 	TIM1->SMCR |= TIM_SMCR_SMS_0;
 	TIM1->SMCR &= ~TIM_SMCR_SMS_1;
 	TIM1->SMCR &= ~TIM_SMCR_SMS_2;
 
-	/* 1111: fSAMPLING = fDTS / 32, N = 8 */
+	// 1111: fSAMPLING = fDTS / 32, N = 8 //
 	TIM1->CCMR1 |= (TIM_CCMR1_IC1F_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC1F_2 | TIM_CCMR1_IC1F_3);
 	TIM1->CCMR1 |= (TIM_CCMR1_IC2F_0 | TIM_CCMR1_IC2F_1 | TIM_CCMR1_IC2F_2 | TIM_CCMR1_IC2F_3);
 
-	/* Auto-Reload Register (MAX counter number) */
+	// Auto-Reload Register (MAX counter number) //
 	TIM1->ARR = 30;
 
 	//Enc_Trig_Int();
 
-	/* 1: Counter enabled */
-	TIM1->CR1 |= TIM_CR1_CEN;
+	// 1: Counter enabled //
+	TIM1->CR1 |= TIM_CR1_CEN;*/
 }
 
 
 
 uint8_t encoder_check()
 {
-if(gpio_stm32f103RC.get_state_pin(GPIOB,encoder_SW)==0)
-{
-return 0;
-}
-if(gpio_stm32f103RC.get_state_pin(GPIOB,encoder_CLK)==0 && gpio_stm32f103RC.get_state_pin(GPIOB,encoder_DT)==1 )
-{
-return 1;
-}
-if(gpio_stm32f103RC.get_state_pin(GPIOB,encoder_CLK)==1 && gpio_stm32f103RC.get_state_pin(GPIOB,encoder_DT)==0 )
-{
-return 2;
-}
-return 7;
+
 }
 
 
@@ -146,33 +140,16 @@ return sw;
 
 void start_menu()
 {
+uint8_t last;
 oled.Cursor(0,0);
 oled.LCD_String_Cyrilic("Выбор кабеля:");
-int i=1;
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);
 while(1)
 {
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);
+gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,1);
+//gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);*/
 /*
-gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.green,0);*/
-/*if(encoder_check()==1)
-{
-i++;
-}
-delay_ms(100);
-if(encoder_check()==2)
-{
-i--;
-}
-delay_ms(100);*/
-if(i<1)
-{
-    i=13;
-}
-if(i>13)
-{
-    i=1;
-}
-switch (i)
+switch (TIM1->CNT )
 {
 case 1:
   //  check_SD_SC2(16,0x01,1);
@@ -214,17 +191,19 @@ case 13:
  //  check_SD_SC2(20,0x13,1);
    break;
 default:
-
 break;
-}
-//oled.ClearLCDScreen();
-//return;
+}*/
 
 oled.Cursor(1,0);
-oled.LCD_String_Cyrilic(cables_list_ru.at(i));
-delay_ms(200);
-oled.Cursor(1,0);
+if(last!=TIM1->CNT)
+{
 oled.PrintStr("                ");
+}
+last=TIM1->CNT;
+oled.LCD_String_Cyrilic(cables_list_ru.at(TIM1->CNT));
+delay_ms(500);
+oled.Cursor(1,0);
+//oled.PrintStr("                ");
 }
 oled.ClearLCDScreen();
 }

@@ -130,7 +130,7 @@ gpio_stm32f103RC.set_pin_state(GPIOC,mcu_led.red,1);
 
 oled.ClearLCDScreen();
 oled.busy_flag();
-
+tim1_init();
 
 
 //adc_init();
